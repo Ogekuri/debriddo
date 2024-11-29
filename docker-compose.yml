@@ -1,0 +1,14 @@
+services:
+  compose:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # prende le variabili d'ambiente e le passa al containder durante l'esecuzione e la build
+      - DOCKER_PORT=${DOCKER_PORT:-8000}
+      - DOCKER_URL=${DOCKER_URL:-http://127.0.0.1:8000}
+      - DOCKER_ENV=${DOCKER_ENV:-}
+    ports:
+      # prende la porta e la passa al network component
+      - ${DOCKER_PORT:-8000}:${DOCKER_PORT:-8000}
+    command: /entrypoint.sh
