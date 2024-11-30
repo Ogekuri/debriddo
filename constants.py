@@ -1,6 +1,6 @@
 # Application name
 APPLICATION_NAME = "Debriddo"
-APPLICATION_VERSION = "0.0.9"
+APPLICATION_VERSION = "0.0.10"
 APPLICATION_DESCRIPTION = "Stremio's addon to online search with debrid support."
 
 # SQL3llite database

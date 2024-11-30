@@ -1,5 +1,8 @@
 name: Release
 
+variables:
+  DOCKER_CLI_EXPERIMENTAL: 'true'
+  
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}  # Nome del repository GitHub (user/repo)
