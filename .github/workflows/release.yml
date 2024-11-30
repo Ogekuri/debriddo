@@ -38,12 +38,16 @@ jobs:
       - name: Download auto-generated ZIP
         run: curl -L -o ${{ github.ref_name }}.zip https://github.com/${{ github.repository }}/archive/refs/tags/${{ github.ref_name }}.zip
 
+      - name: Set repository name as output
+          id: repo-name
+          run: echo "::set-output name=repo_name::$(echo '${{ github.repository }}' | cut -d'/' -f2)"
+
       - name: Upload Asset on Release
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./${{ github.ref_name }}.zip
-          asset_name: ${{ github.ref_name }}.zip
+          asset_name: ${{ steps.repo-name.outputs.repo_name }}_${{ github.ref_name }}.zip
           asset_content_type: application/zip
         env:                                         # Se il GITHUB_TOKEN non funziona, puoi utilizzare un Personal Access Token (PAT) con i permessi adeguati.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Un PAT può essere utilizzato al posto di GITHUB_TOKEN
@@ -74,7 +78,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:v0.0.37
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.ref_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
