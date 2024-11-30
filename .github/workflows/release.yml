@@ -1,7 +1,4 @@
 name: Release
-
-variables:
-  DOCKER_CLI_EXPERIMENTAL: 'true'
   
 env:
   REGISTRY: ghcr.io
@@ -90,6 +87,9 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.ref_name }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
           labels: ${{ steps.meta.outputs.labels }}
+        env:
+          DOCKER_CLI_EXPERIMENTAL: 'true'
+
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
