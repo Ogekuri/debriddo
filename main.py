@@ -278,8 +278,7 @@ async def get_manifest():
     # }
 
 
-formatter = logging.Formatter('[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
-                              '%m-%d %H:%M:%S')
+# formatter = logging.Formatter('[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s', '%m-%d %H:%M:%S')
 
 logger.info(f"Started {app_name} ({app_version}) {app_environment} @ {app_website}")
 

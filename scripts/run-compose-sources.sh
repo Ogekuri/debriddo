@@ -12,8 +12,8 @@ DEFAULT_NODE_ENV=""
 # Controlla se i parametri sono stati forniti
 CFG_NODE_HOST="127.0.0.1"
 CFG_NODE_PORT=${1:-$DEFAULT_NODE_PORT}
-CFG_NODE_ENV=${2:-$DEFAULT_NODE_ENV}
-CFG_NODE_URL=${3:-http://$CFG_NODE_HOST:$CFG_NODE_PORT}
+CFG_NODE_URL=${2:-http://$CFG_NODE_HOST:$CFG_NODE_PORT}
+CFG_NODE_ENV=${3:-$DEFAULT_NODE_ENV}
 
 # cancella il virtual environment
 VENVDIR=".venv"

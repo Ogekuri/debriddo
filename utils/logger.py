@@ -5,21 +5,47 @@ import logging
 class CustomFormatter(logging.Formatter):
     """Logging Formatter to add colors and count warning / errors"""
 
-    grey = "\x1b[38;21m"
-    blue = "\x1b[34;21m"
-    green = "\x1b[32;21m"
-    yellow = "\x1b[33;21m"
-    red = "\x1b[31;21m"
-    bold_red = "\x1b[31;1m"
-    reset = "\x1b[0m"
-    format = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
+    WHITE = "\033[97m"   
+    WHITE_BOLD = "\033[1;97m"   
+    GREY = "\033[90m"
+    LIGHT_GREY = "\033[37m"
+    CYAN = "\033[36m"
+    MAGENTA = "\033[35m"
+    BLUE = "\033[34m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    RED_BOLD = "\033[1;31m"
+
+    # Reset color
+    RESET = "\033[0m"
+
+    # Spaziatura
+    # "INFO:     "
+    # "DEBUG:    "
+    # "WARNING:  "
+    # "ERROR:    "
+    # "CRITICAL: "
+
+    message  = '%(message)s'
+    filename = '{%(pathname)s:%(lineno)d}'
+    time     = '[%(asctime)s]'
+    process  = 'p%(process)s'
+    
+    level     = '%(levelname)s:'
+
+    space_info     = '     '
+    space_debug    = '    '
+    space_warning  = '  '
+    space_error    = '    '
+    space_critical = ' '
 
     FORMATS = {
-        logging.DEBUG: grey + format + reset,
-        logging.INFO: grey + format + reset,
-        logging.WARNING: yellow + format + reset,
-        logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset
+        logging.INFO:     GREEN    + level + RESET + space_info     + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+        logging.DEBUG:    BLUE     + level + RESET + space_debug    + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+        logging.WARNING:  YELLOW   + level + RESET + space_warning  + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+        logging.ERROR:    RED      + level + RESET + space_error    + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+        logging.CRITICAL: RED_BOLD + level + RESET + space_critical + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET
     }
 
     def format(self, record):
