@@ -35,7 +35,7 @@ VENVDIR="venv"
 if ! [ -d "${VENVDIR}/" ]; then
     echo -n "Create virtual environment ..."
     mkdir ${VENVDIR}/
-    virtualenv --python=python3.12 ${VENVDIR}/ >/dev/null
+    virtualenv --python=python3 ${VENVDIR}/ >/dev/null
     echo "done."
 fi
 
