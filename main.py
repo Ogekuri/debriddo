@@ -153,7 +153,7 @@ async def configure():
     menifest_dict = {
                     "id": "com.stremio." + app_name_lc + "." + app_id,
                     "version": str(APPLICATION_VERSION),
-                    "name": app_name + ' ' + app_version + ' ' + app_environment,
+                    "name": app_name + ' ' + app_environment,
                     "short_name": app_name,
                     "description": app_desc,
                     "start_url": app_website,
@@ -193,7 +193,7 @@ async def get_manifest():
     manifest_dict = {
         "id": "com.stremio." + app_name_lc + "." + app_id,
         "version": str(APPLICATION_VERSION),
-        "name": app_name + ' ' + app_version + ' ' + app_environment,
+        "name": app_name + ' ' + app_environment,
         "short_name": app_name,
         "description": app_desc,
         "start_url": app_website,
@@ -264,7 +264,7 @@ async def get_manifest():
     )
 
 
-logger.info(f"Started {app_name} ({app_version}) {app_environment} @ {app_website}")
+logger.info(f"Started {app_name} {app_version} {app_environment} @ {app_website}")
 
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
 async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
