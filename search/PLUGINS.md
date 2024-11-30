@@ -1,9 +1,9 @@
 # Plugins Folder
 
-All plugins are modified version of qBitttorret's plugins.
+Tutti i plugins sono tratti da qBittorrent.
 
-To implement a new plugins you have to modify original plugins to return dictionaries insted to print outputs.
+Per implementare un nuovo plugin è necessario modificare il meccanismo originale di stampa della versione di qBittorrent ed implementare il passaggio di dizionari..
 
-Se the wrapped prettyPrinter used on current supported plugins.
+Si può usare la classe prettyPrinter usata per wappare i plugins già convertiti.
 
-All plugins are statically integrated on 'config.js' and 'html.py' source codes.
+Il nuovo plugins deve essere (al momento) staticamente inserito in 'config.js' e 'html.py'.

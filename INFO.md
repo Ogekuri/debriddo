@@ -1,20 +1,22 @@
 
-# Development Info
+# Informazioni per gli sviluppatori
 
-# Version, repository and deplyoment
+## Versionamento, repository e deplyoment
 
-The APPLICATION_VERSION in constant.py contain the version on x.y.z style.
+    - La costante APPLICATION_VERSION nel constant.py contiene il numero di versione nel formato x.y.z (ad esempio 1.2.3).
 
-The master tags follow the same APPLICATION_VERSION's syntax preceded by a 'v' (like v1.2.3).
+    - Le versioni rilasciate vengono taggate nel brench "master" nel formato vx.y.z (ad esempio v1.2.3).
 
-A new docker image is build on every tag that start with 'v' (see the .github/workflow/release.yml file)
+    - Ad ogni rilascio, quando il master viene taggato, una nuova immagine docker viene buildata e resa disponibile.
 
 ## TODO
 
-### Implementations
+### Implementazioni
 
-* CORSMiddleware change origins
+    * Implementare il supporto per https://debrid-link.com/
+    * Implementare il supporto per Il Corsaro Blu
+    * Modificare CORSMiddleware, cambiare "origins"
 
-### Tests
+### Test
 
-* NO_CACHE_VIDEO_URL = "https://github.com/Ogekuri/debriddo/raw/main/videos/nocache.mp4"
+    * Testare NO_CACHE_VIDEO_URL = "https://github.com/Ogekuri/debriddo/raw/main/videos/nocache.mp4"

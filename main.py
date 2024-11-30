@@ -15,7 +15,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
-from fastapi.templating import Jinja2Templates
 from starlette.responses import FileResponse
 
 from debrid.get_debrid_service import get_debrid_service
@@ -51,7 +50,7 @@ else:
     app_website = "http://127.0.0.1:8000"
 node_env = os.getenv("NODE_ENV", None)
 if node_env is not None and type(node_env) is str and len(node_env) > 0:
-    development = node_env
+    development = node_env.lower()
 else:
     development = None
 
@@ -61,6 +60,7 @@ app_name_lc = str(APPLICATION_NAME).lower()
 app_version = 'v' + str(APPLICATION_VERSION)
 app_desc = str(APPLICATION_DESCRIPTION)
 app_environment = f"({development})" if development is not None else ""
+app_id = str(APPLICATION_VERSION) + '.' + development if development is not None else str(APPLICATION_VERSION)
 
 # Aggiunge il loggin del middleware fastapi
 class LogFilterMiddleware:
@@ -98,6 +98,7 @@ if development is not None:
     app.add_middleware(LogFilterMiddleware)
 
 
+#
 # Abilita CORSMiddleware per le chiamate OPTIONS e il redirect
 #
 # Probailmente posso filtrare meglio
@@ -150,7 +151,7 @@ async def configure():
 @app.get("/site.webmanifest", response_class=HTMLResponse)
 async def configure():
     menifest_dict = {
-                    "id": "com.stremio." + app_name_lc + ".addon",
+                    "id": "com.stremio." + app_name_lc + "." + app_id,
                     "version": str(APPLICATION_VERSION),
                     "name": app_name + ' ' + app_version + ' ' + app_environment,
                     "short_name": app_name,
@@ -190,7 +191,7 @@ async def function(file_path: str):
 @app.get("/{params}/manifest.json")
 async def get_manifest():
     manifest_dict = {
-        "id": "com.stremio." + app_name_lc + ".addon",
+        "id": "com.stremio." + app_name_lc + "." + app_id,
         "version": str(APPLICATION_VERSION),
         "name": app_name + ' ' + app_version + ' ' + app_environment,
         "short_name": app_name,
@@ -198,50 +199,50 @@ async def get_manifest():
         "start_url": app_website,
         "icons": [
             {
-            "src": app_website + "/static/images/web-app-manifest-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any maskable"
+                "src": app_website + "/static/images/web-app-manifest-192x192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
             },
             {
-            "src": app_website + "/static/images/web-app-manifest-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
+                "src": app_website + "/static/images/web-app-manifest-512x512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
             }
         ],
         "catalogs": [
             {
-            "id": app_name_lc + "-realdebrid",
-            "name": "RealDebrid",
-            "type": "other",
-            "extra": [
-                {
-                "name": "skip"
-                }
-            ]
+                "id": app_name_lc + "-realdebrid",
+                "name": "RealDebrid",
+                "type": "other",
+                "extra": [
+                    {
+                    "name": "skip"
+                    }
+                ]
             }
         ],
         "resources": [
             {
-            "name": "stream",
-            "types": [
-                "movie",
-                "series"
-            ],
-            "idPrefixes": [
-                "tt",
-                "kitsu"
-            ]
+                "name": "stream",
+                "types": [
+                    "movie",
+                    "series"
+                ],
+                "idPrefixes": [
+                    "tt",
+                    "kitsu"
+                ]
             },
             {
-            "name": "meta",
-            "types": [
-                "other"
-            ],
-            "idPrefixes": [
-                "realdebrid"
-            ]
+                "name": "meta",
+                "types": [
+                    "other"
+                ],
+                "idPrefixes": [
+                    "realdebrid"
+                ]
             }
         ],
         "types": [
@@ -261,24 +262,7 @@ async def get_manifest():
         content=manifest_dict,
         media_type="application/manifest+json"  # Specifica il Content-Type corretto
     )
-    # {
-    #     "id": "com.stremio.rd.addon",
-    #     "background": "/static/images/background.jpg",
-    #     "logo": "/static/images/logo.png",
-    #     "version": APP_VERSION,
-    #     "catalogs": [],
-    #     "resources": ["stream"],
-    #     "types": ["movie", "series"],
-    #     "name": APP_NAME + develop,
-    #     "description": APP_DESC,
-    #     "behaviorHints": {
-    #         "configurable": True,
-    #         "configurationRequired": False,
-    #     }
-    # }
 
-
-# formatter = logging.Formatter('[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s', '%m-%d %H:%M:%S')
 
 logger.info(f"Started {app_name} ({app_version}) {app_environment} @ {app_website}")
 
@@ -393,55 +377,54 @@ async def get_playback(config: str, query: str, request: Request):
     
 
 async def update_app():
-    if development is None:
-        try:
-            current_version = app_version
-            url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
-            response = requests.get(url)
-            data = response.json()
-            latest_version = data['tag_name']
-            if latest_version != current_version:
-                logger.info("New version available: " + latest_version)
-                logger.info("Updating...")
-                logger.info("Getting update zip...")
-                update_zip = requests.get(data['zipball_url'])
-                with open("update.zip", "wb") as file:
-                    file.write(update_zip.content)
-                logger.info("Update zip downloaded")
-                logger.info("Extracting update...")
-                with zipfile.ZipFile("update.zip", 'r') as zip_ref:
-                    zip_ref.extractall("update")
-                logger.info("Update extracted")
+    try:
+        current_version = app_version
+        url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
+        response = requests.get(url)
+        data = response.json()
+        latest_version = data['tag_name']
+        if latest_version != current_version:
+            logger.info("New version available: " + latest_version)
+            logger.info("Updating...")
+            logger.info("Getting update zip...")
+            update_zip = requests.get(data['zipball_url'])
+            with open("update.zip", "wb") as file:
+                file.write(update_zip.content)
+            logger.info("Update zip downloaded")
+            logger.info("Extracting update...")
+            with zipfile.ZipFile("update.zip", 'r') as zip_ref:
+                zip_ref.extractall("update")
+            logger.info("Update extracted")
 
-                extracted_folder = os.listdir("update")[0]
-                extracted_folder_path = os.path.join("update", extracted_folder)
-                for item in os.listdir(extracted_folder_path):
-                    s = os.path.join(extracted_folder_path, item)
-                    d = os.path.join(".", item)
-                    if os.path.isdir(s):
-                        shutil.copytree(s, d, dirs_exist_ok=True)
-                    else:
-                        shutil.copy2(s, d)
-                logger.info("Files copied")
+            extracted_folder = os.listdir("update")[0]
+            extracted_folder_path = os.path.join("update", extracted_folder)
+            for item in os.listdir(extracted_folder_path):
+                s = os.path.join(extracted_folder_path, item)
+                d = os.path.join(".", item)
+                if os.path.isdir(s):
+                    shutil.copytree(s, d, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(s, d)
+            logger.info("Files copied")
 
-                logger.info("Cleaning up...")
-                shutil.rmtree("update")
-                os.remove("update.zip")
-                logger.info("Cleaned up")
-                logger.info("Updated !")
-        except Exception as e:
-            logger.error(f"Error during update: {e}")
+            logger.info("Cleaning up...")
+            shutil.rmtree("update")
+            os.remove("update.zip")
+            logger.info("Cleaned up")
+            logger.info("Updated !")
+    except Exception as e:
+        logger.error(f"Error during update: {e}")
 
-# gestione dell'auto-update
-# @crontab("* * * * *", start=not isDev)
-# async def schedule_task():
-#     await update_app()
+# gestione dell'auto-update (ogni 5 minuti)
+@crontab("*/5 * * * *", start=development is None)
+async def schedule_task():
+    await update_app()
 
 
 async def main():
-#     await asyncio.gather(
-#         schedule_task()
-#     )
+    await asyncio.gather(
+        schedule_task()
+    )
     return
 
 

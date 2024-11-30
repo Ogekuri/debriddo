@@ -1,46 +1,57 @@
 # Debriddo
 
-Debriddo it's a Stremio'addon to search torrent directly on online search andgines and play media with drbird services.
+Debriddo è un addon per Stremio per la ricerca dei film e delle serie tv sui motori di ricerca online di torrent.
 
-# Download ed esecusione
+# Installazione ed esecuzione
 
-## via Python
+## Docker
 
-- Clonare il repository
+- Ottenere l'immagine docker da GitHub Container Registry
     ```sh
-    git clone https://github.com/Ogekuri/debriddo
+    sudo docker pull "ghcr.io/ogekuri/debriddo:latest"
     ```
-- Eseguire l'applicativo (la porta e l'ip sono facoltativi)
+- Eseguire il conteiner docker
     ```sh
-    cd debriddo
-    ./run-python.sh <PORT> <IP>
+    sudo docker run -p "0.0.0.0:8000:8000" --env DOCKER_PORT="8000" --env DOCKER_URL="https://foo.bar:443" "ghcr.io/ogekuri/debriddo:latest"
     ````
-  Ora è accessibile attraverso `<IP>:<PORT> o 127.0.0.1:8000`
+- Eventualmente puoi specificare il nome dell'ambinete
+    ```sh
+    sudo docker run -p "0.0.0.0:8000:8000" --env DOCKER_PORT="8000" --env DOCKER_URL="https://foo.bar:443" --env DOCKER_ENV="test" "ghcr.io/ogekuri/debriddo:latest"
+    ````
+  Ora è accessibile attraverso `https://foo.bar:443`
 
 - Terminare l'applicazione
     ```sh
     Ctrl+C
     ````
 
-## via Docker
+# Esecuzione dei sorgenti
 
-- Installare l'immagine docker
+## Python
+
+- Per eseguire direnttamente i sorgenti si può usare lo script:
     ```sh
-    sudo docker pull ghcr.io/ogekuri/debriddo:latest
-    ./run-docker.sh
+    scripts/run-python-sources.sh "0.0.0.0" "8000" "https://foo.bar:443" "dev"
+    ```
+## Docker
+
+- Per eseguire i sorgenti in un conteiner docker usare lo script:
+    ```sh
+    scripts/run-docker-sources.sh "0.0.0.0" "8000" "https://foo.bar:443" "dev"
     ```
 
-- Eseguire l'immagine ghcr.io/ogekuri/debriddo:latest
-    ```sh
-    sudo docker run ${IMAGE_NAME}
-    ```
-  Ora è accessibile attraverso `<IP>:<PORT> o 127.0.0.1:8000`
-  
-- Terminare l'applicazione
-    ```sh
-    Ctrl+C
-    ````
-# Opzionale
-## Utilizzo dei certificati
+# Note per gli sviluppatori
 
-Questa funzionalità è ancora da implementare.
+## Visual Studio Code
+
+- Dopo aver aperto il progetto è possibile creare il virtual environment con lo script:
+    ```sh
+    scripts/create_vscode_venv.sh
+    ```
+
+- Clean del progetto
+    ```sh
+    scripts/clean.sh
+    ```
+Altri scrpts sono presenti nella cartella scripts.
+

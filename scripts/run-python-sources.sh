@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# check parameters
+if [ -z $3 ]; then
+    echo "ERROR: missing parameters"
+    echo ""
+    echo "Usage:      $0 <listen ip> <listen port> <application url> [<environment name>]"
+    echo ""
+    echo "Examples:"
+    echo "            $0 127.0.0.1 8000 http://127.0.0.1:8000"
+    echo "            $0 127.0.0.1 8000 http://127.0.0.1:8000 test"
+    echo ""
+    exit 1
+fi
+
 cd -- "$(dirname "$0")/../"
 echo "Run on path: "$(pwd -P)
 echo "Terminate app with Ctrl+C"
