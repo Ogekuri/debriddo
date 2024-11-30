@@ -1,5 +1,5 @@
 # Usa un'immagine base leggera
-FROM python:3.12-slim
+FROM python:3.12
 
 # Imposta i parametri con i valori passati con --build-arg (o con i valori di default)
 ARG PORT=8000
@@ -23,7 +23,7 @@ ENV PYTHONUNBUFFERED 1
 COPY requirements.txt .
 
 # Installa i requirements
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copia il contenuto
 COPY . .
