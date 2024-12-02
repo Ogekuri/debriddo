@@ -1,6 +1,6 @@
 # Application name
 APPLICATION_NAME = "Debriddo"
-APPLICATION_VERSION = "0.0.19"
+APPLICATION_VERSION = "0.0.20"
 APPLICATION_DESCRIPTION = "Provide online search and debrid support."
 
 # SQL3llite database

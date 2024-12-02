@@ -405,6 +405,7 @@ async def get_playback(config: str, query: str, request: Request):
 async def update_app():
     try:
         current_version = app_version
+        logger.info("Checking for new updated. Current version: " + current_version)
         url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
         response = requests.get(url)
         data = response.json()
