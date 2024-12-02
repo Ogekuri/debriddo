@@ -1,7 +1,9 @@
+// variabili generali
+const services = ['realdebrid', 'alldebrid', 'premiumize', 'torbox', 'debridlink'];
 const sorts = ['quality', 'sizedesc', 'sizeasc', 'qualitythensize'];
 const qualityExclusions = ['4k', '1080p', '720p', '480p', 'rips', 'cam', 'unknown'];
 const languages = ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'in', 'nl', 'hu', 'la', 'multi'];
-const engines = ['thepiratebay', 'one337x', 'ilcorsaronero'];
+const engines = ['thepiratebay', 'one337x', 'ilcorsaronero', 'ilcorsaroblu'];
 
 document.addEventListener('DOMContentLoaded', function () {
     updateProviderFields();
@@ -16,19 +18,20 @@ function setElementDisplay(elementId, displayStatus) {
 }
 
 function updateProviderFields(isChangeEvent = false) {
-    if (document.getElementById('debrid').checked) {
-        setElementDisplay('debrid-fields', 'block');
-    } else {
-        setElementDisplay('debrid-fields', 'none');
-    }
+    // if (document.getElementById('debrid').checked) {
+    //     setElementDisplay('debrid-fields', 'block');
+    // } else {
+    //     setElementDisplay('debrid-fields', 'none');
+    // }
 
-    if (document.getElementById('tmdb')?.checked) {
-        setElementDisplay('tmdb-fields', 'block');
-    } else {
-        setElementDisplay('tmdb-fields', 'none');
-    }
+    // if (document.getElementById('tmdb')?.checked) {
+    //     setElementDisplay('tmdb-fields', 'block');
+    // } else {
+    //     setElementDisplay('tmdb-fields', 'none');
+    // }
 }
 
+// caricamento dei parametri
 function loadData() {
     const currentUrl = window.location.href;
     let data = currentUrl.match(/\/([^\/]+)\/configure$/);
@@ -37,22 +40,23 @@ function loadData() {
         data = JSON.parse(data);
         document.getElementById('debrid-api').value = data.debridKey;
         document.getElementById('tmdb-api').value = data.tmdbApi;
-        document.getElementById('service').value = data.service;
         document.getElementById('exclusion-keywords').value = (data.exclusionKeywords || []).join(', ');
         document.getElementById('maxSize').value = data.maxSize;
         document.getElementById('resultsPerQuality').value = data.resultsPerQuality;
         document.getElementById('maxResults').value = data.maxResults;
         document.getElementById('minCacheResults').value = data.minCacheResults;
         document.getElementById('daysCacheValid').value = data.daysCacheValid;
-        if (document.getElementById('cache')) {
-            document.getElementById('cache').checked = data.cache;
-        }
-        if (document.getElementById('search')) {
-            document.getElementById('search').checked = data.search;
-        }
+        document.getElementById('cache').checked = data.cache;
+        document.getElementById('search').checked = data.search;
         document.getElementById('debrid').checked = data.debrid;
         document.getElementById('tmdb').checked = data.metadataProvider === 'tmdb';
         document.getElementById('cinemeta').checked = data.metadataProvider === 'cinemeta';
+
+        services.forEach(serv => {
+            if (data.service === serv) {
+                document.getElementById(serv).checked = true;
+            }
+        });
 
         sorts.forEach(sort => {
             if (data.sort === sort) {
@@ -76,36 +80,10 @@ function loadData() {
             if (data.engines.includes(engine)) {
                 document.getElementById(engine).checked = true;
             }
+            else {
+                document.getElementById(engine).checked = false;
+            }
         });
-
-    }
-}
-
-let showLanguageCheckBoxes = true;
-
-function showCheckboxes() {
-    let checkboxes = document.getElementById("languageCheckBoxes");
-
-    if (showLanguageCheckBoxes) {
-        checkboxes.style.display = "block";
-        showLanguageCheckBoxes = false;
-    } else {
-        checkboxes.style.display = "none";
-        showLanguageCheckBoxes = true;
-    }
-}
-
-let statesearchCheckBoxes = true;
-
-function showSearchCheckboxes() {
-    let checkboxes = document.getElementById("searchCheckBoxes");
-
-    if (statesearchCheckBoxes) {
-        checkboxes.style.display = "block";
-        statesearchCheckBoxes = false;
-    } else {
-        checkboxes.style.display = "none";
-        statesearchCheckBoxes = true;
     }
 }
 
@@ -116,7 +94,6 @@ function getLink(method) {
     const addonHost = new URL(window.location.href).protocol.replace(':', '') + "://" + new URL(window.location.href).host
     const debridApi = document.getElementById('debrid-api').value;
     const tmdbApi = document.getElementById('tmdb-api').value;
-    const service = document.getElementById('service').value;
     const exclusionKeywords = document.getElementById('exclusion-keywords').value.split(',').map(keyword => keyword.trim()).filter(keyword => keyword !== '');
     let maxSize = document.getElementById('maxSize').value;
     let resultsPerQuality = document.getElementById('resultsPerQuality').value;
@@ -130,7 +107,6 @@ function getLink(method) {
     const selectedQualityExclusion = [];
 
     qualityExclusions.forEach(quality => {
-        //console.log(quality, document.getElementById(quality).checked);
         if (document.getElementById(quality).checked) {
             selectedQualityExclusion.push(quality);
         }
@@ -154,6 +130,13 @@ function getLink(method) {
     sorts.forEach(sort => {
         if (document.getElementById(sort).checked) {
             filter = sort;
+        }
+    });
+
+    let service;
+    services.forEach(serv => {
+        if (document.getElementById(serv).checked) {
+            service = serv;
         }
     });
 
@@ -192,27 +175,43 @@ function getLink(method) {
         debrid,
         metadataProvider
     };
+
     if ((debrid && debridApi === '') || (metadataProvider === 'tmdb' && tmdbApi === '') || languages.length === 0) {
         alert('Please fill all required fields');
         return false;
     }
     let stremio_link = `${window.location.host}/${btoa(JSON.stringify(data))}/manifest.json`;
+    let config_link = `${window.location.host}/${btoa(JSON.stringify(data))}/configure`;
 
     if (method === 'link') {
         window.open(`stremio://${stremio_link}`, "_blank");
-    } else if (method === 'copy') {
-        const link = window.location.protocol + '//' + stremio_link;
+    } else {
+        if (method === 'copy') {
+            const link = window.location.protocol + '//' + stremio_link;
 
-        if (!navigator.clipboard) {
-            alert('Your browser does not support clipboard');
-            console.log(link);
-            return;
+            if (!navigator.clipboard) {
+                alert('Your browser does not support clipboard');
+                return;
+            }
+
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Link copied to clipboard');
+            }, () => {
+                alert('Error copying link to clipboard');
+            });
+        } else if (method === 'config') {
+            const link = window.location.protocol + '//' + config_link;
+
+            if (!navigator.clipboard) {
+                alert('Your browser does not support clipboard');
+                return;
+            }
+
+            navigator.clipboard.writeText(link).then(() => {
+                alert('Link copied to clipboard');
+            }, () => {
+                alert('Error copying link to clipboard');
+            });
         }
-
-        navigator.clipboard.writeText(link).then(() => {
-            alert('Link copied to clipboard');
-        }, () => {
-            alert('Error copying link to clipboard');
-        });
     }
 }    

@@ -47,7 +47,7 @@ echo -n "Install python requirements ..."
 ${VENVDIR}/bin/pip install -r requirements.txt >/dev/null
 echo "done."
 
-NODE_URL=$CFG_NODE_URL NODE_ENV=$CFG_NODE_ENV ${VENVDIR}/bin/python3 -m uvicorn main:app --reload --host $CFG_NODE_HOST --port $CFG_NODE_PORT
+NODE_URL=$CFG_NODE_URL NODE_ENV=$CFG_NODE_ENV ${VENVDIR}/bin/python3 -m uvicorn main:app --log-level warning --reload --host $CFG_NODE_HOST --port $CFG_NODE_PORT
 
 # termina il venv
 deactivate

@@ -3,6 +3,11 @@ Elenco modifiche introdotti in Debriddo.
 
 Il formato è basato su on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) ed aderisce a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.19](https://github.com/Ogekuri/debriddo/compare/v0.0.17...v0.0.19) (2022-11-??)
+
+- Rivista la veste grafica
+
+
 ## [v0.0.18](https://github.com/Ogekuri/debriddo/compare/v0.0.17...v0.0.18) (2022-11-30)
 
 - Aggiornato il manifest

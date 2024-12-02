@@ -2,6 +2,8 @@
 
 Debriddo è un addon per Stremio per la ricerca dei film e delle serie tv sui motori di ricerca online di torrent.
 
+Le informazioni per gli sviluppatori sono contenute nel file [DEVELOP.md](DEVELOP.md)
+
 # Installazione ed esecuzione
 
 ## Docker
@@ -25,33 +27,10 @@ Debriddo è un addon per Stremio per la ricerca dei film e delle serie tv sui mo
     Ctrl+C
     ````
 
-# Esecuzione dei sorgenti
+# Ringraziamenti
 
-## Python
+Il progetto è basato sul progetto di **aymene69** [Stremio Jackett Addon](https://github.com/aymene69/stremio-jackett) del quale integra parte dei sorgenti.
 
-- Per eseguire direnttamente i sorgenti si può usare lo script:
-    ```sh
-    scripts/run-python-sources.sh "0.0.0.0" "8000" "https://foo.bar:443" "dev"
-    ```
-## Docker
+Tuttavia, dal momento che il supporto al [Jackett API Server](https://github.com/Jackett/Jackett) è stato completamente rimosso a favore delle ricerche dirette su internet, il progetto non è mantenuto come fork del progretto principale, ma come progetto indipendente.
 
-- Per eseguire i sorgenti in un conteiner docker usare lo script:
-    ```sh
-    scripts/run-docker-sources.sh "0.0.0.0" "8000" "https://foo.bar:443" "dev"
-    ```
-
-# Note per gli sviluppatori
-
-## Visual Studio Code
-
-- Dopo aver aperto il progetto è possibile creare il virtual environment con lo script:
-    ```sh
-    scripts/create_vscode_venv.sh
-    ```
-
-- Clean del progetto
-    ```sh
-    scripts/clean.sh
-    ```
-Altri scrpts sono presenti nella cartella scripts.
-
+Grazie a **aymene69** e al team di **Jacket** per il loro prezioso contributo!

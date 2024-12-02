@@ -225,8 +225,19 @@ class SearchService:
                 list_of_dicts = indexer.engine.search(search_string, category)
                 if list_of_dicts is not None and len(list_of_dicts) > 0:
                     result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                    if result is not None:
+                    if result is not None and type(result) is list and len(result) >0:
                         results.append(result)
+                    else:
+                        # se non ci sono risultati riprova omettendo l'episodio
+                        search_string = str(titles[index] + ' ' + series.season + ' ' + lang_tag)
+                        if indexer.language == languages[index]:
+                            search_string = str(titles[index] + ' ' + series.season)   # no language tag for native language indexer
+                        search_string = quote_plus(search_string)
+                        list_of_dicts = indexer.engine.search(search_string, category)
+                        if list_of_dicts is not None and len(list_of_dicts) > 0:
+                            result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
+                            if result is not None and type(result) is list and len(result) >0:
+                                results.append(result)
                 self.logger.debug(f"Searching {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
             except Exception:
                 self.logger.exception(

@@ -30,7 +30,7 @@ from utils.logger import setup_logger
 from utils.parse_config import parse_config
 from utils.stremio_parser import parse_to_stremio_streams
 from utils.string_encoding import decodeb64
-from static.html import get_index
+from web.pages import get_index
 
 from constants import APPLICATION_NAME, APPLICATION_VERSION, APPLICATION_DESCRIPTION
 
@@ -130,24 +130,53 @@ app.add_middleware(
 
 logger = setup_logger(__name__)
 
-# root
+# application start
+logger.info(f"Started {app_name} {app_version} {app_environment} @ {app_website}")
+
+################
+### Fast API ###
+################
+
+# root: /
 @app.get("/")
 async def root():
     return RedirectResponse(url="/configure")
 
-# favicon
+# /favicon.ico
 @app.get("/favicon.ico")
 async def get_favicon():
-    response = FileResponse(f"static/images/favicon.ico")
+    response = FileResponse(f"web/images/favicon.ico")
     return response
 
+# /config.js
+@app.get("/config.js")
+@app.get("/{config}/config.js")
+async def get_favicon():
+    response = FileResponse(f"web/config.js")
+    return response
 
+# /config.js
+@app.get("/styles.css")
+@app.get("/{config}/styles.css")
+async def get_favicon():
+    response = FileResponse(f"web/styles.css")
+    return response
+
+# /configure
+# /?/configure
 @app.get("/configure", response_class=HTMLResponse)
 @app.get("/{config}/configure", response_class=HTMLResponse)
 async def configure():
     return get_index(app_name, app_version, app_environment)
 
+# /imges/?
+@app.get("/images/{file_path:path}")
+@app.get("/{config}/images/{file_path:path}")
+async def function(file_path: str):
+    response = FileResponse(f"web/images/{file_path}")
+    return response
 
+# /site.webmanifest
 @app.get("/site.webmanifest", response_class=HTMLResponse)
 async def configure():
     menifest_dict = {
@@ -159,13 +188,13 @@ async def configure():
                     "start_url": app_website,
                     "icons": [
                         {
-                        "src": app_website + "/static/images/web-app-manifest-192x192.png",
+                        "src": app_website + "/images/web-app-manifest-192x192.png",
                         "sizes": "192x192",
                         "type": "image/png",
                         "purpose": "any maskable"
                         },
                         {
-                        "src": app_website + "/static/images/web-app-manifest-512x512.png",
+                        "src": app_website + "/images/web-app-manifest-512x512.png",
                         "sizes": "512x512",
                         "type": "image/png",
                         "purpose": "any maskable"
@@ -180,13 +209,8 @@ async def configure():
             media_type="application/manifest+json"  # Specifica il Content-Type corretto
         )
 
-
-@app.get("/static/{file_path:path}")
-async def function(file_path: str):
-    response = FileResponse(f"static/{file_path}")
-    return response
-
-
+# /manifest.json
+# /?/manifest.json
 @app.get("/manifest.json")
 @app.get("/{params}/manifest.json")
 async def get_manifest():
@@ -199,13 +223,13 @@ async def get_manifest():
         "start_url": app_website,
         "icons": [
             {
-                "src": app_website + "/static/images/web-app-manifest-192x192.png",
+                "src": app_website + "/images/web-app-manifest-192x192.png",
                 "sizes": "192x192",
                 "type": "image/png",
                 "purpose": "any maskable"
             },
             {
-                "src": app_website + "/static/images/web-app-manifest-512x512.png",
+                "src": app_website + "/images/web-app-manifest-512x512.png",
                 "sizes": "512x512",
                 "type": "image/png",
                 "purpose": "any maskable"
@@ -251,8 +275,8 @@ async def get_manifest():
             "anime",
             "other"
         ],
-        "background": app_website + "/static/images/background.jpg",
-        "logo": app_website + "/static/images/logo.png",
+        "background": app_website + "/images/background.jpg",
+        "logo": app_website + "/images/logo.png",
         "behaviorHints": {
             "configurable": True,
             "configurationRequired": False
@@ -263,9 +287,7 @@ async def get_manifest():
         media_type="application/manifest+json"  # Specifica il Content-Type corretto
     )
 
-
-logger.info(f"Started {app_name} {app_version} {app_environment} @ {app_website}")
-
+# /?/stream/?/?
 @app.get("/{config}/stream/{stream_type}/{stream_id}")
 async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
     start = time.time()
@@ -352,7 +374,7 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
 
         return {"streams": stream_list}
 
-
+# /playback/?/?
 @app.head("/playback/{config}/{query}")
 @app.get("/playback/{config}/{query}")
 async def get_playback(config: str, query: str, request: Request):
@@ -375,6 +397,10 @@ async def get_playback(config: str, query: str, request: Request):
         logger.error(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="An error occurred while processing the request.")
     
+
+###################
+### self update ###
+###################
 
 async def update_app():
     try:
@@ -421,12 +447,15 @@ async def schedule_task():
     await update_app()
 
 
+############
+### MAIN ###
+############
+
 async def main():
     await asyncio.gather(
         schedule_task()
     )
     return
-
 
 if __name__ == "__main__":
     asyncio.run(main())

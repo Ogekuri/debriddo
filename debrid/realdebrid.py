@@ -246,10 +246,12 @@ class RealDebrid(BaseDebrid):
             strict_matching_files = []
             matching_files = []
             for file in files:
-                if season_episode_in_filename(file["path"], season, episode, strict=True):
+                if season_episode_in_filename(file["path"], season, episode):
                     strict_matching_files.append(file)
-                elif season_episode_in_filename(file["path"], season, episode, strict=False):
-                    matching_files.append(file)
+                # if season_episode_in_filename(file["path"], season, episode, strict=True):
+                #     strict_matching_files.append(file)
+                # elif season_episode_in_filename(file["path"], season, episode, strict=False):
+                #     matching_files.append(file)
 
             if len(strict_matching_files) > 0:
                 matching_files = strict_matching_files
@@ -271,16 +273,18 @@ class RealDebrid(BaseDebrid):
             matching_indexes = []
             strict_matching_indexes = []
             for file in selected_files:
-                if season_episode_in_filename(file["path"], season, episode, strict=True):
+                if season_episode_in_filename(file["path"], season, episode):
                     strict_matching_indexes.append({"index": index, "file": file})
-                elif season_episode_in_filename(file["path"], season, episode, strict=False):
-                    matching_indexes.append({"index": index, "file": file})
+                # if season_episode_in_filename(file["path"], season, episode, strict=True):
+                #     strict_matching_indexes.append({"index": index, "file": file})
+                # elif season_episode_in_filename(file["path"], season, episode, strict=False):
+                #     matching_indexes.append({"index": index, "file": file})
                 index += 1
 
             if len(strict_matching_indexes) > 0:
                 matching_indexes = strict_matching_indexes
 
-            index = max(matching_indexes, lambda x: x["file"]["bytes"])["index"]
+            index = max(matching_indexes, key=lambda x: x["file"]["bytes"])["index"]
 
         if len(links) - 1 < index:
             logger.debug(f"From selected files {selected_files}, index: {index} is out of range for {links}.")
