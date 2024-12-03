@@ -69,11 +69,10 @@ def items_sort(items, config):
 
 # TODO: not needed anymore because of RTN
 def filter_out_non_matching(items, season, episode):
+    logger.debug("Filter results for season: " + season + ", spisode: " + episode)
     filtered_items = []
     for item in items:
-        logger.debug(season)
-        logger.debug(episode)
-        logger.debug(item.parsed_data)
+        # logger.debug(item.parsed_data)
         clean_season = season.replace("S", "")
         clean_episode = episode.replace("E", "")
         numeric_season = int(clean_season)
@@ -81,7 +80,7 @@ def filter_out_non_matching(items, season, episode):
         try:
             if len(item.parsed_data.seasons) == 0 and len(item.parsed_data.episodes) == 0:
                 continue
-
+            # torrent con stagione completa (manca l'E??)
             if len(item.parsed_data.episodes) == 0 and numeric_season in item.parsed_data.seasons:
                 filtered_items.append(item)
                 continue

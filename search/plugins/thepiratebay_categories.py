@@ -112,7 +112,13 @@ class thepiratebay(object):
 		x=[]
 		for category in self.supported_categories[cat]:
 			url=self.query.format(self=self,what=what,category=category)
-			x+=json.loads(retrieve_url(url))
+			# fix risulati nulli
+			result = retrieve_url(url)
+			if type(result) is str and len(result) > 0:
+				parse = json.loads(result)
+				if type(parse) is list and len(parse) > 0:
+					if parse[0]['name'] != "No results returned" and parse[0]['info_hash'] != "0000000000000000000000000000000000000000":
+						x+=json.loads(result)
 		self.parseJSON(x)
 		return prettyPrinter.get()
 

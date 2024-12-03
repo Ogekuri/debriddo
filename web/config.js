@@ -3,11 +3,7 @@ const services = ['realdebrid', 'alldebrid', 'premiumize', 'torbox', 'debridlink
 const sorts = ['quality', 'sizedesc', 'sizeasc', 'qualitythensize'];
 const qualityExclusions = ['4k', '1080p', '720p', '480p', 'rips', 'cam', 'unknown'];
 const languages = ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'in', 'nl', 'hu', 'la', 'multi'];
-const engines = ['thepiratebay', 'one337x', 'ilcorsaronero', 'ilcorsaroblu'];
-
-document.addEventListener('DOMContentLoaded', function () {
-    updateProviderFields();
-});
+const engines = ['thepiratebay', 'one337x', 'limetorrents', 'torrentproject', 'torrentz', 'ilcorsaronero', 'ilcorsaroblu'];
 
 function setElementDisplay(elementId, displayStatus) {
     const element = document.getElementById(elementId);
@@ -15,20 +11,6 @@ function setElementDisplay(elementId, displayStatus) {
         return;
     }
     element.style.display = displayStatus;
-}
-
-function updateProviderFields(isChangeEvent = false) {
-    // if (document.getElementById('debrid').checked) {
-    //     setElementDisplay('debrid-fields', 'block');
-    // } else {
-    //     setElementDisplay('debrid-fields', 'none');
-    // }
-
-    // if (document.getElementById('tmdb')?.checked) {
-    //     setElementDisplay('tmdb-fields', 'block');
-    // } else {
-    //     setElementDisplay('tmdb-fields', 'none');
-    // }
 }
 
 // caricamento dei parametri
@@ -47,6 +29,7 @@ function loadData() {
         document.getElementById('minCacheResults').value = data.minCacheResults;
         document.getElementById('daysCacheValid').value = data.daysCacheValid;
         document.getElementById('cache').checked = data.cache;
+        document.getElementById('playtorrent').checked = data.playtorrent;
         document.getElementById('search').checked = data.search;
         document.getElementById('debrid').checked = data.debrid;
         document.getElementById('tmdb').checked = data.metadataProvider === 'tmdb';
@@ -101,6 +84,7 @@ function getLink(method) {
     let minCacheResults = document.getElementById('minCacheResults').value;
     let daysCacheValid = document.getElementById('daysCacheValid').value;
     const cache = document.getElementById('cache')?.checked;
+    const playtorrent = document.getElementById('playtorrent')?.checked;
     const search = document.getElementById('search')?.checked;
     const debrid = document.getElementById('debrid').checked;
     const metadataProvider = document.getElementById('tmdb').checked ? 'tmdb' : 'cinemeta';
@@ -171,6 +155,7 @@ function getLink(method) {
         'exclusion': selectedQualityExclusion,
         tmdbApi,
         cache,
+        playtorrent,
         search,
         debrid,
         metadataProvider

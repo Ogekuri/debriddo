@@ -74,7 +74,6 @@ def search_cache(config, media):
                 elif media.type == "series":
                     cache_search['season'] = media.season
                     cache_search['episode'] = media.episode
-                    cache_search['seasonfile'] = False  # I guess keep it false to not mess up results?
                 
                 try:
                     # Costruisci la query di filtro in base a `cache_search`
@@ -82,7 +81,7 @@ def search_cache(config, media):
                     if media.type == "movie":
                         filters.append("year = :year")
                     elif media.type == "series":
-                        filters.extend(["season = :season", "episode = :episode", "seasonfile = :seasonfile"])
+                        filters.append("((season = :season AND episode = :episode AND seasonfile = False) OR (season = :season AND seasonfile = True))")
 
                     # Genera la query dinamica
                     query = f"SELECT * FROM {TABLE_NAME} WHERE " + " AND ".join(filters)
@@ -188,8 +187,13 @@ def cache_results(torrents: List[TorrentItem], media):
                             cache_item['year'] = media.year
                         elif media.type == "series":
                             cache_item['season'] = media.season
-                            cache_item['episode'] = media.episode
-                            cache_item['seasonfile'] = False  # I guess keep it false to not mess up results?
+                            # parsed_result = parse(result.raw_title) - già popolato
+                            if type(torrent.parsed_data.episodes) is list and len(torrent.parsed_data.episodes) > 0:
+                                cache_item['episode'] = media.episode
+                                cache_item['seasonfile'] = False  # False = contiene un episodio
+                            else:
+                                cache_item['episode'] = ''
+                                cache_item['seasonfile'] = True  # True = contiene la stagione intera
 
                         cache_items.append(cache_item)
                 except:

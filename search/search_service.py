@@ -31,7 +31,10 @@ from RTN import parse
 
 from search.plugins.thepiratebay_categories import thepiratebay
 from search.plugins.one337x import one337x
+from search.plugins.limetorrents import limetorrents
+from search.plugins.torrentproject import torrentproject
 from search.plugins.ilcorsaronero import ilcorsaronero
+from search.plugins.torrentz import torrentz
 
 from urllib.parse import quote_plus
 import io
@@ -105,8 +108,11 @@ class SearchService:
         
         del threads, results_queue, results
 
+        start_time = time.time()
         if flatten_results is not None and len(flatten_results) > 0:
-            # post process results ############################################à
+            # spost process result ############################################
+            self.logger.debug("Post process " + str(len(flatten_results)) + " results")
+
             results = []
 
             threads = []
@@ -139,6 +145,11 @@ class SearchService:
         else:
             results = None
 
+        if results is not None:
+            self.logger.info(f"Post processed {len(results)} results for {media.titles[0]}/{media.type} in {round(time.time() - start_time, 1)} [s]")
+        else: 
+            self.logger.info(f"No result found for {media.titles[0]}/{media.type}")
+
         return results
 
 
@@ -147,6 +158,12 @@ class SearchService:
             return thepiratebay()
         elif engine_name == 'one337x':
             return one337x()
+        elif engine_name == 'limetorrents':
+            return limetorrents()
+        elif engine_name == 'torrentproject':
+            return torrentproject()
+        elif engine_name == 'torrentz':
+            return torrentz()
         elif engine_name == 'ilcorsaronero':
             return ilcorsaronero()
         else:
@@ -157,6 +174,12 @@ class SearchService:
             if engine_name == 'thepiratebay':
                 return "any"
             elif engine_name == 'one337x':
+                return "any"
+            elif engine_name == 'limetorrents':
+                return "any"
+            elif engine_name == 'torrentproject':
+                return "any"
+            elif engine_name == 'torrentz':
                 return "any"
             elif engine_name == 'ilcorsaronero':
                 return "it"
@@ -175,6 +198,7 @@ class SearchService:
             titles = [movie.titles[index] for index in index_of_language]
 
         results = []
+        start_time = time.time()
 
         for index, lang in enumerate(languages):
             lang_tag = self.__language_tags[languages[index]]
@@ -185,17 +209,21 @@ class SearchService:
             category = str(indexer.movie_search_capatabilities)
 
             try:
-                start_time = time.time()
                 list_of_dicts = indexer.engine.search(search_string, category)
                 if list_of_dicts is not None and len(list_of_dicts) > 0:
                     result = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
                     if result is not None:
                         results.append(result)
-                self.logger.debug(f"Searching {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+                
             except Exception:
                 self.logger.exception(
                     f"An exception occured while searching for a movie on Search with indexer {indexer.title} and "
                     f"language {lang}.")
+                
+        if len(results) > 0:
+            self.logger.debug(f"Found {len(results)} for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+        else:
+            self.logger.debug(f"No results found for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
 
         return results
     
@@ -211,6 +239,7 @@ class SearchService:
             titles = [series.titles[index] for index in index_of_language]
 
         results = []
+        start_time = time.time()
 
         for index, lang in enumerate(languages):
             lang_tag = self.__language_tags[languages[index]]
@@ -221,27 +250,37 @@ class SearchService:
             category = str(indexer.tv_search_capatabilities)
 
             try:
-                start_time = time.time()
+                results_founded = False
                 list_of_dicts = indexer.engine.search(search_string, category)
                 if list_of_dicts is not None and len(list_of_dicts) > 0:
                     result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
                     if result is not None and type(result) is list and len(result) >0:
                         results.append(result)
-                    else:
-                        # se non ci sono risultati riprova omettendo l'episodio
-                        search_string = str(titles[index] + ' ' + series.season + ' ' + lang_tag)
-                        if indexer.language == languages[index]:
-                            search_string = str(titles[index] + ' ' + series.season)   # no language tag for native language indexer
-                        search_string = quote_plus(search_string)
-                        list_of_dicts = indexer.engine.search(search_string, category)
-                        if list_of_dicts is not None and len(list_of_dicts) > 0:
-                            result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                            if result is not None and type(result) is list and len(result) >0:
-                                results.append(result)
-                self.logger.debug(f"Searching {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+                        results_founded = False
+
+                # se non ci sono risultati riprova omettendo l'episodio
+                # perché ci sono i torrent con l'intera serie inclusa
+                # bisogna poi cercare il file corretto
+                if not results_founded:
+                    self.logger.debug(f"No result for {search_string} @ {indexer.engine_name}/{category} will search for torrents with complete season")
+                    search_string = str(titles[index] + ' ' + series.season + ' ' + lang_tag)
+                    if indexer.language == languages[index]:
+                        search_string = str(titles[index] + ' ' + series.season)   # no language tag for native language indexer
+                    search_string = quote_plus(search_string)
+                    list_of_dicts = indexer.engine.search(search_string, category)
+                    if list_of_dicts is not None and len(list_of_dicts) > 0:
+                        result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
+                        if result is not None and type(result) is list and len(result) >0:
+                            results.append(result)
+
             except Exception:
                 self.logger.exception(
                     f"An exception occured while searching for a series on Search with indexer {indexer.title} and language {lang}.")
+        
+        if len(results) > 0:
+            self.logger.info(f"Found {len(results)} for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+        else:
+            self.logger.info(f"No results found for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
 
         return results
 

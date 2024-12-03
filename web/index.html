@@ -27,7 +27,7 @@
                 <h2>Ricerca Online</h2>
                 <div class="internal-content">
                     <p>Puoi eseguire la ricerca online del Film o dell'episodio della Serie TV</p>
-                    <p><input id="search" name="search" value="search" type="checkbox" checked oninput="updateProviderFields(true)">Abilita la ricerca online</p>
+                    <p><input id="search" name="search" value="search" type="checkbox" checked>Abilita la ricerca online</p>
                 </div>
                 <div class="internal-content">
                     <p>Seleziona cosa usare per eseguire le ricerche</p>
@@ -35,8 +35,11 @@
                         <legend class="legend">Sito web</legend>
                         <p><input type="checkbox" id="thepiratebay" checked><img class="iconstyle" src="images/thepiratebay.png" alt="ThePirateBay">The Pirate Bay (<a href="https://thepiratebay.org/" class="web-link" target="_blank">https://thepiratebay.org/</a>)</p>
                         <p><input type="checkbox" id="one337x" checked><img class="iconstyle" src="images/1337x.png" alt="1337x">1337x (<a href="https://1337xto.to/" class="web-link" target="_blank">https://1337xto.to/</a>)</p>
-                        <p><input type="checkbox" id="ilcorsaronero" checked><img class="iconstyle" src="images/ilcorsaronero.png" alt="IlCorsaroNero">Il Corsaro Nero (<a href="https://ilcorsaronero.link/" class="web-link" target="_blank">https://ilcorsaronero.link/</a>)</p>
-                        <p><input type="checkbox" id="ilcorsaroblu" checked><img class="iconstyle" src="images/ilcorsaroblu.png" alt="IlCorsaroNero">Il Corsaro Blu (<a href="https://ilcorsaroblu.org/" class="web-link" target="_blank">https://ilcorsaroblu.org/</a>) <b>[NOT WORKING]</b></p>
+                        <p><input type="checkbox" id="limetorrents" checked><img class="iconstyle" src="images/limetorrents.png" alt="LimeTorrents">LimeTorrents (<a href="https://www.limetorrents.lol/" class="web-link" target="_blank">https://www.limetorrents.lol/</a>)</p>
+                        <p><input type="checkbox" id="torrentproject" checked><img class="iconstyle" src="images/torrentproject.png" alt="TorrentProject">Torrent Project (<a href="https://torrentproject2.net/" class="web-link" target="_blank">https://torrentproject2.net/</a>)</p>
+                        <p><input type="checkbox" id="torrentz" checked><img class="iconstyle" src="images/torrentz.png" alt="Torrentz">Torrentz (<a href="https://torrentz2.nz/" class="web-link" target="_blank">https://torrentz2.nz/</a>)</p>
+                        <p><input type="checkbox" id="ilcorsaronero" checked><img class="iconstyle" src="images/ilcorsaronero.png" alt="IlCorsaroNero">Il Corsaro Nero (<a href="https://ilcorsaronero.link/" class="web-link" target="_blank">https://ilcorsaronero.link/</a>) <b>[LENTO]</b></p>
+                        <p><input type="checkbox" id="ilcorsaroblu" checked><img class="iconstyle" src="images/ilcorsaroblu.png" alt="IlCorsaroNero">Il Corsaro Blu (<a href="https://ilcorsaroblu.org/" class="web-link" target="_blank">https://ilcorsaroblu.org/</a>) <b>[NON FUNZIONANTE]</b></p>
                     </fieldset>
                 </div>
             </div>
@@ -46,15 +49,15 @@
                 <h2>Cache</h2>
                 <div class="internal-content">
                     <p>Puoi utilizzare una cache per memorizzare in locale le tue ricerce</p>
-                    <p><p><input id="cache" name="cache" value="cache" type="checkbox" checked oninput="updateProviderFields(true)">Abilita la cache</p>
+                    <p><p><input id="cache" name="cache" value="cache" type="checkbox" checked>Abilita la cache</p>
                 </div>
                 <div class="internal-content">
                     <p>Numero minimo di risultati</p>
-                    <p><input oninput="" type="text" name="minCacheResults" id="minCacheResults" autocomplete="off" placeholder="3">
+                    <p><input type="text" name="minCacheResults" id="minCacheResults" autocomplete="off" placeholder="3">
                 </div>
                 <div class="internal-content">
                     <p>Durata dei dati in cache in giorni</p>
-                    <p><input oninput="" type="text" name="daysCacheValid" id="daysCacheValid" autocomplete="off" placeholder="30">
+                    <p><input type="text" name="daysCacheValid" id="daysCacheValid" autocomplete="off" placeholder="30">
                 </div>
             </div>
 
@@ -63,29 +66,29 @@
                 <h2>Streaming con Debrid</h2>
                 <div class="internal-content">
                     <p>Puoi abilitare lo streaming con Debrid</p>
-                    <p><input id="debrid" name="debrid" value="debrid" type="checkbox" checked oninput="updateProviderFields(true)">Abilita debrid</p>
+                    <p><input id="debrid" name="debrid" value="debrid" type="checkbox" checked>Abilita debrid</p>
                 </div>
                 <div class="internal-content">
                     <p>Debrid</p>
-
-                    <!-- <select onchange="" id="service" name="service" autocomplete="off">
-                        <option value="realdebrid">Real-Debrid</option>
-                        <option value="alldebrid">All-Debrid</option>
-                        <option value="premiumize">Premiumize</option>
-                        <option value="torbox">TorBox</option>
-                    </select> -->
-
                     <fieldset>
                         <legend class="legend">Servizio</legend>
-                        <p><input oninput="" id="realdebrid" name="service" value="realdebrid" type="radio" checked><img class="iconstyle" src="images/real-debrid.png" alt="Real-Debrid">Real-Debrid (<a href="https://real-debrid.com/" class="web-link" target="_blank">https://real-debrid.com/</a>)</p>
-                        <p><input oninput="" id="alldebrid" name="service" value="alldebrid" type="radio"><img class="iconstyle" src="images/alldebrid.png" alt="All-Debrid">All-Debrid (<a href="https://alldebrid.com/" class="web-link" target="_blank">https://alldebrid.com/</a>)) <b>[NOT TESTED]</b></p>
-                        <p><input oninput="" id="premiumize" name="service" value="premiumize" type="radio"><img class="iconstyle" src="images/premiumize.png" alt="Premiumize">Premiumize (<a href="https://www.premiumize.me/" class="web-link" target="_blank">https://www.premiumize.me/</a>) <b>[NOT TESTED]</b></p>
-                        <p><input oninput="" id="torbox" name="service" value="torbox" type="radio"><img class="iconstyle" src="images/torbox.png" alt="TorBox">TorBox (<a href="https://torbox.app/ class="web-link" target="_blank">https://torbox.app/</a>) <b>[NOT TESTED]</b></p>
-                        <p><input oninput="" id="debridlink" name="service" value="debridlink" type="radio"><img class="iconstyle" src="images/debrid-link.png" alt="Debrid-Link">Debrid-Link (<a href="https://debrid-link.com/" class="web-link" target="_blank">https://debrid-link.com/</a>) <b>[NOT WORKING]</b></p>
+                        <p><input id="realdebrid" name="service" value="realdebrid" type="radio" checked><img class="iconstyle" src="images/real-debrid.png" alt="Real-Debrid">Real-Debrid [⬇️] (<a href="https://real-debrid.com/" class="web-link" target="_blank">https://real-debrid.com/</a>)</p>
+                        <p><input id="alldebrid" name="service" value="alldebrid" type="radio"><img class="iconstyle" src="images/alldebrid.png" alt="All-Debrid">All-Debrid [⬇️] (<a href="https://alldebrid.com/" class="web-link" target="_blank">https://alldebrid.com/</a>)) <b>[NON TESTATO]</b></p>
+                        <p><input id="premiumize" name="service" value="premiumize" type="radio"><img class="iconstyle" src="images/premiumize.png" alt="Premiumize">Premiumize [⬇️] (<a href="https://www.premiumize.me/" class="web-link" target="_blank">https://www.premiumize.me/</a>) <b>[NON TESTATO]</b></p>
+                        <p><input id="torbox" name="service" value="torbox" type="radio"><img class="iconstyle" src="images/torbox.png" alt="TorBox">TorBox [⬇️][⚡] (<a href="https://torbox.app/ class="web-link" target="_blank">https://torbox.app/</a>) <b>[NON TESTATO]</b></p>
+                        <p><input id="debridlink" name="service" value="debridlink" type="radio"><img class="iconstyle" src="images/debrid-link.png" alt="Debrid-Link">Debrid-Link [⬇️] (<a href="https://debrid-link.com/" class="web-link" target="_blank">https://debrid-link.com/</a>) <b>[NON FUNZIONANTE]</b></p>
                     </fieldset>
-
                     <p>Debrid API key</p>
-                    <p><input oninput="" type="text" name="debrid-api" id="debrid-api" autocomplete="off" placeholder="Your Debrid API key">
+                    <p><input type="text" name="debrid-api" id="debrid-api" autocomplete="off" placeholder="Your Debrid API key">
+                </div>
+            </div>
+
+            <div class="section-content">
+                <h2>Streaming con Torrent</h2>
+                <div class="internal-content">
+                    <p>Puoi abilitare lo streaming con diretto dei Torrent. </p>
+                    <p><i>L'utilizzo di questa funzionalità abilità la condivisione dei file Torrent.</i> </p>
+                    <p><input id="playtorrent" name="playtorrent" value="playtorrent" type="checkbox" checked>Abilita il play torrent [🏴‍☠️]</p>
                 </div>
             </div>
 
@@ -96,13 +99,13 @@
                     <p>Selezionare come ricercare le informazioni di Film e Serie TV</p>
                     <fieldset>
                         <legend class="legend">Sito web</legend>
-                            <p><input id="tmdb" name="metadataProvider" value="tmdb" type="radio" checked oninput="updateProviderFields(true)">The Movie Database (TMDB)</p>
-                            <p><input id="cinemeta" name="metadataProvider" value="cinemeta" type="radio" oninput="updateProviderFields(true)">Cinemeta (Stremio Addon)</p>
+                            <p><input id="tmdb" name="metadataProvider" value="tmdb" type="radio" checked>The Movie Database (TMDB)</p>
+                            <p><input id="cinemeta" name="metadataProvider" value="cinemeta" type="radio">Cinemeta (Stremio Addon)</p>
                     </fieldset>
                 </div>
                 <div class="internal-content">
                     <p>TMDB API key</p>
-                    <p><input oninput="" type="text" name="tmdb-api" id="tmdb-api" autocomplete="off" placeholder="Your TMDB API key">
+                    <p><input type="text" name="tmdb-api" id="tmdb-api" autocomplete="off" placeholder="Your TMDB API key">
                 </div>
             </div>
 
@@ -113,10 +116,10 @@
                     <p>Selezionare il metodo di ordinamento</p>
                     <fieldset>
                         <legend class="legend">Prima</legend>
-                        <p><input oninput="" id="quality" name="sorting" value="quality" type="radio" checked>Qualità</p>
-                        <p><input oninput="" id="sizedesc" name="sorting" value="sizedesc" type="radio">Dimensione maggiore</p>
-                        <p><input oninput="" id="sizeasc" name="sorting" value="sizeasc" type="radio">Dimensione minore</p>
-                        <p><input oninput="" id="qualitythensize" name="sorting" value="qualitythensize" type="radio">Qualità e dimensione</p>
+                        <p><input id="quality" name="sorting" value="quality" type="radio" checked>Qualità</p>
+                        <p><input id="sizedesc" name="sorting" value="sizedesc" type="radio">Dimensione maggiore</p>
+                        <p><input id="sizeasc" name="sorting" value="sizeasc" type="radio">Dimensione minore</p>
+                        <p><input id="qualitythensize" name="sorting" value="qualitythensize" type="radio">Qualità e dimensione</p>
                     </fieldset>
                 </div>
             </div>
@@ -128,18 +131,18 @@
                     <p>Selezionare le quallità da escludere (facoltativo)</p>
                     <fieldset>
                         <legend class="legend">Escludi</legend>
-                        <p><input oninput="" id="4k" name="4k" type="checkbox">4K</p>
-                        <p><input oninput="" id="1080p" name="1080p" type="checkbox">1080p</p>
-                        <p><input oninput="" id="720p" name="720p" type="checkbox">720p</p>
-                        <p><input oninput="" id="480p" name="480p" type="checkbox">480p</p>
-                        <p><input oninput="" id="rips" name="rips" type="checkbox">RIP</p>
-                        <p><input oninput="" id="cam" name="cam" type="checkbox">CAM</p>
-                        <p><input oninput="" id="unknown" name="unknown" type="checkbox">Unknown</p>
+                        <p><input id="4k" name="4k" type="checkbox">4K</p>
+                        <p><input id="1080p" name="1080p" type="checkbox">1080p</p>
+                        <p><input id="720p" name="720p" type="checkbox">720p</p>
+                        <p><input id="480p" name="480p" type="checkbox">480p</p>
+                        <p><input id="rips" name="rips" type="checkbox">RIP</p>
+                        <p><input id="cam" name="cam" type="checkbox">CAM</p>
+                        <p><input id="unknown" name="unknown" type="checkbox">Unknown</p>
                     </fieldset>
                 </div>
                 <div class="internal-content">
                     <p>Selezionare la parole chiave da escludere (facoltativo)</p>
-                    <p><input oninput="" type="text" name="exclusion-keywords" id="exclusion-keywords" autocomplete="off" placeholder="keyword1, keyword2, keyword3">
+                    <p><input type="text" name="exclusion-keywords" id="exclusion-keywords" autocomplete="off" placeholder="keyword1, keyword2, keyword3">
                 </div>
 
             </div>
@@ -173,15 +176,15 @@
                 <h2>Risultati</h2>
                 <div class="internal-content">
                     <p>Dimensione massima del file in GB.</p>
-                    <p><input oninput="" type="text" name="maxSize" id="maxSize" autocomplete="off" placeholder="50">
+                    <p><input type="text" name="maxSize" id="maxSize" autocomplete="off" placeholder="50">
                 </div>
                 <div class="internal-content">
                     <p>Numero massimo di risultati a parità di qualità.</p>
-                    <p><input oninput="" type="text" name="resultsPerQuality" id="resultsPerQuality" autocomplete="off" placeholder="10">
+                    <p><input type="text" name="resultsPerQuality" id="resultsPerQuality" autocomplete="off" placeholder="10">
                 </div>
                 <div class="internal-content">
                     <p>Numero massimo dei risultati.</p>
-                    <p><input oninput="" type="text" name="maxResults" id="maxResults" autocomplete="off" placeholder="30">
+                    <p><input type="text" name="maxResults" id="maxResults" autocomplete="off" placeholder="30">
                 </div>
             </div>
 

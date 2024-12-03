@@ -6,4 +6,4 @@ Per implementare un nuovo plugin è necessario modificare il meccanismo original
 
 Si può usare la classe prettyPrinter usata per wappare i plugins già convertiti.
 
-Il nuovo plugins deve essere (al momento) staticamente inserito in 'config.js' e 'index.html'.
+Il nuovo plugins deve essere (al momento) staticamente inserito in 'search/search_service.py', 'config.js' e 'index.html'.

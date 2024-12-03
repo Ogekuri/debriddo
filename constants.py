@@ -1,7 +1,7 @@
 # Application name
 APPLICATION_NAME = "Debriddo"
-APPLICATION_VERSION = "0.0.20"
-APPLICATION_DESCRIPTION = "Provide online search and debrid support."
+APPLICATION_VERSION = "0.0.21"
+APPLICATION_DESCRIPTION = "Ricerca online i Film e le tue Serie Tv preferite."
 
 # SQL3llite database
 CACHE_DATABASE_FILE = "caches_items.db"

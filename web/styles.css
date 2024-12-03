@@ -407,6 +407,7 @@ select:focus {
     height: 16px;
     display: inline;
     text-align: left;
+    padding: 0px;
     margin-left: 0px;
-    margin-right: 0px;
+    margin-right: 5px;
 }

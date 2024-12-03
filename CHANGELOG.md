@@ -3,6 +3,10 @@ Elenco modifiche introdotti in Debriddo.
 
 Il formato è basato su on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) ed aderisce a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.21](https://github.com/Ogekuri/debriddo/compare/v0.0.20...v0.0.21) (2022-11-03)
+
+- Aggiunto LimeTorrents, Torrent Project e Torrentz
+
 ## [v0.0.20](https://github.com/Ogekuri/debriddo/compare/v0.0.19...v0.0.20) (2022-11-02)
 
 - Modificato lo script di auto-update

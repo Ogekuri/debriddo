@@ -47,7 +47,7 @@ def filter_by_direct_torrnet(item):
         return 0
 
 
-def parse_to_debrid_stream(torrent_item: TorrentItem, configb64, host, results: queue.Queue, media: Media):
+def parse_to_debrid_stream(torrent_item: TorrentItem, configb64, host, playtorrent, results: queue.Queue, media: Media):
     if torrent_item.availability == True:
         name = f"{INSTANTLY_AVAILABLE}\n"
     else:
@@ -70,7 +70,7 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, configb64, host, results: 
         quality = ""
 
     if torrent_item.from_cache:
-        cache = "[⚙ Cache]"
+        cache = "{⚙Cache}"
     else:
         cache = ""
 
@@ -108,7 +108,7 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, configb64, host, results: 
         }
     })
 
-    if torrent_item.privacy == "public":
+    if playtorrent and torrent_item.privacy == "public":
         name = f"{DIRECT_TORRENT}\n"
         name += f"{resolution} {quality} {cache}"
 
@@ -136,7 +136,7 @@ def parse_to_stremio_streams(torrent_items: List[TorrentItem], config, media):
     configb64 = encodeb64(json.dumps(config).replace('=', '%3D'))
     for torrent_item in torrent_items[:int(config['maxResults'])]:
         thread = threading.Thread(target=parse_to_debrid_stream,
-                                  args=(torrent_item, configb64, config['addonHost'], thread_results_queue, media),
+                                  args=(torrent_item, configb64, config['addonHost'], config['playtorrent'], thread_results_queue, media),
                                   daemon=True)
         thread.start()
         threads.append(thread)

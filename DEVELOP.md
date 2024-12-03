@@ -7,12 +7,15 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Implementazioni
 
+* Implemetare l'aggiornamento via crontab
+* Implementare l'aggiornamento automatico
 * Implementare il supporto per https://debrid-link.com/
 * Implementare il supporto alle autenticazioni nei plugins di ricerca
+* Implementare il supporto 'private'/'public' per i motori di ricerca che hanno la password (da decidere)
 * Implementare il supporto per Il Corsaro Blu
 * Modificare CORSMiddleware, cambiare "origins"
-* Rimuovere **[NOT WORKING]** una volta implementati
-* Rimuovere **[NOT TESTED]** una volta testati
+* Rimuovere **[NON FUNZIONANTE]** una volta implementati
+* Rimuovere **[NON TESTATO]** una volta testati
 
 ### Test da completare
 

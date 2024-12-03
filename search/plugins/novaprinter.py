@@ -82,7 +82,10 @@ class PrettyPrint:
 
     def get(self):
         # Restituisci l'elenco di tutte le stringhe accumulate
-        return self.dictionary_list
+        if type(self.dictionary_list) is list and len(self.dictionary_list) > 0:
+            return self.dictionary_list
+        else:
+            return None
 
     def clear(self):
         # Resetta l'elenco delle stringhe salvate
