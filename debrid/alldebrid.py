@@ -110,7 +110,7 @@ class AllDebrid(BaseDebrid):
         #     return dict()
         #
         # url = f"{self.base_url}magnet/instant?agent=debriddo&apikey={self.config['debridKey']}&magnets[]={'&magnets[]='.join(hashes_or_magnets)}&ip={ip}"
-        # print(url)
+        # logger.debug(url)
         # return self.get_json_response(url)
 
 

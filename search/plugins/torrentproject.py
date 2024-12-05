@@ -8,13 +8,14 @@ import re
 
 from datetime import datetime
 from html.parser import HTMLParser
-from urllib.parse import unquote
-
+from urllib.parse import unquote, quote_plus
+from utils.logger import setup_logger
 
 class torrentproject(object):
     url = 'https://torrentproject.cc'
     name = 'TorrentProject'
     supported_categories = {'all': '0'}
+    logger = setup_logger(__name__)
 
     class MyHTMLParser(HTMLParser):
 
@@ -78,16 +79,16 @@ class torrentproject(object):
                             # ignore those with link and desc_link equals to -1
                             if self.singleResData['desc_link'] != '-1' \
                                     or self.singleResData['link'] != '-1':
-                                try:
-                                    date_string = self.singleResData['pub_date']
-                                    date = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
-                                    self.singleResData['pub_date'] = int(date.timestamp())
-                                except Exception:
-                                    pass
-                                try:
-                                    prettyPrinter(self.singleResData)
-                                except Exception:
-                                    print(self.singleResData)
+                                # fix
+                                # data non gestita perché potrebbe anche essere qualcosa del tipi: "7 years ago"
+                                self.singleResData['pub_date'] = -1
+                                # try:
+                                #     date_string = self.singleResData['pub_date']
+                                #     date = datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+                                #     self.singleResData['pub_date'] = int(date.timestamp())
+                                # except Exception:
+                                #     logger.error("self.singleResData['pub_date']", self.singleResData)
+                                prettyPrinter(self.singleResData)
                                 self.pageRes.append(self.singleResData)
                                 self.fullResData.append(self.singleResData)
                         self.singleResData = self.get_single_data()
@@ -106,14 +107,13 @@ class torrentproject(object):
     def search(self, what, cat='all'):
         prettyPrinter.clear()
         # curr_cat = self.supported_categories[cat]
-        what = what.replace('%20', '+')
         what = what.lower()
+        what = quote_plus(what)
         # analyze first 5 pages of results
         for currPage in range(0, 5):
 #            url = self.url + '/browse?t={0}&p={1}'.format(what, currPage)
             url = self.url + '/?t={0}&p={1}'.format(what, currPage)
             html = retrieve_url(url)
-            print(url)
             parser = self.MyHTMLParser(self.url)
             parser.feed(html)
             parser.close()

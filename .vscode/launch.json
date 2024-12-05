@@ -23,7 +23,8 @@
                 "--port",
                 "58443",
             ],
-            "jinja": true
+            "jinja": true,
+            "justMyCode": false
         }
     ]
 }

@@ -38,6 +38,9 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
 
 # Some sites blocks default python User-agent
 user_agent = 'Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'
@@ -76,7 +79,7 @@ def retrieve_url(url):
         req = urllib.request.Request(url, headers=headers)
         response = urllib.request.urlopen(req)
     except urllib.error.URLError as errno:
-        print(" ".join(("Connection error:", str(errno.reason))))
+        logger.error(" ".join(("Connection error:", str(errno.reason))))
         return ""
     dat = response.read()
     # Check if it is gzipped
@@ -121,3 +124,5 @@ def download_file(url, referer=None):
     file.close()
     # return file path
     return (path + " " + url)
+
+

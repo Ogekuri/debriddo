@@ -38,11 +38,13 @@
 #         print(outtext, file=utf8stdout)
 
 import json
+from utils.logger import setup_logger
 
 class PrettyPrint:
     def __init__(self):
         # Inizializza una lista per salvare tutte le stringhe stampate
         self.dictionary_list = []
+        self.logger = setup_logger(__name__)
 
     def __call__(self, dictionary): # *args, **kwargs):
         # Se serve comunque stampare l'dictionary_list, puoi usare:

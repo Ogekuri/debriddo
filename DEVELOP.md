@@ -7,6 +7,9 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Implementazioni
 
+* Mettere un aprogres se il torrent non è al 100% su debrid?
+* implementare l'esportazione e l'importazione del database della cache per i container docker.
+* verificare perché non tiene i risultati della cache per primi
 * Implemetare l'aggiornamento via crontab
 * Implementare l'aggiornamento automatico
 * Implementare il supporto per https://debrid-link.com/

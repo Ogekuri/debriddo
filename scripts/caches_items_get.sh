@@ -44,6 +44,7 @@ for TABLE in $TABLES; do
   if [ -z "$DATA" ]; then
     echo "Nessun dato trovato."
   else
-    sqlite3 "$DB_PATH" "SELECT * FROM $TABLE;" | cut -d "|" -f 1-4,7- # salto i traker
+#    sqlite3 "$DB_PATH" "SELECT * FROM $TABLE;"
+    sqlite3 "$DB_PATH" "SELECT * FROM $TABLE;" | cut -d "|" -f 1-19,23- # salto i magnet, link e traker
   fi
 done

@@ -1,5 +1,6 @@
 from RTN import title_match, RTN, DefaultRanking, SettingsModel, sort_torrents
 from RTN.models import CustomRank
+from RTN.exceptions import GarbageTorrent
 from utils.filter.language_filter import LanguageFilter
 from utils.filter.max_size_filter import MaxSizeFilter
 from utils.filter.quality_exclusion_filter import QualityExclusionFilter
@@ -13,15 +14,30 @@ quality_order = {"4k": 0, "2160p": 0, "1080p": 1, "720p": 2, "480p": 3}
 
 
 def sort_quality(item):
-    if len(item.parsed_data.data.resolution) == 0:
-        return float('inf'), True
+    # if item.parsed_data.data.resolution is None or item.parsed_data.data.resolution == "unknown" or item.parsed_data.data.resolution == "":
+    #     return float('inf'), True
 
-    # TODO: first resolution?
-    return quality_order.get(item.parsed_data.data.resolution[0],
-                             float('inf')), item.parsed_data.data.resolution is None
+    # # TODO: first resolution?
+    # return quality_order.get(item.parsed_data.data.resolution[0],
+    #                          float('inf')), item.parsed_data.data.resolution is None
+
+    # Controlla la presenza di parsed_data e data
+    if not hasattr(item, 'parsed_data') or not hasattr(item.parsed_data, 'data') or not hasattr(item.parsed_data.data, 'resolution'):
+        return float('inf'), True   # True = non trovato
+
+    resolution = item.parsed_data.data.resolution
+
+    # Gestione dei casi con risoluzione mancante o sconosciuta
+    if resolution is None or resolution == "unknown" or resolution == "":
+        return float('inf'), True   # True = non trovato
+
+    # Ritorna il valore di quality_order con fallback a infinito
+    return quality_order.get(resolution, float('inf')), False   # False = trovato
 
 
 def items_sort(items, config):
+
+    
     settings = SettingsModel(
         require=[],
         exclude=config['exclusionKeywords'] + config['exclusion'],
@@ -31,9 +47,29 @@ def items_sort(items, config):
         #     "hdr": CustomRank(enable=True, fetch=True, rank=100),
         # }
     )
+    
+    # Se genera l'eccezione poi l'ordinamento dei TorrentItems basato sui Torrent non funziona
+    # if rank < self.settings.options["remove_ranks_under"]:
+    # raise GarbageTorrent(f"'{raw_title}' does not meet the minimum rank requirement, got rank of {rank}")
+    #
+    # maximun negative value => non ne leva nessuno
+    #
+    # default: remove_ranks_under = -10000,
+    settings.options.remove_ranks_under = -2147483648   # 32 bit?
 
     rtn = RTN(settings=settings, ranking_model=DefaultRanking())
-    torrents = [rtn.rank(item.raw_title, item.info_hash) for item in items]
+    
+    # torrents = [rtn.rank(item.raw_title, item.info_hash) for item in items]
+    torrents = []
+    for item in items:
+        try:
+            torrent = rtn.rank(item.raw_title, item.info_hash, False) # remove_trash: bool = False
+            torrents.append(torrent)
+        except GarbageTorrent as e:
+            logger.error(f"Error while ranking the torrent: {item.raw_title} - {str(e)}")
+        except Exception as e:
+            logger.error(f"Unexpected error for torrent: {item.raw_title}", exc_info=e)
+    
     sorted_torrents = sort_torrents(set(torrents))
 
     for key, value in sorted_torrents.items():
@@ -93,7 +129,7 @@ def filter_out_non_matching(items, season, episode):
 
 
 def remove_non_matching_title(items, titles):
-    logger.debug(titles)
+    logger.debug(f"Filtering by title: {titles}")
     filtered_items = []
     for item in items:
         for title in titles:
@@ -107,6 +143,7 @@ def remove_non_matching_title(items, titles):
 
 
 def filter_items(items, media, config):
+    # vengono processati nell'ordine in cui sono dichiarati
     filters = {
         "languages": LanguageFilter(config),
         "maxSize": MaxSizeFilter(config, media.type),  # Max size filtering only happens for movies, so it
@@ -124,12 +161,19 @@ def filter_items(items, media, config):
 
     # TODO: is titles[0] always the correct title? Maybe loop through all titles and get the highest match?
     items = remove_non_matching_title(items, media.titles)
+    logger.debug(f"Item count changed to {len(items)}")
 
     for filter_name, filter_instance in filters.items():
         try:
-            logger.debug(f"Filtering by {filter_name}: " + str(config[filter_name]))
-            items = filter_instance(items)
-            logger.debug(f"Item count changed to {len(items)}")
+            if len(items) > 0:  # finché ci sono risultati
+                logger.debug(f"Filtering by {filter_name}: " + str(config[filter_name]))
+                new_items = filter_instance(items)
+                if len(new_items) > 0:
+                    items = new_items
+                else:
+                    # per esempio se ci sono solo versioni in inglese, le tiene e ritorna quelle
+                    logger.warning(f"Ignoring filterning by {filter_name} that cause 0 results")
+                logger.debug(f"Item count changed to {len(items)}")
         except Exception as e:
             logger.error(f"Error while filtering by {filter_name}", exc_info=e)
     logger.debug(f"Item count after filtering: {len(items)}")

@@ -21,8 +21,9 @@
 # SOFTWARE.
 
 import re
+from urllib.parse import quote_plus
 from html.parser import HTMLParser
-
+from utils.logger import setup_logger
 from helpers import download_file, retrieve_url
 from novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
@@ -40,6 +41,7 @@ class one337x(object):
         'music': 'Music',
         'tv': 'TV',
     }
+    logger = setup_logger(__name__)
 
     class MyHtmlParser(HTMLParser):
 
@@ -120,7 +122,7 @@ class one337x(object):
     def search(self, what, cat='all'):
         prettyPrinter.clear()
         parser = self.MyHtmlParser(self.url)
-        what = what.replace('%20', '+')
+        what = quote_plus(what)
         category = self.supported_categories[cat]
         page = 1
         while True:

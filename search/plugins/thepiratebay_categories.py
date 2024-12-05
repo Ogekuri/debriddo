@@ -5,7 +5,9 @@
 
 import urllib.parse
 import json
+from urllib.parse import quote
 from helpers import retrieve_url,download_file
+from utils.logger import setup_logger
 from novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 
@@ -14,6 +16,7 @@ class thepiratebay(object):
 	url='https://thepiratebay.org'
 	api='https://apibay.org'
 	name='ThePirateBay'
+	logger = setup_logger(__name__)
 
 	# uncomment appropriate lines to include TPB category in qBittorrent search category
 	# currently set to include only HD video for "movies" & "tv"
@@ -109,6 +112,7 @@ class thepiratebay(object):
 
 	def search(self,what,cat='all'):
 		prettyPrinter.clear()
+		what = quote(what)
 		x=[]
 		for category in self.supported_categories[cat]:
 			url=self.query.format(self=self,what=what,category=category)

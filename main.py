@@ -5,10 +5,10 @@ import re
 import shutil
 import time
 import zipfile
-
+import uvicorn
 import requests
 import starlette.status as status
-from aiocron import crontab
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,6 +16,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
 from starlette.responses import FileResponse
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from contextlib import asynccontextmanager
 
 from debrid.get_debrid_service import get_debrid_service
 from search.search_result import SearchResult
@@ -34,15 +36,16 @@ from web.pages import get_index
 
 from constants import APPLICATION_NAME, APPLICATION_VERSION, APPLICATION_DESCRIPTION
 
+
+# load .env
 load_dotenv()
 
+
+# get environment variables
 root_path = os.environ.get("ROOT_PATH", None)
 if root_path and not root_path.startswith("/"):
     root_path = "/" + root_path
 
-app = FastAPI(root_path=root_path)
-
-# get environments
 node_url = os.getenv("NODE_URL", "http://127.0.0.1:8000")
 if node_url is not None and type(node_url) is str and len(node_url) > 0:
     app_website = node_url
@@ -54,6 +57,7 @@ if node_env is not None and type(node_env) is str and len(node_env) > 0:
 else:
     development = None
 
+
 # define common string
 app_name = str(APPLICATION_NAME)
 app_name_lc = str(APPLICATION_NAME).lower()
@@ -61,6 +65,33 @@ app_version = 'v' + str(APPLICATION_VERSION)
 app_desc = str(APPLICATION_DESCRIPTION)
 app_environment = f"({development})" if development is not None else ""
 app_id = str(APPLICATION_VERSION) + '.' + development if development is not None else str(APPLICATION_VERSION)
+
+
+
+# logger
+logger = setup_logger(__name__)
+
+
+# application start
+logger.info(f"Started {app_name} {app_version} {app_environment} @ {app_website}")
+
+
+# Lifespan: gestisce startup e shutdown
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(update_app, 'interval', seconds=60)  # Il check dell'update ogni 60 secondi
+    scheduler.start()
+    logger.info(f"Scheduler avviato")
+    try:
+        yield  # Qui puoi mettere codice che deve girare durante la vita dell'app
+    finally:
+        scheduler.shutdown()
+        logger.info(f"Scheduler arrestato")
+
+# Creazione dell'app FastAPI
+app = FastAPI(lifespan=lifespan)
+
 
 # Aggiunge il loggin del middleware fastapi
 class LogFilterMiddleware:
@@ -127,11 +158,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-logger = setup_logger(__name__)
-
-# application start
-logger.info(f"Started {app_name} {app_version} {app_environment} @ {app_website}")
 
 ################
 ### Fast API ###
@@ -292,10 +318,8 @@ async def get_manifest():
 async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
     start = time.time()
     stream_id = stream_id.replace(".json", "")
-
     config = parse_config(config)
     logger.debug(stream_type + " request")
-
     logger.debug(f"Getting media from {config['metadataProvider']}")
     if config['metadataProvider'] == "tmdb" and config['tmdbApi']:
         metadata_provider = TMDB(config)
@@ -311,7 +335,7 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
         logger.debug("Getting cached results")
         cached_results = search_cache(config, media)
         if cached_results is not None and len(cached_results) > 0:
-            cached_results = [SearchResult().from_cached_item(torrent, media) for torrent in cached_results]
+            cached_results = [SearchResult().from_cached_item(torrent) for torrent in cached_results]
             logger.debug("Got " + str(len(cached_results)) + " cached results")
 
             if len(cached_results) > 0:
@@ -331,6 +355,8 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
         engine_results = search_service.search(media)
         if engine_results is not None:
             logger.debug("Got " + str(len(engine_results)) + " results from Torrent Search (Engines)")
+            for result in engine_results:
+                logger.debug("- " + str(result.raw_title))
 
             logger.debug("Filtering Torrent Search (Engines) results")
             filtered_engine_search_results = filter_items(engine_results, media, config=config)
@@ -384,7 +410,7 @@ async def get_playback(config: str, query: str, request: Request):
         config = parse_config(config)
         logger.debug("Decoding query")
         query = decodeb64(query)
-        logger.debug(query)
+        logger.debug(f"QUERY: {query}")
         logger.debug("Decoded query")
         ip = request.client.host
         debrid_service = get_debrid_service(config)
@@ -403,60 +429,51 @@ async def get_playback(config: str, query: str, request: Request):
 ###################
 
 async def update_app():
-    try:
-        current_version = app_version
-        logger.info("Checking for new updated. Current version: " + current_version)
-        url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
-        response = requests.get(url)
-        data = response.json()
-        latest_version = data['tag_name']
-        if latest_version != current_version:
-            logger.info("New version available: " + latest_version)
-            logger.info("Updating...")
-            logger.info("Getting update zip...")
-            update_zip = requests.get(data['zipball_url'])
-            with open("update.zip", "wb") as file:
-                file.write(update_zip.content)
-            logger.info("Update zip downloaded")
-            logger.info("Extracting update...")
-            with zipfile.ZipFile("update.zip", 'r') as zip_ref:
-                zip_ref.extractall("update")
-            logger.info("Update extracted")
+    if development is None:
+        try:
+            logger.info(f"Checking for new updated ({app_version})")
+            url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
+            response = requests.get(url)
+            data = response.json()
+            latest_version = data['tag_name']
+            if latest_version != app_version:
+                logger.info("New version available: " + latest_version)
+                logger.info("Updating...")
+                logger.info("Getting update zip...")
+                update_zip = requests.get(data['zipball_url'])
+                with open("update.zip", "wb") as file:
+                    file.write(update_zip.content)
+                logger.info("Update zip downloaded")
+                logger.info("Extracting update...")
+                with zipfile.ZipFile("update.zip", 'r') as zip_ref:
+                    zip_ref.extractall("update")
+                logger.info("Update extracted")
 
-            extracted_folder = os.listdir("update")[0]
-            extracted_folder_path = os.path.join("update", extracted_folder)
-            for item in os.listdir(extracted_folder_path):
-                s = os.path.join(extracted_folder_path, item)
-                d = os.path.join(".", item)
-                if os.path.isdir(s):
-                    shutil.copytree(s, d, dirs_exist_ok=True)
-                else:
-                    shutil.copy2(s, d)
-            logger.info("Files copied")
+                extracted_folder = os.listdir("update")[0]
+                extracted_folder_path = os.path.join("update", extracted_folder)
+                for item in os.listdir(extracted_folder_path):
+                    s = os.path.join(extracted_folder_path, item)
+                    d = os.path.join(".", item)
+                    if os.path.isdir(s):
+                        shutil.copytree(s, d, dirs_exist_ok=True)
+                    else:
+                        shutil.copy2(s, d)
+                logger.info("Files copied")
 
-            logger.info("Cleaning up...")
-            shutil.rmtree("update")
-            os.remove("update.zip")
-            logger.info("Cleaned up")
-            logger.info("Updated !")
-    except Exception as e:
-        logger.error(f"Error during update: {e}")
-
-# gestione dell'auto-update (ogni 5 minuti)
-@crontab("*/5 * * * *", start=development is None)
-async def schedule_task():
-    await update_app()
+                logger.info("Cleaning up...")
+                shutil.rmtree("update")
+                os.remove("update.zip")
+                logger.info("Cleaned up")
+                logger.info("Updated !")
+        except Exception as e:
+            logger.error(f"Error during update: {e}")
+    else:
+        logger.warning(f"Skipping software update, current version: {app_version} ({development})")
 
 
 ############
 ### MAIN ###
 ############
 
-async def main():
-    await asyncio.gather(
-        schedule_task()
-    )
-    return
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

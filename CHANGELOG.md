@@ -3,6 +3,11 @@ Elenco modifiche introdotti in Debriddo.
 
 Il formato è basato su on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) ed aderisce a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.22](https://github.com/Ogekuri/debriddo/compare/v0.0.21...v0.0.22) (2022-11-04)
+
+- Aggiunto TorrentGalaxy, The RarGb
+- Modificato il database per memorizzare i torrent con più episodi
+
 ## [v0.0.21](https://github.com/Ogekuri/debriddo/compare/v0.0.20...v0.0.21) (2022-11-03)
 
 - Aggiunto LimeTorrents, Torrent Project e Torrentz

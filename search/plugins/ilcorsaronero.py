@@ -2,10 +2,11 @@
 # AUTHORS: LightDestory (https://github.com/LightDestory)
 
 import re
+from urllib.parse import quote_plus
 from helpers import retrieve_url
 from novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
-
+from utils.logger import setup_logger
 
 class ilcorsaronero(object):
     url = 'https://ilcorsaronero.link/'
@@ -18,6 +19,7 @@ class ilcorsaronero(object):
                             'books': 'libri',
                             'software': 'software',
                             'tv': 'serie-tv'}
+    logger = setup_logger(__name__)
 
     class HTMLParser:
 
@@ -77,7 +79,7 @@ class ilcorsaronero(object):
 
     def search(self, what, cat='all'):
         prettyPrinter.clear()
-        what = what.replace("%20", "+")
+        what = quote_plus(what)
         parser = self.HTMLParser(self.url)
         counter: int = 1
         filter = '&cat={0}'.format(self.supported_categories[cat])

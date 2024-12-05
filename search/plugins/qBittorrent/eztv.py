@@ -8,15 +8,15 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
-
 from novaprinter import prettyPrinter
 from helpers import retrieve_url
-
+from utils.logger import setup_logger
 
 class eztv(object):
     name = "EZTV"
     url = 'https://eztvx.to/'
     supported_categories = {'all': 'all', 'tv': 'tv'}
+    logger = setup_logger(__name__)
 
     class MyHtmlParser(HTMLParser):
         A, TD, TR, TABLE = ('a', 'td', 'tr', 'table')
@@ -94,7 +94,7 @@ class eztv(object):
                 response = urllib.request.urlopen(req)  # nosec B310
                 return response.read().decode('utf-8')
             except urllib.error.URLError as errno:
-                print(f"Connection error: {errno.reason}")
+                self.logger.error(" ".join(("Connection error:", str(errno.reason))))
             return ""
 
     def search(self, what, cat='all'):

@@ -16,7 +16,7 @@ from models.movie import Movie
 from models.series import Series
 from utils.detection import detect_languages
 from utils.logger import setup_logger
-
+from utils.string_encoding import normalize
 
 import os
 import queue
@@ -35,6 +35,8 @@ from search.plugins.limetorrents import limetorrents
 from search.plugins.torrentproject import torrentproject
 from search.plugins.ilcorsaronero import ilcorsaronero
 from search.plugins.torrentz import torrentz
+from search.plugins.torrentgalaxy import torrentgalaxy
+from search.plugins.therarbg import therarbg
 
 from urllib.parse import quote_plus
 import io
@@ -67,6 +69,7 @@ class SearchService:
             'la':'LATIN', 
             'multi':'MULTI',
             }
+        self.__default_lang_tag = self.__language_tags['en']
 
 
     def search(self, media):
@@ -83,37 +86,43 @@ class SearchService:
             if isinstance(media, Movie):
                 with ThreadPoolExecutor() as executor:
                     futures = [executor.submit(self.__search_movie_indexer, media, indexer) for indexer in indexers]
-                    for future in futures:
-                        results_queue.put(future.result())  # Raccoglie il risultato
+                    if futures is not None and type(futures) is list and len(futures) > 0:
+                        for future in futures:
+                            result = future.result() # Raccoglie il risultato
+                            if result is not None:
+                                results_queue.put(result)
             elif isinstance(media, Series):
                 with ThreadPoolExecutor() as executor:
                     futures = [executor.submit(self.__search_series_indexer, media, indexer) for indexer in indexers]
-                    for future in futures:
-                        results_queue.put(future.result())  # Raccoglie il risultato
+                    if futures is not None and type(futures) is list and len(futures) > 0:
+                        for future in futures:
+                            result = future.result() # Raccoglie il risultato
+                            if result is not None:
+                                results_queue.put(result)
         else:
             if isinstance(media, Movie):
                 for indexer in indexers:
                     result = self.__search_movie_indexer(media, indexer)
-                    results_queue.put(result)  # Put the result in the queue
+                    if result is not None:
+                        results_queue.put(result)  # Put the result in the queue
             elif isinstance(media, Series):
                 for indexer in indexers:
                     result = self.__search_series_indexer(media, indexer)
-                    results_queue.put(result)  # Put the result in the queue
+                    if result is not None:
+                        results_queue.put(result)  # Put the result in the queue
 
         # Retrieve results from the queue and append them to the results list
-        results = []
+        search_results = []
         while not results_queue.empty():
-            results.extend(results_queue.get())
-        flatten_results = [result for sublist in results for result in sublist]
-        
-        del threads, results_queue, results
+            search_results.extend(results_queue.get())
+        # flatten_results = [result for sublist in results for result in sublist]       
+        # del threads, results_queue, results
+        del threads, results_queue
 
         start_time = time.time()
-        if flatten_results is not None and len(flatten_results) > 0:
+        if search_results is not None and len(search_results) > 0:
             # spost process result ############################################
-            self.logger.debug("Post process " + str(len(flatten_results)) + " results")
-
-            results = []
+            self.logger.debug("Post process " + str(len(search_results)) + " results")
 
             threads = []
             results_queue = queue.Queue()  # Create a Queue instance to hold the results
@@ -123,9 +132,10 @@ class SearchService:
                 def thread_target(result, media):
                     # Call the actual function
                     res = self.__post_process_result(result, media)
-                    results_queue.put(res)  # Put the result in the queue
+                    if res is not None:
+                        results_queue.put(res)  # Put the result in the queue
 
-                for result in flatten_results:
+                for result in search_results:
                     # Pass the wrapper function as the target to Thread, with necessary arguments
                     threads.append(threading.Thread(target=thread_target, args=(result, media)))
 
@@ -135,13 +145,15 @@ class SearchService:
                 for thread in threads:
                     thread.join()
             else:
-                for result in flatten_results:
+                for result in search_results:
                     res = self.__post_process_result(result, media)
-                    results_queue.put(res)  # Put the result in the queue
+                    if res is not None:
+                        results_queue.put(res)  # Put the result in the queue
 
             # Retrieve results from the queue and append them to the results list
+            results = []
             while not results_queue.empty():
-                results.append(results_queue.get())
+                results.append(results_queue.get()) # ogni processo ritorna un singolo SearchResult() e non un lista
         else:
             results = None
 
@@ -164,6 +176,10 @@ class SearchService:
             return torrentproject()
         elif engine_name == 'torrentz':
             return torrentz()
+        elif engine_name == 'torrentgalaxy':
+            return torrentgalaxy()
+        elif engine_name == 'therarbg':
+            return therarbg()
         elif engine_name == 'ilcorsaronero':
             return ilcorsaronero()
         else:
@@ -180,6 +196,10 @@ class SearchService:
             elif engine_name == 'torrentproject':
                 return "any"
             elif engine_name == 'torrentz':
+                return "any"
+            elif engine_name == 'torrentgalaxy':
+                return "any"
+            elif engine_name == 'therarbg':
                 return "any"
             elif engine_name == 'ilcorsaronero':
                 return "it"
@@ -200,30 +220,46 @@ class SearchService:
         results = []
         start_time = time.time()
 
-        for index, lang in enumerate(languages):
-            lang_tag = self.__language_tags[languages[index]]
-            search_string = str(titles[index] + ' ' + movie.year  + ' ' +  lang_tag)
-            if indexer.language == languages[index]:
-                search_string = str(titles[index] + ' ' + movie.year)   # no language tag for native language indexer
-            search_string = quote_plus(search_string)
-            category = str(indexer.movie_search_capatabilities)
-
+        index = 0
+        for lang in languages:
             try:
+                title = titles[index]
+                lang_tag = self.__language_tags[languages[index]]
+
+                search_string = str(title + ' ' + movie.year  + ' ' +  lang_tag)
+                if indexer.language == languages[index]:
+                    search_string = str(title + ' ' + movie.year)   # no language tag for native language indexer
+                search_string = normalize(search_string)
+                category = str(indexer.movie_search_capatabilities)
                 list_of_dicts = indexer.engine.search(search_string, category)
                 if list_of_dicts is not None and len(list_of_dicts) > 0:
-                    result = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
-                    if result is not None:
-                        results.append(result)
+                    torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
+                    if torrents is not None and type(torrents) is list and len(torrents) >0:
+                        results.extend(torrents)
+                else:
+                    # se non ci sono risultati prova una ricerca più grossolana o in inglese
+                    search_string = str(title + ' ' + movie.year  + ' ' +  self.__default_lang_tag)
+                    if indexer.language == languages[index]:
+                        search_string = str(title)   # no language tag for native language indexer
+                    search_string = normalize(search_string)
+                    category = str(indexer.movie_search_capatabilities)
+                    list_of_dicts = indexer.engine.search(search_string, category)
+                    if list_of_dicts is not None and len(list_of_dicts) > 0:
+                        torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
+                        if torrents is not None and type(torrents) is list and len(torrents) >0:
+                            results.extend(torrents)
                 
             except Exception:
                 self.logger.exception(
                     f"An exception occured while searching for a movie on Search with indexer {indexer.title} and "
                     f"language {lang}.")
+            
+            index = index + 1
                 
         if len(results) > 0:
-            self.logger.debug(f"Found {len(results)} for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+            self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
         else:
-            self.logger.debug(f"No results found for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+            self.logger.info(f"No results found for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
 
         return results
     
@@ -241,46 +277,65 @@ class SearchService:
         results = []
         start_time = time.time()
 
-        for index, lang in enumerate(languages):
-            lang_tag = self.__language_tags[languages[index]]
-            search_string = str(titles[index] + ' ' + series.season + series.episode + ' ' + lang_tag)
-            if indexer.language == languages[index]:
-                search_string = str(titles[index] + ' ' + series.season + series.episode)   # no language tag for native language indexer
-            search_string = quote_plus(search_string)
-            category = str(indexer.tv_search_capatabilities)
-
+        index = 0
+        for lang in languages:
             try:
-                results_founded = False
-                list_of_dicts = indexer.engine.search(search_string, category)
-                if list_of_dicts is not None and len(list_of_dicts) > 0:
-                    result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                    if result is not None and type(result) is list and len(result) >0:
-                        results.append(result)
-                        results_founded = False
-
+                # Esempio balordo:
+                # Arcane.S02E01-03.WEBDL 1080p Ita Eng x264-NAHOM
+                # Arcane.S02E04-06.WEBDL 1080p Ita Eng x264-NAHOM
+                # Arcane.S02E07-09.WEBDL 1080p Ita Eng x264-NAHOM
+                # Arcane.S02.720p.ITA-ENG.MULTI.WEBRip.x265.AAC-V3SP4EV3R
+                #
+                # Se cerco S02 E02 non lo trovo da nessuna parte, ma è presente in 2 file
+                # Se cerco S02 E04 lo trova in un file, ma è presente in 2 file
+                # Se cerco S02 trova 4 file ma è presente in 2 file
+                #
+                # Decido di prendere sempe tutti i risultati e vedere se poi dopo è sufficiente filtrarli
+                #
                 # se non ci sono risultati riprova omettendo l'episodio
                 # perché ci sono i torrent con l'intera serie inclusa
                 # bisogna poi cercare il file corretto
-                if not results_founded:
-                    self.logger.debug(f"No result for {search_string} @ {indexer.engine_name}/{category} will search for torrents with complete season")
-                    search_string = str(titles[index] + ' ' + series.season + ' ' + lang_tag)
+
+                title = titles[index]
+                lang_tag = self.__language_tags[languages[index]]
+
+                # search_string = str(title_normalized + ' ' + series.season + series.episode + ' ' + lang_tag)
+                # if indexer.language == languages[index]:
+                #     search_string = str(title_normalized + ' ' + series.season + series.episode)   # no language tag for native language indexer
+                search_string = str(title + ' ' + series.season + ' ' + lang_tag)
+                if indexer.language == languages[index]:
+                    search_string = str(title + ' ' + series.season)   # no language tag for native language indexer
+                search_string = normalize(search_string)
+                category = str(indexer.tv_search_capatabilities)
+                list_of_dicts = indexer.engine.search(search_string, category)
+                if list_of_dicts is not None and len(list_of_dicts) > 0:
+                    torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
+                    if torrents is not None and type(torrents) is list and len(torrents) >0:
+                        results.extend(torrents)
+                else:
+                    # se non ci sono risultati prova una ricerca più grossolana o in inglese
+                    search_string = str(title + ' ' + series.season  + ' ' + self.__default_lang_tag)
                     if indexer.language == languages[index]:
-                        search_string = str(titles[index] + ' ' + series.season)   # no language tag for native language indexer
-                    search_string = quote_plus(search_string)
+                        search_string = str(title)   # no language tag for native language indexer
+                    search_string = normalize(search_string)
+                    category = str(indexer.tv_search_capatabilities)
                     list_of_dicts = indexer.engine.search(search_string, category)
                     if list_of_dicts is not None and len(list_of_dicts) > 0:
-                        result = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                        if result is not None and type(result) is list and len(result) >0:
-                            results.append(result)
+                        torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
+                        if torrents is not None and type(torrents) is list and len(torrents) >0:
+                            results.extend(torrents)
+
 
             except Exception:
                 self.logger.exception(
                     f"An exception occured while searching for a series on Search with indexer {indexer.title} and language {lang}.")
+            
+            index = index +1
         
         if len(results) > 0:
-            self.logger.info(f"Found {len(results)} for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+            self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
         else:
-            self.logger.info(f"No results found for {search_string} @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+            self.logger.info(f"No results found for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
 
         return results
 
@@ -395,7 +450,9 @@ class SearchService:
                 result.magnet = res_link
                 result.link = result.magnet
             else:
-                raise Exception('Error, please fill a bug report!')
+                # raise Exception('Error, please fill a bug report!')
+                # se non riesce a scarica il file ritorna None
+                return None
             self.logger.debug(f"Download magnet of result {result.title} @ {result.engine_name} in {round(time.time() - start_time, 1)} [s]")
 
         # parse RAW title to detect languages

@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from urllib.parse import quote
-
+from utils.logger import setup_logger
 from novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 from helpers import retrieve_url
@@ -26,6 +26,7 @@ class limetorrents(object):
                             'movies': 'movies',
                             'music': 'music',
                             'tv': 'tv'}
+    logger = setup_logger(__name__)
 
     class MyHtmlParser(HTMLParser):
         """ Sub-class for parsing results """
@@ -129,6 +130,7 @@ class limetorrents(object):
     def search(self, query, cat='all'):
         # """ Performs search """
         prettyPrinter.clear()
+        query = quote(query)
         query = query.replace("%20", "-")
         category = self.supported_categories[cat]
 

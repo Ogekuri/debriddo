@@ -5,6 +5,7 @@ from constants import CACHE_DATABASE_FILE
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
 from datetime import datetime
+from utils.string_encoding import normalize
 
 TABLE_NAME = "cached_items"
 
@@ -12,23 +13,35 @@ TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS cached_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TIMESTAMP,
-    raw_title TEXT,
     title TEXT,
-    trackers TEXT,
-    magnet TEXT,
-    files TEXT,
-    hash TEXT,
-    indexer TEXT,
-    engine_name TEXT,
-    seeders INTEGER,
-    size INTEGER,
     language TEXT,
-    type TEXT,
-    availability TEXT,
-    year INTEGER,
-    season INTEGER,
-    episode INTEGER,
-    seasonfile BOOLEAN
+    media_id TEXT,
+    media_type TEXT,
+    media_titles TEXT,
+    media_year TEXT,
+    media_season TEXT,
+    media_episode TEXT,
+    media_languages TEXT,
+    torrent_hash TEXT,
+    torrent_type TEXT,
+    torrent_title TEXT,
+    torrent_raw_title TEXT,
+    torrent_indexer TEXT,
+    torrent_engine_name TEXT,
+    torrent_privacy TEXT,
+    torrent_languages TEXT,
+    torrent_magnet TEXT,
+    torrent_link TEXT,
+    torrent_trackers TEXT,
+    torrent_seeders INTEGER,
+    torrent_size INTEGER,
+    torrent_availability BOOL,
+    seasonfile BOOLEAN,
+    season_first INTEGER,
+    season_last INTEGER,
+    episode_first INTEGER,
+    episode_last INTEGER,
+    year INTEGER
 )
 """
 
@@ -53,35 +66,43 @@ def search_cache(config, media):
                 connection.commit()
             except sqlite3.Error as e:
                 logger.error(f"SQL error: {e}")
-                pass
 
             logger.debug("Searching for cached " + media.type + " results")
 
             cache_items = []
 
             # cicla sulle lingue
-            for index, language in enumerate(media.languages):
+            index = 0
+            for language in media.languages:
 
                 title = media.titles[index]
+                title = normalize(title)
+
+                if media.type == "movie":
+                    year = int(media.year)
+                elif media.type == "series":
+                    clean_season = int(media.season.replace("S", ""))
+                    clean_episode = int(media.episode.replace("E", ""))
+                
                 logger.info("Searchching for " + media.type + " '" + title + "' @<cache>")
 
-                cache_search = media.__dict__
+                cache_search = dict()
                 cache_search['title'] = title
                 cache_search['language'] = language
 
                 if media.type == "movie":
-                    cache_search['year'] = media.year
+                    cache_search['year'] = year
                 elif media.type == "series":
-                    cache_search['season'] = media.season
-                    cache_search['episode'] = media.episode
-                
+                    cache_search['season'] = clean_season
+                    cache_search['episode'] = clean_episode
+
                 try:
                     # Costruisci la query di filtro in base a `cache_search`
                     filters = ["title = :title", "language = :language"]
                     if media.type == "movie":
                         filters.append("year = :year")
                     elif media.type == "series":
-                        filters.append("((season = :season AND episode = :episode AND seasonfile = False) OR (season = :season AND seasonfile = True))")
+                        filters.append("((season_first <= :season AND season_last >= :season  AND episode_first <= :episode AND episode_last >= :episode AND seasonfile = False) OR (season_first <= :season AND season_last >= :season AND seasonfile = True))")
 
                     # Genera la query dinamica
                     query = f"SELECT * FROM {TABLE_NAME} WHERE " + " AND ".join(filters)
@@ -97,13 +118,19 @@ def search_cache(config, media):
                     # Trasforma ogni riga in un dizionario
                     for row in rows:
                         cache_item = dict(zip(columns, row))
-                        cache_item['trackers'] = cache_item['trackers'].split(";") if cache_item['trackers'] else []
+                        # strighe di lista in lista
+                        cache_item['media_titles'] = eval(cache_item['media_titles'])
+                        cache_item['media_languages'] = eval(cache_item['media_languages'])
+                        cache_item['torrent_languages'] = eval(cache_item['torrent_languages'])
+                        cache_item['torrent_trackers'] = eval(cache_item['torrent_trackers'])
+                        cache_item['torrent_availability'] = bool(cache_item['torrent_availability'])
                         cache_items.append(cache_item)
 
                     logger.debug(f"{len(cache_items)} record found on cache database table:'{TABLE_NAME}'.")
                 except sqlite3.Error as e:
                     logger.error(f"SQL error: {e}")
-                    pass
+                
+                index = index + 1
             
             if cache_items is not None and len(cache_items) > 0:
                 return cache_items
@@ -147,7 +174,7 @@ def cache_results(torrents: List[TorrentItem], media):
             hash_already_exist = False
             try:
                 # Esegui una query per verificare l'esistenza dell'hash
-                cursor.execute(f"SELECT 1 FROM {TABLE_NAME} WHERE hash = ? LIMIT 1;", (torrent.info_hash,))
+                cursor.execute(f"SELECT 1 FROM {TABLE_NAME} WHERE torrent_hash = ? LIMIT 1;", (torrent.info_hash,))
                 result = cursor.fetchone()
 
                 # Restituisci True se il risultato non è None
@@ -155,7 +182,6 @@ def cache_results(torrents: List[TorrentItem], media):
                     hash_already_exist = True
             except sqlite3.Error as e:
                     logger.error(f"SQL error: {e}")
-                    pass
             
             if not hash_already_exist:
                 try:
@@ -165,40 +191,88 @@ def cache_results(torrents: List[TorrentItem], media):
                             title = titles[language]
                         else:
                             title = media.titles[0]
-
-                        cache_item = dict()
-
-                        cache_item['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        cache_item['title'] = title
-                        cache_item['raw_title'] = torrent.raw_title
-                        cache_item['trackers'] = ";".join(torrent.trackers)
-                        cache_item['magnet'] = torrent.magnet
-                        cache_item['files'] = ""  # I guess keep it empty?
-                        cache_item['hash'] = torrent.info_hash
-                        cache_item['indexer'] = torrent.indexer
-                        cache_item['engine_name'] = torrent.engine_name
-                        cache_item['seeders'] = torrent.seeders
-                        cache_item['size'] = torrent.size
-                        cache_item['language'] = language
-                        cache_item['type'] = media.type
-                        cache_item['availability'] = torrent.availability
+                        title = normalize(title)
 
                         if media.type == "movie":
-                            cache_item['year'] = media.year
+                             year = int(media.year)
+                             seasonfile = False
+                             season_first = -1
+                             season_last = -1
+                             episode_first = -1
+                             episode_last = -1
                         elif media.type == "series":
-                            cache_item['season'] = media.season
-                            # parsed_result = parse(result.raw_title) - già popolato
-                            if type(torrent.parsed_data.episodes) is list and len(torrent.parsed_data.episodes) > 0:
-                                cache_item['episode'] = media.episode
-                                cache_item['seasonfile'] = False  # False = contiene un episodio
-                            else:
-                                cache_item['episode'] = ''
-                                cache_item['seasonfile'] = True  # True = contiene la stagione intera
+                            year = -1
+                            clean_season = int(media.season.replace("S", ""))
+                            # clean_episode = int(media.episode.replace("E", ""))
 
+                            # parsed_result = parse(result.raw_title) - già popolato
+                            if type(torrent.parsed_data.seasons) is list and len(torrent.parsed_data.seasons) > 0:
+                                season_first = min(torrent.parsed_data.seasons)
+                                season_last = max(torrent.parsed_data.seasons)
+                            elif type(torrent.parsed_data.seasons) is int and torrent.parsed_data.seasons > 0:
+                                season_first = torrent.parsed_data.seasons
+                                season_last = torrent.parsed_data.seasons
+                            else:
+                                season_first = clean_season
+                                season_last = clean_season
+
+                            if type(torrent.parsed_data.episodes) is list and len(torrent.parsed_data.episodes) > 1:
+                                seasonfile = True  # True = contiene la stagione intera
+                                episode_first = min(torrent.parsed_data.episodes)
+                                episode_last = max(torrent.parsed_data.episodes)
+                            elif type(torrent.parsed_data.episodes) is list and len(torrent.parsed_data.episodes) == 1:
+                                seasonfile = False  # True = contiene la stagione intera
+                                episode_first = min(torrent.parsed_data.episodes)
+                                episode_last = max(torrent.parsed_data.episodes)
+                            elif type(torrent.parsed_data.episodes) is int and torrent.parsed_data.episodes > 0:
+                                seasonfile = False  # False = contiene un episodio
+                                episode_first = torrent.parsed_data.episodes
+                                episode_last = torrent.parsed_data.episodes
+                            else:
+                                seasonfile = True  # False = contiene un episodio
+                                episode_first = 0
+                                episode_last = 1000
+
+                        # prepara i dati per l'inserimento
+                        cache_item = dict()
+                        cache_item['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        cache_item['title'] = str(title)
+                        cache_item['language'] = str(language)
+                        cache_item['media_id'] = str(media.id)
+                        cache_item['media_type'] = str(media.type)
+                        cache_item['media_titles'] = str(media.titles) # lista
+                        if media.type == "movie":
+                            cache_item['media_year'] = str(media.year)
+                            cache_item['media_season'] = ""
+                            cache_item['media_episode'] = ""
+                        elif media.type == "series":
+                            cache_item['media_year'] = ""
+                            cache_item['media_season'] = str(media.season)
+                            cache_item['media_episode'] = str(media.episode)
+                        cache_item['media_languages'] = str(media.languages) # lista
+                        cache_item['torrent_hash'] = str(torrent.info_hash)
+                        cache_item['torrent_type'] =  str(torrent.type)
+                        cache_item['torrent_title'] =  str(torrent.title)
+                        cache_item['torrent_raw_title'] =  str(torrent.raw_title)
+                        cache_item['torrent_indexer'] =  str(torrent.indexer)
+                        cache_item['torrent_engine_name'] =  str(torrent.engine_name)
+                        cache_item['torrent_privacy'] =  str(torrent.privacy)
+                        cache_item['torrent_languages'] = str(torrent.languages) # lista
+                        cache_item['torrent_magnet'] = str(torrent.magnet)
+                        cache_item['torrent_link'] = str(torrent.link)
+                        cache_item['torrent_trackers'] = str(torrent.trackers) # lista
+                        cache_item['torrent_seeders'] = int(torrent.seeders)
+                        cache_item['torrent_size'] = int(torrent.size)
+                        cache_item['torrent_availability'] = torrent.availability # bool
+                        cache_item['seasonfile'] = seasonfile
+                        cache_item['season_first'] = int(season_first)
+                        cache_item['season_last'] = int(season_last)
+                        cache_item['episode_first'] = int(episode_first)
+                        cache_item['episode_last'] = int(episode_last)
+                        cache_item['year'] = int(year)
                         cache_items.append(cache_item)
                 except:
                     logger.exception("An exception occured durring cache parsing")
-                    pass
         
         # Estrai dinamicamente le colonne dalla lista di dizionari
         if cache_items is not None and len(cache_items) > 0:
@@ -211,7 +285,6 @@ def cache_results(torrents: List[TorrentItem], media):
                     connection.commit()
                 except sqlite3.Error as e:
                     logger.error(f"SQL error: {e}")
-                    pass
             
             logger.info(f"Cached {str(len(cache_items))} {media.type} results")
 

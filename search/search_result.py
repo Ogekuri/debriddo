@@ -65,20 +65,20 @@ class SearchResult:
             self.from_cache,
         )
 
-    def from_cached_item(self, cached_item, media):
+    def from_cached_item(self, cached_item):
         if type(cached_item) is not dict:
             logger.error(cached_item)
-        self.raw_title = cached_item['raw_title']
-        self.title = cached_item['title']
-        self.indexer = cached_item['indexer']
-        self.magnet = cached_item['magnet']
-        self.link = cached_item['magnet']
-        self.info_hash = cached_item['hash']
-        self.languages = [ cached_item['language'] ]
-        self.seeders = cached_item['seeders']
-        self.size = cached_item['size']
-        self.type = cached_item['type']
-        self.privacy = 'public'
+        self.type = cached_item['media_type']
+        self.raw_title = cached_item['torrent_raw_title']
+        self.title = cached_item['torrent_title']
+        self.indexer = cached_item['torrent_indexer']
+        self.magnet = cached_item['torrent_magnet']
+        self.link = cached_item['torrent_link']
+        self.info_hash = cached_item['torrent_hash']
+        self.languages = cached_item['torrent_languages']
+        self.seeders = cached_item['torrent_seeders']
+        self.size = cached_item['torrent_size']
+        self.privacy = cached_item['torrent_privacy']
         self.from_cache = True
 
         parsed_result = parse(self.raw_title)

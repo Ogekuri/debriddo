@@ -7,6 +7,8 @@ from helpers import retrieve_url, download_file
 from novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 from bs4 import BeautifulSoup
+from urllib.parse import quote
+from utils.logger import setup_logger
 
 class torrentz(object):
     url = 'https://torrentz2.nz/'
@@ -17,6 +19,7 @@ class torrentz(object):
         Torrentz2 categories not supported
     """
     supported_categories = {'all': '0'}
+    logger = setup_logger(__name__)
 
     def __parseHTML(self, html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -34,10 +37,16 @@ class torrentz(object):
             
             # Estrai gli altri campi
             spans = dl.find('dd').find_all('span')
+
             time_uploaded = spans[1].get_text(strip=True)
             size = spans[2].get_text(strip=True)
             seeders = spans[3].get_text(strip=True)
             leechers = spans[4].get_text(strip=True)
+
+            # rmuove i caratteri che non sono numeri
+            seeders = ''.join(c for c in seeders if c.isdigit())
+            leechers = ''.join(c for c in leechers if c.isdigit())
+
             
             # Crea il dizionario per il risultato
             data={
@@ -56,7 +65,9 @@ class torrentz(object):
 
     def search(self, what, cat='all'):
         prettyPrinter.clear()
-        url = '{0}search?q={1}&cat=0'.format(self.api_url, what)
+        what = quote(what)
+        # url = '{0}search?q={1}&cat=0'.format(self.api_url, what)
+        url = '{0}search?q={1}'.format(self.api_url, what)
         self.__parseHTML(retrieve_url(url))
         return prettyPrinter.get()
 
