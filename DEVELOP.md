@@ -7,11 +7,11 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Implementazioni
 
+* Implemetare l'aggiornamento via crontab
+* Implementare l'aggiornamento automatico
 * Mettere un aprogres se il torrent non è al 100% su debrid?
 * implementare l'esportazione e l'importazione del database della cache per i container docker.
 * verificare perché non tiene i risultati della cache per primi
-* Implemetare l'aggiornamento via crontab
-* Implementare l'aggiornamento automatico
 * Implementare il supporto per https://debrid-link.com/
 * Implementare il supporto alle autenticazioni nei plugins di ricerca
 * Implementare il supporto 'private'/'public' per i motori di ricerca che hanno la password (da decidere)

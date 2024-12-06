@@ -431,14 +431,14 @@ async def get_playback(config: str, query: str, request: Request):
 async def update_app():
     if development is None:
         try:
-            logger.info(f"Checking for new updated ({app_version})")
+            
             url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
             response = requests.get(url)
             data = response.json()
             latest_version = data['tag_name']
             if latest_version != app_version:
-                logger.info("New version available: " + latest_version)
-                logger.info("Updating...")
+                logger.info(f"Checking for new updated. New version available: {latest_version}")
+                logger.info(f"Updating from {app_version} to {latest_version}...")
                 logger.info("Getting update zip...")
                 update_zip = requests.get(data['zipball_url'])
                 with open("update.zip", "wb") as file:
@@ -465,6 +465,8 @@ async def update_app():
                 os.remove("update.zip")
                 logger.info("Cleaned up")
                 logger.info("Updated !")
+            else:
+                logger.info(f"Checking for new updated. It's already updated ({app_version}).")
         except Exception as e:
             logger.error(f"Error during update: {e}")
     else:

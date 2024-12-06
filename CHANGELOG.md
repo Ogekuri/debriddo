@@ -3,6 +3,10 @@ Elenco modifiche introdotti in Debriddo.
 
 Il formato è basato su on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) ed aderisce a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.24](https://github.com/Ogekuri/debriddo/compare/v0.0.23...v0.0.24) (2024-11-06)
+
+- Modifica procedura aggiornamento automatico del software.
+
 ## [v0.0.23](https://github.com/Ogekuri/debriddo/compare/v0.0.22...v0.0.23) (2024-11-05)
 
 - Aggiunti file mancanti nel rilascio
