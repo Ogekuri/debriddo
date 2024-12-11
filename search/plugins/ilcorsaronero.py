@@ -1,4 +1,4 @@
-# VERSION: 0.0.26
+# VERSION: 0.0.27
 # AUTHORS: LightDestory (https://github.com/LightDestory)
 # CONTRIBUTORS: Ogekuri
 

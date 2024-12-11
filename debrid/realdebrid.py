@@ -1,4 +1,4 @@
-# VERSION: 0.0.26
+# VERSION: 0.0.27
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -132,7 +132,7 @@ class RealDebrid(BaseDebrid):
                 logger.debug("Prefetching season pack")
                 prefetched_torrent_info = await self.__prefetch_season_pack(magnet, torrent_download)
                 if len(prefetched_torrent_info["links"]) > 0:
-                    self.delete_torrent(torrent_info["id"])
+                    await self.delete_torrent(torrent_info["id"])
                     torrent_info = prefetched_torrent_info
 
         torrent_id = torrent_info["id"]

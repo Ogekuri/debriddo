@@ -1,4 +1,4 @@
-# VERSION: 0.0.26
+# VERSION: 0.0.27
 # AUTHORS: Lima66
 # CONTRIBUTORS: Ogekuri, Diego de las Heras (ngosang@hotmail.es)
 

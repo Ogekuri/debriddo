@@ -1,4 +1,4 @@
-# VERSION: 0.0.26
+# VERSION: 0.0.27
 # AUTHORS: Scare! (https://Scare.ca/dl/qBittorrent/)
 # CONTRIBUTORS: Ogekuri, LightDestory https://github.com/LightDestory
 

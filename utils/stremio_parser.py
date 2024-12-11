@@ -1,4 +1,4 @@
-# VERSION: 0.0.26
+# VERSION: 0.0.27
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -63,6 +63,8 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, host, playtorr
     # resolution = parsed_data.resolution[0] if len(parsed_data.resolution) > 0 else "Unknown"
     # name += f"{resolution}" + (f"\n({'|'.join(parsed_data.quality)})" if len(parsed_data.quality) > 0 else "")
 
+    # TODO: 📦 (Package)
+
     if parsed_data.resolution != None and parsed_data.resolution != "unknown":
         resolution = parsed_data.resolution 
     else:
@@ -74,7 +76,7 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, host, playtorr
         quality = ""
 
     if torrent_item.from_cache:
-        cache = "{⚙Cache}"
+        cache = "{🔄Cache}"
     else:
         cache = ""
 

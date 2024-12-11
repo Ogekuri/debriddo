@@ -1,4 +1,4 @@
-# VERSION: 0.0.26
+# VERSION: 0.0.27
 # AUTHORS: sa3dany, Alyetama, BurningMop, scadams
 # CONTRIBUTORS: Ogekuri
 
