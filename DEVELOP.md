@@ -7,23 +7,21 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Implementazioni
 
-* Implemetare l'aggiornamento via crontab
-* Implementare l'aggiornamento automatico
-* Mettere un aprogres se il torrent non è al 100% su debrid?
-* implementare l'esportazione e l'importazione del database della cache per i container docker.
-* verificare perché non tiene i risultati della cache per primi
+* Verificare queste funzioni di Read-Debird get_availability_bulk (serve ancora???) e select_files
+* Refactory dei Plug-Ins
+  * Valutare se mantenere la compatibilità con i plug-ins d qTorrrentio o rifarli
+  * Valutare se implementare un plug-ins unico parametrizzabile con i [file yml di Jacket server](https://github.com/Jackett/Jackett/tree/master/src/Jackett.Common/Definitions)
+  * Implementare il supporto 'private'/'public' per i motori di ricerca che hanno la password (da decidere)
+* Implementare l'esportazione e l'importazione del database della cache per i container docker (file? contenuto?).
+* Mettere un progress se il torrent non è al 100% su debrid (se è possibile?)
+* Verificare perché non tiene i risultati della cache per primi
 * Implementare il supporto per https://debrid-link.com/
-* Implementare il supporto alle autenticazioni nei plugins di ricerca
-* Implementare il supporto 'private'/'public' per i motori di ricerca che hanno la password (da decidere)
-* Implementare il supporto per Il Corsaro Blu
-* Modificare CORSMiddleware, cambiare "origins"
-* Rimuovere **[NON FUNZIONANTE]** una volta implementati
+* Implementare il supporto per l'uso concorrente di più debrid (ha senso?)
 * Rimuovere **[NON TESTATO]** una volta testati
 
 ### Test da completare
 
-- Testare 'alldebrid', 'premiumize', 'torbox', 'debridlink']
-- Testare NO_CACHE_VIDEO_URL = "https://github.com/Ogekuri/debriddo/raw/main/videos/nocache.mp4"
+- Testare 'alldebrid', 'premiumize', 'torbox' che sono passati tutti a funzioni asincrone (e non testati)
 
 ## Esecuzione dei sorgenti
 

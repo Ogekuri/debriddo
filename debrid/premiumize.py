@@ -14,40 +14,40 @@ class Premiumize(BaseDebrid):
         super().__init__(config)
         self.base_url = "https://www.premiumize.me/api"
 
-    def add_magnet(self, magnet, ip=None):
+    async def add_magnet(self, magnet, ip=None):
         url = f"{self.base_url}/transfer/create?apikey={self.config['debridKey']}"
         form = {'src': magnet}
-        return self.get_json_response(url, method='post', data=form)
+        return await self.get_json_response(url, method='post', data=form)
 
     # Doesn't work for the time being. Premiumize does not support torrent file torrents
-    def add_torrent(self, torrent_file):
+    async def add_torrent(self, torrent_file):
         url = f"{self.base_url}/transfer/create?apikey={self.config['debridKey']}"
         form = {'file': torrent_file}
-        return self.get_json_response(url, method='post', data=form)
+        return await self.get_json_response(url, method='post', data=form)
 
-    def list_transfers(self):
+    async def list_transfers(self):
         url = f"{self.base_url}/transfer/list?apikey={self.config['debridKey']}"
-        return self.get_json_response(url)
+        return await self.get_json_response(url)
 
-    def get_folder_or_file_details(self, item_id, is_folder=True):
+    async def get_folder_or_file_details(self, item_id, is_folder=True):
         if is_folder:
             logger.debug(f"Getting folder details with id: {item_id}")
             url = f"{self.base_url}/folder/list?id={item_id}&apikey={self.config['debridKey']}"
         else:
             logger.debug(f"Getting file details with id: {item_id}")
             url = f"{self.base_url}/item/details?id={item_id}&apikey={self.config['debridKey']}"
-        return self.get_json_response(url)
+        return await self.get_json_response(url)
 
-    def get_availability(self, hash):
+    async def get_availability(self, hash):
         url = f"{self.base_url}/cache/check?apikey={self.config['debridKey']}&items[]={hash}"
-        return self.get_json_response(url)
+        return await self.get_json_response(url)
 
-    def get_availability_bulk(self, hashes_or_magnets, ip=None):
+    async def get_availability_bulk(self, hashes_or_magnets, ip=None):
         url = f"{self.base_url}/cache/check?apikey={self.config['debridKey']}&items[]=" + "&items[]=".join(
             hashes_or_magnets)
-        return self.get_json_response(url)
+        return await self.get_json_response(url)
 
-    def get_stream_link(self, query, ip=None):
+    async def get_stream_link(self, query, ip=None):
         query = json.loads(query)
         magnet = query['magnet']
         logger.debug(f"Received query for magnet: {magnet}")
@@ -56,21 +56,21 @@ class Premiumize(BaseDebrid):
         stream_type = query['type']
         logger.debug(f"Stream type: {stream_type}")
 
-        transfer_data = self.add_magnet(magnet)
+        transfer_data = await self.add_magnet(magnet)
         if not transfer_data or 'id' not in transfer_data:
             logger.error("Failed to create transfer.")
             return "Error: Failed to create transfer."
         transfer_id = transfer_data['id']
         logger.debug(f"Transfer created with ID: {transfer_id}")
 
-        if not self.wait_for_ready_status(lambda: self.get_availability(info_hash)["transcoded"][0] is True):
+        if not self.wait_for_ready_status_async_func(lambda: self.get_availability(info_hash)["transcoded"][0] is True):
             logger.debug("Torrent not ready, caching in progress")
             return NO_CACHE_VIDEO_URL
 
         logger.debug("Torrent is ready.")
 
         # Assuming the transfer is complete, we need to find whether it's a file or a folder
-        transfers = self.list_transfers()
+        transfers = await self.list_transfers()
         item_id, is_folder = None, False
         for item in transfers.get('transfers', []):
             if item['id'] == transfer_id:
@@ -85,7 +85,7 @@ class Premiumize(BaseDebrid):
             logger.error("Transfer completed but no item ID found.")
             return "Error: Transfer completed but no item ID found."
 
-        details = self.get_folder_or_file_details(item_id, is_folder)
+        details = await self.get_folder_or_file_details(item_id, is_folder)
         logger.debug(f"Got details")
 
         if stream_type == "movie":

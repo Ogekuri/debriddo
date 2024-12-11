@@ -1,75 +1,96 @@
 import hashlib
 import queue
 import threading
-import time
 import urllib.parse
 from typing import List
 
 import bencode
-import requests
+import asyncio
+
 from RTN import parse
 
 from search.search_result import SearchResult
 from torrent.torrent_item import TorrentItem
 from utils.general import get_info_hash_from_magnet
-from utils.general import season_episode_in_filename
 from utils.logger import setup_logger
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 class TorrentService:
+
     def __init__(self):
         self.logger = setup_logger(__name__)
-        self.__session = requests.Session()
 
-    def convert_and_process(self, results: List[SearchResult]):
-        threads = []
-        torrent_items_queue = queue.Queue()
+    # # versione originale multi-thread
+    # async def convert_and_process(self, results: List[SearchResult]):
+              
+    #     threads = []
+    #     torrent_items_queue = queue.Queue()
+    #     def thread_target(result: SearchResult):
+    #         torrent_item = result.convert_to_torrent_item()
+    #         if torrent_item.link.startswith("magnet:"):
+    #             processed_torrent_item = self.__process_magnet(torrent_item)
+    #         else:
+    #             processed_torrent_item = self.__process_web_url(torrent_item)
+    #         torrent_items_queue.put(processed_torrent_item)
+    #     for result in results:
+    #         threads.append(threading.Thread(target=thread_target, args=(result,)))
+    #     for thread in threads:
+    #         thread.start()
+    #     for thread in threads:
+    #          thread.join()
+    #     torrent_items_result = []
+    #     while not torrent_items_queue.empty():
+    #         torrent_items_result.append(torrent_items_queue.get())
+    #     return torrent_items_result
 
-        def thread_target(result: SearchResult):
-            torrent_item = result.convert_to_torrent_item()
+    
+    async def __process_web_url_or_process_magnet(self, result: SearchResult):
+        
+        torrent_item = result.convert_to_torrent_item()
+        
+        if torrent_item.link.startswith("magnet:"):
+            return self.__process_magnet(torrent_item)
+        else:
+            return await self.__process_web_url(torrent_item)
 
-            if torrent_item.link.startswith("magnet:"):
-                processed_torrent_item = self.__process_magnet(torrent_item)
-            else:
-                processed_torrent_item = self.__process_web_url(torrent_item)
 
-            torrent_items_queue.put(processed_torrent_item)
+    async def convert_and_process(self, results: List[SearchResult]):
 
-        for result in results:
-            threads.append(threading.Thread(target=thread_target, args=(result,)))
-
-        for thread in threads:
-            thread.start()
-
-        for thread in threads:
-            thread.join()
-
-        torrent_items_result = []
-
-        while not torrent_items_queue.empty():
-            torrent_items_result.append(torrent_items_queue.get())
-
+        if MULTI_THREAD:
+            loop = asyncio.get_event_loop()
+            tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__process_web_url_or_process_magnet(result)) for result in results]
+            torrent_items_result = await asyncio.gather(*tasks)
+        else:
+            tasks = [self.__process_web_url_or_process_magnet(result) for result in results] 
+            torrent_items_result = await asyncio.gather(*tasks)
+        
         return torrent_items_result
 
-    def __process_web_url(self, result: TorrentItem):
+
+    async def __process_web_url(self, result: TorrentItem):
         try:
             # TODO: is the timeout enough?
-            response = self.__session.get(result.link, allow_redirects=False, timeout=2)
-        except requests.exceptions.RequestException:
-            self.logger.error(f"Error while processing url: {result.link}")
-            return result
-        except requests.exceptions.ReadTimeout:
-            self.logger.error(f"Timeout while processing url: {result.link}")
-            return result
+            session = AsyncThreadSafeSession()  # Usa il client asincrono
+            # response = await session.request_get(result.link, allow_redirects=False, timeout=2)
+            response = await session.request_get(result.link)
+            await session.close()
+            if response is not None:
+                if response.status_code == 200:
+                    return self.__process_torrent(result, response.content)
+                elif response.status_code == 302:
+                    result.magnet = response.headers['Location']
+                    return self.__process_magnet(result)
+                else:
+                    self.logger.error(f"Error code {response.status_code} while processing url: {result.link}")
 
-        if response.status_code == 200:
-            return self.__process_torrent(result, response.content)
-        elif response.status_code == 302:
-            result.magnet = response.headers['Location']
-            return self.__process_magnet(result)
-        else:
-            self.logger.error(f"Error code {response.status_code} while processing url: {result.link}")
+                return result
 
-        return result
+        except Exception as e:
+            self.logger.error(f"Error during update: {e}")
+        
+        return None
+
 
     def __process_torrent(self, result: TorrentItem, torrent_file):
         metadata = bencode.bdecode(torrent_file)

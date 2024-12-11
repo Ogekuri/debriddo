@@ -1,16 +1,17 @@
-# VERSION: 1.1
+# VERSION: 1.0
 # AUTHORS: Ogekuri
 
 import urllib.parse
-import json
-from helpers import retrieve_url, download_file
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from utils.logger import setup_logger
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
-class torrentz(object):
+
+class torrentz(BasePlugin):
     url = 'https://torrentz2.nz/'
     api_url = "https://torrentz2.nz/"
     name = 'Torrentz2'
@@ -19,7 +20,7 @@ class torrentz(object):
         Torrentz2 categories not supported
     """
     supported_categories = {'all': '0'}
-    logger = setup_logger(__name__)
+
 
     def __parseHTML(self, html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -63,14 +64,16 @@ class torrentz(object):
         
         return results
 
-    def search(self, what, cat='all'):
+    async def search(self, what, cat='all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         what = quote(what)
         # url = '{0}search?q={1}&cat=0'.format(self.api_url, what)
+        # TODO: leggere il numero di pagine e fare una chiamata asincrona per ogni pagina
         url = '{0}search?q={1}'.format(self.api_url, what)
-        self.__parseHTML(retrieve_url(url))
+        page = await session.retrieve_url(url)
+        if page is not None:
+            self.__parseHTML(page)
+        await session.close()
         return prettyPrinter.get()
 
-    def download_torrent(self, info):
-        # non necessaria ha già i magnet nella ricarca
-        return None

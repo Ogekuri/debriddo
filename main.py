@@ -1,37 +1,46 @@
-import asyncio
-import logging
 import os
+import sys
 import re
 import shutil
 import time
 import zipfile
 import uvicorn
-import requests
 import starlette.status as status
 
 from dotenv import load_dotenv
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import Response, RedirectResponse
 from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
+
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
 from starlette.responses import FileResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
 from debrid.get_debrid_service import get_debrid_service
+
 from search.search_result import SearchResult
 from search.search_service import SearchService
+
 from metdata.cinemeta import Cinemeta
 from metdata.tmdb import TMDB
+
 from torrent.torrent_service import TorrentService
 from torrent.torrent_smart_container import TorrentSmartContainer
+
 from utils.cache import search_cache
 from utils.filter_results import filter_items, sort_items
 from utils.logger import setup_logger
 from utils.parse_config import parse_config
 from utils.stremio_parser import parse_to_stremio_streams
 from utils.string_encoding import decodeb64
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+
 from web.pages import get_index
 
 from constants import APPLICATION_NAME, APPLICATION_VERSION, APPLICATION_DESCRIPTION
@@ -76,6 +85,30 @@ logger = setup_logger(__name__)
 logger.info(f"Started {app_name} {app_version} {app_environment} @ {app_website}")
 
 
+# verifica se è in reload
+is_reload_enabled = any("--reload" in arg for arg in sys.argv)
+
+
+# calcola il numero ottimale di thread
+def calculate_optimal_thread_count():
+    """
+    Calcola il numero ottimale di workers per Uvicorn basato sui core della CPU.
+    Formula: (N CPU Cores * 2) + 1
+    """
+    try:
+        # Ottieni il numero di core della CPU
+        cpu_cores = os.cpu_count()
+        if cpu_cores is None:
+            return 8
+        
+        # Calcola il numero ottimale di workers
+        optimal_workers = (cpu_cores * 2) + 1
+        return optimal_workers
+    except Exception as e:
+        logger.error(f"Errore nel calcolo dei workers: {e}")
+        return 8
+    
+
 # Lifespan: gestisce startup e shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -83,8 +116,17 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(update_app, 'interval', seconds=60)  # Il check dell'update ogni 60 secondi
     scheduler.start()
     logger.info(f"Scheduler avviato")
+
+    # Verifica se il server Uvicorn è configurato con reload
+    if is_reload_enabled:
+        logger.warning("L'applicazione è in modalità reload.")
+    else:
+        logger.debug("L'applicazione non è in modalità reload.")
+
     try:
         yield  # Qui puoi mettere codice che deve girare durante la vita dell'app
+    
+    # terminazione
     finally:
         scheduler.shutdown()
         logger.info(f"Scheduler arrestato")
@@ -92,6 +134,12 @@ async def lifespan(app: FastAPI):
 # Creazione dell'app FastAPI
 app = FastAPI(lifespan=lifespan)
 
+# Imposta un maggior numero di thread, per esempio 16
+n_workers = calculate_optimal_thread_count()
+logger.info(f"Set numeber of thread to: {n_workers}")
+executor = ThreadPoolExecutor(max_workers=n_workers)
+loop = asyncio.get_event_loop()
+loop.set_default_executor(executor)
 
 # Aggiunge il loggin del middleware fastapi
 class LogFilterMiddleware:
@@ -109,7 +157,14 @@ class LogFilterMiddleware:
             # Log informazioni sulla richiesta
             request = Request(scope, receive)
             path = request.url.path
-            sensible_path = re.sub(r'/ey.*?/', '/<SENSITIVE_DATA>/', path)
+                        
+            
+            # GET - /C_<SENSITIVE_DATA>/config
+            sensible_path = re.sub(r'/C_.*?/', '/<SENSITIVE_DATA>/', path)
+            
+            # GET - /playback/C_<SENSITIVE_DATA>/ey<QUERY>/
+            sensible_path = re.sub(r'/ey.*?$', '/<QUERY>', sensible_path)
+
             logger.debug(f"{request.method} - {sensible_path}")
 
             # Log body della richiesta (se presente)
@@ -129,39 +184,22 @@ if development is not None:
     app.add_middleware(LogFilterMiddleware)
 
 
-#
 # Abilita CORSMiddleware per le chiamate OPTIONS e il redirect
-#
-# Probailmente posso filtrare meglio
-# configurando le origini consentite
-#
-# esempio:
-#
-# origins = [
-#     "https://web.stremio.com",  # Specifica l'origine consentita
-#     "http://localhost",        # Durante lo sviluppo
-#     "http://localhost:8000",   # Durante lo sviluppo
-# ]
-#
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,  # Origini consentite
-#     allow_credentials=True, # Consente l'invio di credenziali (es. cookie)
-#     allow_methods=["*"],    # Consente tutti i metodi (GET, POST, OPTIONS, ecc.)
-#     allow_headers=["*"],    # Consente tutti gli header
-# )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["*"],    # Origini consentite
+    allow_credentials=True, # Consente l'invio di credenziali (es. cookie)
+    allow_methods=["*"],    # Consente tutti i metodi (GET, POST, OPTIONS, ecc.)
+    allow_headers=["*"],    # Consente tutti gli header
 )
+
+
 
 
 ################
 ### Fast API ###
 ################
+
 
 # root: /
 @app.get("/")
@@ -181,7 +219,14 @@ async def get_favicon():
     response = FileResponse(f"web/config.js")
     return response
 
-# /config.js
+# /lz-string.min.js
+@app.get("/lz-string.min.js")
+@app.get("/{config}/lz-string.min.js")
+async def get_favicon():
+    response = FileResponse(f"web/lz-string.min.js")
+    return response
+
+# /styles.css
 @app.get("/styles.css")
 @app.get("/{config}/styles.css")
 async def get_favicon():
@@ -314,18 +359,18 @@ async def get_manifest():
     )
 
 # /?/stream/?/?
-@app.get("/{config}/stream/{stream_type}/{stream_id}")
-async def get_results(config: str, stream_type: str, stream_id: str, request: Request):
+@app.get("/{config_url}/stream/{stream_type}/{stream_id}")
+async def get_results(config_url: str, stream_type: str, stream_id: str, request: Request):
     start = time.time()
     stream_id = stream_id.replace(".json", "")
-    config = parse_config(config)
+    config = parse_config(config_url)
     logger.debug(stream_type + " request")
     logger.debug(f"Getting media from {config['metadataProvider']}")
     if config['metadataProvider'] == "tmdb" and config['tmdbApi']:
         metadata_provider = TMDB(config)
     else:
         metadata_provider = Cinemeta(config)
-    media = metadata_provider.get_metadata(stream_id, stream_type)
+    media = await metadata_provider.get_metadata(stream_id, stream_type)
     logger.info("Got media and properties: " + str(media.titles))
 
     debrid_service = get_debrid_service(config)
@@ -352,11 +397,14 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
 
         logger.debug("Searching for results direct with Torrent Search (Engines)")
         search_service = SearchService(config)
-        engine_results = search_service.search(media)
+        engine_results = await search_service.search(media)
         if engine_results is not None:
             logger.debug("Got " + str(len(engine_results)) + " results from Torrent Search (Engines)")
             for result in engine_results:
-                logger.debug("- " + str(result.raw_title))
+                if result.raw_title:
+                    logger.debug("- " + str(result.raw_title))
+                else:
+                    logger.error(f"Error on result: {result}")        
 
             logger.debug("Filtering Torrent Search (Engines) results")
             filtered_engine_search_results = filter_items(engine_results, media, config=config)
@@ -367,7 +415,7 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
     if search_results is not None:
         logger.debug("Converting result to TorrentItems (results: " + str(len(search_results)) + ")")
         torrent_service = TorrentService()
-        torrent_results = torrent_service.convert_and_process(search_results)
+        torrent_results = await torrent_service.convert_and_process(search_results)
         logger.debug("Converted result to TorrentItems (results: " + str(len(torrent_results)) + ")")
 
         torrent_smart_container = TorrentSmartContainer(torrent_results, media)
@@ -393,28 +441,35 @@ async def get_results(config: str, stream_type: str, stream_id: str, request: Re
         logger.debug("Got best matching results (results: " + str(len(best_matching_results)) + ")")
 
         logger.debug("Processing results")
-        stream_list = parse_to_stremio_streams(best_matching_results, config, media)
+        stream_list = parse_to_stremio_streams(best_matching_results, config, config_url, media)
         logger.info("Processed results (results: " + str(len(stream_list)) + ")")
 
         logger.info("Total time: " + str(time.time() - start) + "s")
 
         return {"streams": stream_list}
 
+
 # /playback/?/?
-@app.head("/playback/{config}/{query}")
-@app.get("/playback/{config}/{query}")
-async def get_playback(config: str, query: str, request: Request):
+@app.head("/playback/{config_url}/{query}")
+async def head_playback(config: str, query: str, request: Request):
+    if not query:
+        raise HTTPException(status_code=400, detail="Query required.")
+    # Qui potrei limitarmi a controllare la validità di config e query
+    # e restituire comunque lo stesso set di header (es: un redirect) senza generare effettivamente la destinazione.
+    return Response(status_code=status.HTTP_200_OK)
+
+# /playback/?/?
+@app.get("/playback/{config_url}/{query}")
+async def get_playback(config_url: str, query: str, request: Request):
     try:
         if not query:
             raise HTTPException(status_code=400, detail="Query required.")
-        config = parse_config(config)
-        logger.debug("Decoding query")
+        config = parse_config(config_url)
         query = decodeb64(query)
-        logger.debug(f"QUERY: {query}")
-        logger.debug("Decoded query")
+        logger.debug(f"Decoded <QUERY>: {query}")
         ip = request.client.host
         debrid_service = get_debrid_service(config)
-        link = debrid_service.get_stream_link(query, ip)
+        link = await debrid_service.get_stream_link(query, ip)
 
         logger.info("Got link: " + link)
         return RedirectResponse(url=link, status_code=status.HTTP_301_MOVED_PERMANENTLY)
@@ -429,48 +484,56 @@ async def get_playback(config: str, query: str, request: Request):
 ###################
 
 async def update_app():
-    if development is None:
-        try:
-            
-            url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
-            response = requests.get(url)
-            data = response.json()
-            latest_version = data['tag_name']
-            if latest_version != app_version:
-                logger.info(f"Checking for new updated. New version available: {latest_version}")
-                logger.info(f"Updating from {app_version} to {latest_version}...")
-                logger.info("Getting update zip...")
-                update_zip = requests.get(data['zipball_url'])
-                with open("update.zip", "wb") as file:
-                    file.write(update_zip.content)
-                logger.info("Update zip downloaded")
-                logger.info("Extracting update...")
-                with zipfile.ZipFile("update.zip", 'r') as zip_ref:
-                    zip_ref.extractall("update")
-                logger.info("Update extracted")
 
-                extracted_folder = os.listdir("update")[0]
-                extracted_folder_path = os.path.join("update", extracted_folder)
-                for item in os.listdir(extracted_folder_path):
-                    s = os.path.join(extracted_folder_path, item)
-                    d = os.path.join(".", item)
-                    if os.path.isdir(s):
-                        shutil.copytree(s, d, dirs_exist_ok=True)
-                    else:
-                        shutil.copy2(s, d)
-                logger.info("Files copied")
+    if development is not None:
+        logger.warning(f"Skipping software update, develoment version: {app_version} ({development})")
+        return
 
-                logger.info("Cleaning up...")
-                shutil.rmtree("update")
-                os.remove("update.zip")
-                logger.info("Cleaned up")
-                logger.info("Updated !")
-            else:
-                logger.info(f"Checking for new updated. It's already updated ({app_version}).")
-        except Exception as e:
-            logger.error(f"Error during update: {e}")
-    else:
-        logger.warning(f"Skipping software update, current version: {app_version} ({development})")
+    if is_reload_enabled is False:
+        logger.info(f"Skipping software update, reload is disabled")
+        return
+  
+    try:
+        session = AsyncThreadSafeSession()  # Usa il client asincrono    
+        url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
+        response = session.request_get(url)
+        data = response.json()
+        latest_version = data['tag_name']
+        if latest_version != app_version:
+            logger.warning(f"{APPLICATION_NAME} upgrade is started")
+            logger.info(f"Updating from {app_version} to {latest_version}...")
+            logger.info("Getting update zip...")
+            update_zip = await session.request_get(data['zipball_url'])
+            with open("update.zip", "wb") as file:
+                file.write(update_zip.content)
+            logger.info("Update zip downloaded")
+            logger.info("Extracting update...")
+            with zipfile.ZipFile("update.zip", 'r') as zip_ref:
+                zip_ref.extractall("update")
+            logger.info("Update extracted")
+
+            extracted_folder = os.listdir("update")[0]
+            extracted_folder_path = os.path.join("update", extracted_folder)
+            for item in os.listdir(extracted_folder_path):
+                s = os.path.join(extracted_folder_path, item)
+                d = os.path.join(".", item)
+                if os.path.isdir(s):
+                    shutil.copytree(s, d, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(s, d)
+            logger.info("Files copied")
+
+            logger.info("Cleaning up...")
+            shutil.rmtree("update")
+            os.remove("update.zip")
+            logger.info("Cleaned up")
+            logger.info("Updated !")
+        else:
+            logger.info(f"{APPLICATION_NAME} it's already updated ({app_version}).")
+        
+        await session.close()
+    except Exception as e:
+        logger.error(f"Error during update: {e}")
 
 
 ############

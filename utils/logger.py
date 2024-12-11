@@ -54,7 +54,7 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def setup_logger(name):
+def setup_logger(name, debug=None):
     logger = logging.getLogger(name)
 
     # get environment
@@ -65,7 +65,7 @@ def setup_logger(name):
         development = None
 
     # define logging level
-    if development is not None:
+    if development is not None or debug is not None:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)

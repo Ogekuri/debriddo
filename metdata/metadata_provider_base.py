@@ -1,11 +1,13 @@
 from utils.logger import setup_logger
 
 
+
 class MetadataProvider:
 
     def __init__(self, config):
         self.config = config
         self.logger = setup_logger(__name__)
+
 
     def replace_weird_characters(self, string):
         corresp = {
@@ -31,5 +33,5 @@ class MetadataProvider:
 
         return string
 
-    def get_metadata(self, id, type):
+    async def get_metadata(self, id, type):
         raise NotImplementedError

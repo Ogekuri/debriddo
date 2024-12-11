@@ -1,21 +1,21 @@
 #VERSION: 1.5
 #AUTHORS: mauricci
 
-from helpers import retrieve_url
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 import re
-
-from datetime import datetime
 from html.parser import HTMLParser
 from urllib.parse import unquote, quote_plus
 from utils.logger import setup_logger
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
-class torrentproject(object):
+
+class torrentproject(BasePlugin):
     url = 'https://torrentproject.cc'
     name = 'TorrentProject'
     supported_categories = {'all': '0'}
-    logger = setup_logger(__name__)
+
 
     class MyHTMLParser(HTMLParser):
 
@@ -104,28 +104,38 @@ class torrentproject(object):
                             elif curr_key != 'name':
                                 self.singleResData[curr_key] += data.strip()
 
-    def search(self, what, cat='all'):
+    async def search(self, what, cat='all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         # curr_cat = self.supported_categories[cat]
         what = what.lower()
         what = quote_plus(what)
+        
+        # TODO: leggere il numero di pagine e fare una chiamata asincrona per ogni pagina
+
         # analyze first 5 pages of results
         for currPage in range(0, 5):
 #            url = self.url + '/browse?t={0}&p={1}'.format(what, currPage)
             url = self.url + '/?t={0}&p={1}'.format(what, currPage)
-            html = retrieve_url(url)
-            parser = self.MyHTMLParser(self.url)
-            parser.feed(html)
-            parser.close()
-            if len(parser.pageRes) < 20:
-                break
+            html = await session.retrieve_url(url)
+            if html is not None:
+                parser = self.MyHTMLParser(self.url)
+                parser.feed(html)
+                parser.close()
+                if len(parser.pageRes) < 20:
+                    break
+        await session.close()
         return prettyPrinter.get()
 
-    def download_torrent(self, info):
+    async def download_torrent(self, info):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         """ Downloader """
-        html = retrieve_url(info)
-        m = re.search('href=[\'\"].*?(magnet.+?)[\'\"]', html)
-        if m and len(m.groups()) > 0:
-            magnet = unquote(m.group(1))
-            return(str(magnet + ' ' + info))
+        html = await session.retrieve_url(info)
+        if html is not None:
+            m = re.search('href=[\'\"].*?(magnet.+?)[\'\"]', html)
+            if m and len(m.groups()) > 0:
+                magnet = unquote(m.group(1))
+                await session.close()
+                return(str(magnet + ' ' + info))
+        await session.close()
         return None

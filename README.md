@@ -29,8 +29,11 @@ Le informazioni per gli sviluppatori sono contenute nel file [DEVELOP.md](DEVELO
 
 # Ringraziamenti
 
+Un ringraziamento speciale a **Riki** che ha sostituito egregiamente ChatGPT del tutto gratuitamente!.
+
 Il progetto è basato sul progetto di **aymene69** [Stremio Jackett Addon](https://github.com/aymene69/stremio-jackett) del quale integra parte dei sorgenti.
 
-Tuttavia, dal momento che il supporto al [Jackett API Server](https://github.com/Jackett/Jackett) è stato completamente rimosso a favore delle ricerche dirette su internet, il progetto non è mantenuto come fork del progretto principale, ma come progetto indipendente.
-
+Tuttavia, dal momento che il supporto al [Jackett API Server](https://github.com/Jackett/Jackett) è stato completamente rimosso a favore delle ricerche dirette, il progetto non è mantenuto come fork del progretto principale, ma come progetto indipendente.
 Grazie a **aymene69** e al team di **Jacket** per il loro prezioso contributo!
+
+Un grazie infine anche ai realizzazetori dei plugins di qTorrentio che sono stati integrati in questo progetto: [LightDestory](https://github.com/LightDestory), [Scare!](https://Scare.ca/dl/qBittorrent/), Lima66, Diego de las Heras, sa3dany, Alyetama, BurningMop, scadams, BurningMop, nindogo, mauricci.

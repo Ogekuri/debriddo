@@ -6,13 +6,14 @@
 import urllib.parse
 import json
 from urllib.parse import quote
-from helpers import retrieve_url,download_file
 from utils.logger import setup_logger
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
 
-class thepiratebay(object):
+class thepiratebay(BasePlugin):
 	url='https://thepiratebay.org'
 	api='https://apibay.org'
 	name='ThePirateBay'
@@ -96,34 +97,45 @@ class thepiratebay(object):
 		'udp://tracker.tiny-vps.com:6969/announce',
 		'udp://open.stealth.si:80/announce']
 
-	def download_torrent(self,info):
+
+	async def download_torrent(self,info):
+		session = AsyncThreadSafeSession()  # Usa il client asincrono
 		torrent_id=urllib.parse.unquote(info).split('=')[-1]
 		url=self.download.format(self=self,id=torrent_id)
-		data=json.loads(retrieve_url(url))
-		if data:
-			name=urllib.parse.quote(data['name'],safe='')
-			trs=urllib.parse.urlencode({'tr':self.trackers},True)
-			return(str(self.magnet.format(hash		=data['info_hash'],
-									 name		=name,
-									 trackers	=trs,
-									 info		=info)))
-		else:
-			raise Exception('Error in "'+self.name+'" search plugin, download_torrent()')
+		page = await session.retrieve_url(url)
+		if page is not None:
+			data=json.loads(page)
+			if data:
+				name=urllib.parse.quote(data['name'],safe='')
+				trs=urllib.parse.urlencode({'tr':self.trackers},True)
+				await session.close()
+				return(str(self.magnet.format(hash		=data['info_hash'],
+										name		=name,
+										trackers	=trs,
+										info		=info)))
+			else:
+				await session.close()
+				raise Exception('Error in "'+self.name+'" search plugin, download_torrent()')
+		await session.close()
+		return None
 
-	def search(self,what,cat='all'):
+	async def search(self,what,cat='all'):
+		session = AsyncThreadSafeSession()  # Usa il client asincrono
 		prettyPrinter.clear()
 		what = quote(what)
 		x=[]
+		# TODO: leggere il numero di pagine e fare una chiamata asincrona per ogni pagina
 		for category in self.supported_categories[cat]:
 			url=self.query.format(self=self,what=what,category=category)
 			# fix risulati nulli
-			result = retrieve_url(url)
-			if type(result) is str and len(result) > 0:
+			result = await session.retrieve_url(url)
+			if result is not None and type(result) is str and len(result) > 0:
 				parse = json.loads(result)
 				if type(parse) is list and len(parse) > 0:
 					if parse[0]['name'] != "No results returned" and parse[0]['info_hash'] != "0000000000000000000000000000000000000000":
 						x+=json.loads(result)
 		self.parseJSON(x)
+		await session.close()
 		return prettyPrinter.get()
 
 	def parseJSON(self,collection):

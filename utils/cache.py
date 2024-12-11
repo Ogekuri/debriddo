@@ -87,6 +87,9 @@ def search_cache(config, media):
                 logger.info("Searchching for " + media.type + " '" + title + "' @<cache>")
 
                 cache_search = dict()
+                
+                cache_search['media_id'] = media.id
+
                 cache_search['title'] = title
                 cache_search['language'] = language
 
@@ -98,11 +101,10 @@ def search_cache(config, media):
 
                 try:
                     # Costruisci la query di filtro in base a `cache_search`
-                    filters = ["title = :title", "language = :language"]
                     if media.type == "movie":
-                        filters.append("year = :year")
+                        filters = [ "( (media_id = :media_id) OR (title = :title AND language = :language AND year = :year) )" ]
                     elif media.type == "series":
-                        filters.append("((season_first <= :season AND season_last >= :season  AND episode_first <= :episode AND episode_last >= :episode AND seasonfile = False) OR (season_first <= :season AND season_last >= :season AND seasonfile = True))")
+                        filters = [ "( (media_id = :media_id) OR (title = :title AND language = :language AND ((season_first <= :season AND season_last >= :season  AND episode_first <= :episode AND episode_last >= :episode AND seasonfile = False) OR (season_first <= :season AND season_last >= :season AND seasonfile = True))) )" ]
 
                     # Genera la query dinamica
                     query = f"SELECT * FROM {TABLE_NAME} WHERE " + " AND ".join(filters)
@@ -126,7 +128,7 @@ def search_cache(config, media):
                         cache_item['torrent_availability'] = bool(cache_item['torrent_availability'])
                         cache_items.append(cache_item)
 
-                    logger.debug(f"{len(cache_items)} record found on cache database table:'{TABLE_NAME}'.")
+                    logger.info(f"{len(cache_items)} record found on cache database table:'{TABLE_NAME}'.")
                 except sqlite3.Error as e:
                     logger.error(f"SQL error: {e}")
                 

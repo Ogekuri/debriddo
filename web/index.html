@@ -34,15 +34,22 @@
                     <fieldset>
                         <legend class="legend">Sito web</legend>
                         <p><input type="checkbox" id="thepiratebay" checked><img class="iconstyle" src="images/thepiratebay.png" alt="The Pirate Bay">The Pirate Bay (<a href="https://thepiratebay.org/" class="web-link" target="_blank">https://thepiratebay.org/</a>)</p>
-                        <p><input type="checkbox" id="one337x" checked><img class="iconstyle" src="images/1337x.png" alt="1337x">1337x (<a href="https://1337xto.to/" class="web-link" target="_blank">https://1337xto.to/</a>)</p>
+                        <p><input type="checkbox" id="one337x" checked><img class="iconstyle" src="images/1337x.png" alt="1337x">1337x (<a href="https://1337xto.to/" class="web-link" target="_blank">https://1337xto.to/</a>)  <i>{lento}</i></p>
                         <p><input type="checkbox" id="limetorrents" checked><img class="iconstyle" src="images/limetorrents.png" alt="LimeTorrents">LimeTorrents (<a href="https://www.limetorrents.lol/" class="web-link" target="_blank">https://www.limetorrents.lol/</a>)</p>
                         <p><input type="checkbox" id="torrentproject" checked><img class="iconstyle" src="images/torrentproject.png" alt="Torrent Project">Torrent Project (<a href="https://torrentproject2.net/" class="web-link" target="_blank">https://torrentproject2.net/</a>)</p>
                         <p><input type="checkbox" id="torrentz" checked><img class="iconstyle" src="images/torrentz.png" alt="Torrentz">Torrentz (<a href="https://torrentz2.nz/" class="web-link" target="_blank">https://torrentz2.nz/</a>)</p>
-                        <p><input type="checkbox" id="torrentgalaxy" checked><img class="iconstyle" src="images/torrentgalaxy.png" alt="TorrentGalaxy">Torrent Galaxy (<a href="https://torrentgalaxy.to/" class="web-link" target="_blank">https://torrentgalaxy.to/</a>)</p>
+                        <p><input type="checkbox" id="torrentgalaxy" checked><img class="iconstyle" src="images/torrentgalaxy.png" alt="TorrentGalaxy">Torrent Galaxy (<a href="https://torrentgalaxy.one/" class="web-link" target="_blank">https://torrentgalaxy.to/</a>)</p>
                         <p><input type="checkbox" id="therarbg" checked><img class="iconstyle" src="images/therarbg.png" alt="The RarGb">The RarGb (<a href="https://therarbg.to/" class="web-link" target="_blank">https://therarbg.to/</a>)</p>
-                        <p><input type="checkbox" id="ilcorsaronero" checked><img class="iconstyle" src="images/ilcorsaronero.png" alt="Il Corsaro Nero">Il Corsaro Nero (<a href="https://ilcorsaronero.link/" class="web-link" target="_blank">https://ilcorsaronero.link/</a>) <b>[LENTO]</b></p>
-                        <p><input type="checkbox" id="ilcorsaroblu" checked><img class="iconstyle" src="images/ilcorsaroblu.png" alt="Il Corsaro Nero">Il Corsaro Blu (<a href="https://ilcorsaroblu.org/" class="web-link" target="_blank">https://ilcorsaroblu.org/</a>) <b>[NON FUNZIONANTE]</b></p>
+                        <p><input type="checkbox" id="ilcorsaronero" checked><img class="iconstyle" src="images/ilcorsaronero.png" alt="Il Corsaro Nero">Il Corsaro Nero (<a href="https://ilcorsaronero.link/" class="web-link" target="_blank">https://ilcorsaronero.link/</a>) <i>{molto lento}</i></p>
+                        <p><input type="checkbox" id="ilcorsaroblu" checked><img class="iconstyle" src="images/ilcorsaroblu.png" alt="Il Corsaro Nero">Il Corsaro Blu (<a href="https://ilcorsaroblu.org/" class="web-link" target="_blank">https://ilcorsaroblu.org/</a>) <i>{molto lento}</i></p>
                     </fieldset>
+                </div>
+                <div class="internal-content">
+                    <p><b>Credenziali accesso a Il Corsaro Blu</b></p>
+                    <p>Username</p>
+                    <p><input type="text" name="ilcorsaroblu-uid" id="ilcorsaroblu-uid" autocomplete="off" placeholder="">
+                    <p>Password</p>
+                    <p><input type="text" name="ilcorsaroblu-pwd" id="ilcorsaroblu-pwd" autocomplete="off" placeholder="">
                 </div>
             </div>
 
@@ -55,7 +62,7 @@
                 </div>
                 <div class="internal-content">
                     <p>Numero minimo di risultati</p>
-                    <p><input type="text" name="minCacheResults" id="minCacheResults" autocomplete="off" placeholder="3">
+                    <p><input type="text" name="minCacheResults" id="minCacheResults" autocomplete="off" placeholder="10">
                 </div>
                 <div class="internal-content">
                     <p>Durata dei dati in cache in giorni</p>
@@ -199,6 +206,7 @@
         </div>
     </form>
 </div>
+<script src="lz-string.min.js"></script>
 <script src="config.js"></script>
 </body>
 </html>

@@ -3,6 +3,15 @@ Elenco modifiche introdotti in Debriddo.
 
 Il formato è basato su on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) ed aderisce a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.25](https://github.com/Ogekuri/debriddo/compare/v0.0.24...v0.0.25) (2024-11-06)
+
+- Modificato real-debird per le funzioni HTTP/2 asincrone
+- Ricodificata la configurazione con lzstring
+- Implementato il supporto per HTTP/2 e le chiamate asincrone in helper
+- Rivisto il multi-thread per funzionare con le chiamate asincrone
+- Aggiornati nuovamente la procedura di aggiornamento.
+- Implementato il ri-dimensionamento dei thread.
+
 ## [v0.0.24](https://github.com/Ogekuri/debriddo/compare/v0.0.23...v0.0.24) (2024-11-06)
 
 - Modifica procedura aggiornamento automatico del software.

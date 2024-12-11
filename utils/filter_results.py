@@ -1,5 +1,6 @@
+import re
+
 from RTN import title_match, RTN, DefaultRanking, SettingsModel, sort_torrents
-from RTN.models import CustomRank
 from RTN.exceptions import GarbageTorrent
 from utils.filter.language_filter import LanguageFilter
 from utils.filter.max_size_filter import MaxSizeFilter
@@ -114,6 +115,15 @@ def filter_out_non_matching(items, season, episode):
         numeric_season = int(clean_season)
         numeric_episode = int(clean_episode)
         try:
+            # fix brutto per i deficienti (Stagione 1 / Stagione 01 / Season 1 / Season 01)
+            pattern = re.compile(r'stagione\s0?' + str(numeric_season), re.IGNORECASE)
+            if pattern.search(item.raw_title):
+                filtered_items.append(item)
+                continue
+            pattern = re.compile(r'season\s0?' + str(numeric_season), re.IGNORECASE)
+            if pattern.search(item.raw_title):
+                filtered_items.append(item)
+                continue
             if len(item.parsed_data.seasons) == 0 and len(item.parsed_data.episodes) == 0:
                 continue
             # torrent con stagione completa (manca l'E??)
@@ -130,10 +140,12 @@ def filter_out_non_matching(items, season, episode):
 
 def remove_non_matching_title(items, titles):
     logger.debug(f"Filtering by title: {titles}")
+    # default: threshold: float = 0.85
+    threshold = float(0.5)
     filtered_items = []
     for item in items:
         for title in titles:
-            if not title_match(title, item.parsed_data.parsed_title):
+            if not title_match(title, item.parsed_data.parsed_title, threshold):
                 continue
 
             filtered_items.append(item)

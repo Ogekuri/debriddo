@@ -6,17 +6,20 @@
 import re
 import math
 import time
-import threading
 from urllib.parse import quote_plus
-from helpers import retrieve_url
 from utils.logger import setup_logger
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 from html.parser import HTMLParser
+import asyncio
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
 
-class torrentgalaxy(object):
-    url = 'https://torrentgalaxy.to'
+SITE_URL = "https://torrentgalaxy.to/"
+
+class torrentgalaxy(BasePlugin):
+    url = SITE_URL
     name = "TorrentGalaxy"
     supported_categories = {
         'all': '',
@@ -29,14 +32,14 @@ class torrentgalaxy(object):
         'pictures': 'c37=1&',
         'books': 'c13=1&c19=1&c12=1&c14=1&c15=1&',
     }
-    logger = setup_logger(__name__)
+
 
     class TorrentGalaxyParser(HTMLParser):
         DIV, A, SPAN, FONT, SMALL, = 'div', 'a', 'span', 'font', 'small'
         count_div, = -1,
         get_size, get_seeds, get_leechs, get_pub_date0, get_pub_date = False, False, False, False, False
         this_record = {}
-        url = 'https://torrentgalaxy.to'
+        url = SITE_URL
 
         def handle_starttag(self, tag, attrs):
             if tag == self.DIV:
@@ -94,38 +97,39 @@ class torrentgalaxy(object):
                 self.this_record['pub_date'] = str(int(time.mktime(time.strptime(data.strip(),"%d/%m/%y %H:%M"))))
                 self.get_pub_date, self.get_pub_date0 = False, False
 
-    def do_search(self, url):
-        webpage = retrieve_url(url)
-        tgParser = self.TorrentGalaxyParser()
-        tgParser.feed(webpage)
+    async def do_search(self, session, url):
+        webpage = await session.retrieve_url(url)
+        if webpage is not None:
+            tgParser = self.TorrentGalaxyParser()
+            tgParser.feed(webpage)
 
-    def search(self, what, cat='all'):
+    async def search(self, what, cat='all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         query = quote_plus(what)
-        search_url = 'https://torrentgalaxy.to/torrents.php?'
+        search_url = SITE_URL + 'torrents.php?'
         full_url = \
             search_url + \
             self.supported_categories[cat.lower()] + \
             'sort=seeders&order=desc&search=' + \
             query
-        webpage = retrieve_url(full_url)
-        tgParser = self.TorrentGalaxyParser()
-        tgParser.feed(webpage)
-
-        all_results_re = re.compile(r'steelblue[^>]+>(.*?)<')
-        all_results = all_results_re.findall(webpage)[0]
-        all_results = all_results.replace(' ', '')
-        pages = math.ceil(int(all_results) / 50)
-        threads = []
-        for page in range(1, pages):
-            this_url = full_url + '&page=' + str(page)
-            t = threading.Thread(args=(this_url,), target=self.do_search)
-            threads.append(t)
-            t.start()
-            # self.do_search(this_url)
         
-        for thread in threads:
-            thread.join()
+        webpage = await session.retrieve_url(full_url)
+        if webpage is not None:
+            tgParser = self.TorrentGalaxyParser()
+            tgParser.feed(webpage)
+            all_results_re = re.compile(r'steelblue[^>]+>(.*?)<')
+            if all_results_re is not None and type(all_results_re) is list and len(all_results_re) > 0:
+                all_results = all_results_re.findall(webpage)[0]
+                all_results = all_results.replace(' ', '')
+                pages = math.ceil(int(all_results) / 50)
+                
+                this_urls = [ full_url + '&page=' + str(page) for page in range(0, pages)]
+                # TODO: run in multi-thread?
+                tasks = [self.do_search(session, this_url) for this_url in this_urls] 
+                await asyncio.gather(*tasks)
+        
+        await session.close()
         return prettyPrinter.get()
 
 if __name__ == '__main__':

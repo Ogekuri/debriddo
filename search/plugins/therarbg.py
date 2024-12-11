@@ -23,14 +23,14 @@
 import re
 from urllib.parse import quote
 from html.parser import HTMLParser
-import time
-import threading
-from helpers import download_file, retrieve_url
 from utils.logger import setup_logger
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
-class therarbg(object):
+
+class therarbg(BasePlugin):
     url = 'https://therarbg.com'
     name = 'The RarBg'
     supported_categories = {
@@ -42,8 +42,7 @@ class therarbg(object):
         'anime':'Anime', 
         'software':'Apps'
         }
-    logger = setup_logger(__name__)
-    
+        
     next_page_regex = r'<a.*?>»<\/a>'
     title_regex = r'<title>Search for.*<\/title>'
     has_next_page = True
@@ -103,7 +102,7 @@ class therarbg(object):
                     href = params.get('href')
                     link = f'{self.url}{href}'
                     self.row['desc_link'] = link
-                    # torrent_page = retrieve_url(link)
+                    # torrent_page = await session.retrieve_url(link)
                     # matches = re.finditer(self.magnet_regex, torrent_page, re.MULTILINE)
                     # magnet_urls = [x.group() for x in matches]
                     # self.row['link'] = magnet_urls[0].split('"')[1]
@@ -156,14 +155,18 @@ class therarbg(object):
                 self.alreadyParseName = False
 
 
-    def download_torrent(self, info):
+    async def download_torrent(self, info):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         try:
-            torrent_page = retrieve_url(info)
-            matches = re.finditer(self.magnet_regex, torrent_page, re.MULTILINE)
-            magnet_urls = [x.group() for x in matches]
-            return str(magnet_urls[0].split('"')[1])
+            torrent_page = await session.retrieve_url(info)
+            if torrent_page is not None:
+                matches = re.finditer(self.magnet_regex, torrent_page, re.MULTILINE)
+                magnet_urls = [x.group() for x in matches]
+                await session.close()
+                return str(magnet_urls[0].split('"')[1])
         except Exception:
             pass
+        await session.close()
         return None
 
     def getPageUrl(self, what, cat, page):
@@ -172,39 +175,32 @@ class therarbg(object):
         else:
             return f'{self.url}/get-posts/order:-se:keywords:{what}/?page={page}'
 
-    def threaded_search(self, page, what, cat):
+    async def page_search(self, session, page, what, cat):
         page_url = self.getPageUrl(what, cat, page)
-        retrievedHtml = retrieve_url(page_url)
-        next_page_matches = re.finditer(self.next_page_regex, retrievedHtml, re.MULTILINE)
-        title_matches = re.finditer(self.title_regex, retrievedHtml, re.MULTILINE)
-        is_result_page = [x.group() for x in title_matches]
-        next_page = [x.group() for x in next_page_matches]
-        if len(next_page) == 0:
-            self.has_next_page = False
-        if is_result_page:
-            parser = self.MyHtmlParser(self.url)
-            parser.feed(retrievedHtml)
-            parser.close()
+        retrievedHtml = await session.retrieve_url(page_url)
+        if retrievedHtml is not None:
+            next_page_matches = re.finditer(self.next_page_regex, retrievedHtml, re.MULTILINE)
+            title_matches = re.finditer(self.title_regex, retrievedHtml, re.MULTILINE)
+            is_result_page = [x.group() for x in title_matches]
+            next_page = [x.group() for x in next_page_matches]
+            if len(next_page) == 0:
+                self.has_next_page = False
+            if is_result_page:
+                parser = self.MyHtmlParser(self.url)
+                parser.feed(retrievedHtml)
+                parser.close()
 
-    def search(self, what, cat = 'all'):
+    async def search(self, what, cat = 'all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         what= quote(what)
         page = 1
         search_category = self.supported_categories[cat]
 
-        # non funziona sta cagata
-        # threads = []
-        # while self.has_next_page:
-        #     t = threading.Thread(args=(page, what, search_category), target=self.threaded_search)
-        #     t.start()
-        #     time.sleep(0.5)
-        #     threads.append(t)
-        #     page += 1
-        # for t in threads:
-        #     t.join()
-
+        # TODO: leggere prima il numero di pagine e poi mandare le richieste in modo asincrono
         while self.has_next_page:
-            self.threaded_search(page, what, search_category)
+            await self.page_search(session, page, what, search_category)
             page += 1
 
+        await session.close()
         return prettyPrinter.get()

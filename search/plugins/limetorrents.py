@@ -7,16 +7,17 @@ from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from urllib.parse import quote
 from utils.logger import setup_logger
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
-from helpers import retrieve_url
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
 # Fix invalid certificate in Windows
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-class limetorrents(object):
+class limetorrents(BasePlugin):
     url = "https://www.limetorrents.lol"
     name = "LimeTorrents"
     supported_categories = {'all': 'all',
@@ -26,8 +27,8 @@ class limetorrents(object):
                             'movies': 'movies',
                             'music': 'music',
                             'tv': 'tv'}
-    logger = setup_logger(__name__)
-
+    
+    
     class MyHtmlParser(HTMLParser):
         """ Sub-class for parsing results """
 
@@ -116,30 +117,40 @@ class limetorrents(object):
                     prettyPrinter(self.current_item)
                     self.page_items += 1
 
-    def download_torrent(self, info):
+
+    async def download_torrent(self, info):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         # since limetorrents provides torrent links in itorrent (cloudflare protected),
         # we have to fetch the info page and extract the magnet link
-        info_page = retrieve_url(info)
-        magnet_match = re.search(r"href\s*\=\s*\"(magnet[^\"]+)\"", info_page)
-        if magnet_match and magnet_match.groups():
-            return(str(magnet_match.groups()[0] + " " + info))
-        else:
-            raise Exception('Error, please fill a bug report!')
+        info_page = await session.retrieve_url(info)
+        if info_page is not None:
+            magnet_match = re.search(r"href\s*\=\s*\"(magnet[^\"]+)\"", info_page)
+            if magnet_match and magnet_match.groups():
+                await session.close()
+                return(str(magnet_match.groups()[0] + " " + info))
+            else:
+                await session.close()
+                raise Exception('Error, please fill a bug report!')
+        await session.close()
         return None
 
-    def search(self, query, cat='all'):
+    async def search(self, query, cat='all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         # """ Performs search """
         prettyPrinter.clear()
         query = quote(query)
         query = query.replace("%20", "-")
         category = self.supported_categories[cat]
-
+        
+        # TODO: leggere il numero di pagine e fare una chiamata asincrona per ogni pagina
         for page in range(1, 5):
             page_url = f"{self.url}/search/{category}/{query}/seeds/{page}/"
-            html = retrieve_url(page_url)
-            parser = self.MyHtmlParser(self.url)
-            parser.feed(html)
-            parser.close()
-            if parser.page_items < 20:
-                break
+            html = await session.retrieve_url(page_url)
+            if html is not None:
+                parser = self.MyHtmlParser(self.url)
+                parser.feed(html)
+                parser.close()
+                if parser.page_items < 20:
+                    break
+        await session.close()
         return prettyPrinter.get()

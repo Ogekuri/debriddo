@@ -24,12 +24,12 @@ import re
 from urllib.parse import quote_plus
 from html.parser import HTMLParser
 from utils.logger import setup_logger
-from helpers import download_file, retrieve_url
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
-
-class one337x(object):
+class one337x(BasePlugin):
     url = 'https://1337x.to'
     name = '1337x'
     supported_categories = {
@@ -41,7 +41,7 @@ class one337x(object):
         'music': 'Music',
         'tv': 'TV',
     }
-    logger = setup_logger(__name__)
+
 
     class MyHtmlParser(HTMLParser):
 
@@ -90,11 +90,15 @@ class one337x(object):
                 link = params[self.HREF]
                 if link.startswith('/torrent/'):
                     link = f'{self.url}{link}'
-                    torrent_page = retrieve_url(link)
-                    magnet_regex = r'href="magnet:.*"'
-                    matches = re.finditer(magnet_regex, torrent_page, re.MULTILINE)
-                    magnet_urls = [x.group() for x in matches]
-                    self.row['link'] = magnet_urls[0].split('"')[1]
+                # fix non scarico subito il file
+                #     torrent_page = retrieve_url(link)
+                #     magnet_regex = r'href="magnet:.*"'
+                #     matches = re.finditer(magnet_regex, torrent_page, re.MULTILINE)
+                #     magnet_urls = [x.group() for x in matches]
+                #     self.row['link'] = magnet_urls[0].split('"')[1]
+                #     self.row['engine_url'] = self.url
+                #     self.row['desc_link'] = link
+                    self.row['link'] = link
                     self.row['engine_url'] = self.url
                     self.row['desc_link'] = link
 
@@ -116,22 +120,38 @@ class one337x(object):
                 prettyPrinter(self.row)
                 self.row = {}
 
-    def download_torrent(self, info):
-        return(str(download_file(info)))
+    async def download_torrent(self, info):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
+        # fix le info dopo
+        torrent_page = await session.retrieve_url(info)
+        if torrent_page is not None:
+            magnet_regex = r'href="magnet:.*"'
+            matches = re.finditer(magnet_regex, torrent_page, re.MULTILINE)
+            if matches is not None:
+                magnet_urls = [x.group() for x in matches]
+                magnet = magnet_urls[0].split('"')[1]
+                await session.close()
+                return(str(magnet))
+        await session.close()
+        return None
 
-    def search(self, what, cat='all'):
+    async def search(self, what, cat='all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         parser = self.MyHtmlParser(self.url)
         what = quote_plus(what)
         category = self.supported_categories[cat]
         page = 1
+        # TODO: leggere il numero di pagine e fare una chiamata asincrona per ogni pagina
         while True:
             page_url = f'{self.url}/category-search/{what}/{category}/{page}/' if category else f'{self.url}/search/{what}/{page}/'
-            html = retrieve_url(page_url)
-            parser.feed(html)
-            if html.find('<li class="last">') == -1:
-                # exists on every page but the last
-                break
-            page += 1
+            html = await session.retrieve_url(page_url)
+            if html is not None:
+                parser.feed(html)
+                if html.find('<li class="last">') == -1:
+                    # exists on every page but the last
+                    break
+                page += 1
         parser.close()
+        await session.close()
         return prettyPrinter.get()

@@ -1,13 +1,12 @@
-import threading
 from typing import List, Dict
-
-from RTN import parse
 
 from debrid.alldebrid import AllDebrid
 from debrid.premiumize import Premiumize
 from debrid.realdebrid import RealDebrid
 from debrid.torbox import TorBox
+
 from torrent.torrent_item import TorrentItem
+
 from utils.cache import cache_results
 from utils.general import season_episode_in_filename
 from utils.logger import setup_logger

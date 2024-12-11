@@ -58,7 +58,7 @@ class SearchResult:
             self.seeders,
             self.languages,
             self.indexer,       # ilCorSaRoNeRo
-            self.engine_name,   # ilcorsaronero
+            self.engine_name,   # ilcorsaronero (tutto minuscolo)
             self.privacy,
             self.type,
             self.parsed_data,

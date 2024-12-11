@@ -15,14 +15,12 @@ source ${VENVDIR}/bin/activate
 
 now=$(date '+%Y-%m-%d_%H-%M-%S')
 
-mv requirements.txt requirements_${now}.txt
-
 #
 # Only local packages on virtual environment
-#  pip freeze -l > requirements.txt # or --local instead of -l
+#  pip freeze -l > pip-freeze.txt # or --local instead of -l
 #
 # Only local packages installed by the user on virtual environment
-#  pip freeze --user > requirements.txt
+#  pip freeze --user > pip-freeze.txt
 #
 
-${VENVDIR}/bin/pip3 freeze --local > requirements.txt
+${VENVDIR}/bin/pip3 freeze --local > pip-freeze.txt

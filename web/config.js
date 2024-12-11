@@ -17,9 +17,16 @@ function setElementDisplay(elementId, displayStatus) {
 function loadData() {
     const currentUrl = window.location.href;
     let data = currentUrl.match(/\/([^\/]+)\/configure$/);
-    if (data && data[1].startsWith("ey")) {
-        data = atob(data[1]);
-        data = JSON.parse(data);
+    // vecchia codifica con atob/btoa
+    // if (data && data[1].startsWith("ey")) {
+    //     data = atob(data[1]);
+    //     data = JSON.parse(data);
+    if (data && data[1].startsWith("C_")) {
+        // Nuovo formato compresso (con LZString ad esempio)
+        const compressedData = data[1].substring(2);
+        const decompressed = LZString.decompressFromEncodedURIComponent(compressedData);
+        data = JSON.parse(decompressed);
+
         document.getElementById('debrid-api').value = data.debridKey;
         document.getElementById('tmdb-api').value = data.tmdbApi;
         document.getElementById('exclusion-keywords').value = (data.exclusionKeywords || []).join(', ');
@@ -34,6 +41,8 @@ function loadData() {
         document.getElementById('debrid').checked = data.debrid;
         document.getElementById('tmdb').checked = data.metadataProvider === 'tmdb';
         document.getElementById('cinemeta').checked = data.metadataProvider === 'cinemeta';
+        document.getElementById('ilcorsaroblu-uid').value = data.ilcorsarobluUid;
+        document.getElementById('ilcorsaroblu-pwd').value = data.ilcorsarobluPwd;
 
         services.forEach(serv => {
             if (data.service === serv) {
@@ -83,6 +92,8 @@ function getLink(method) {
     let maxResults = document.getElementById('maxResults').value;
     let minCacheResults = document.getElementById('minCacheResults').value;
     let daysCacheValid = document.getElementById('daysCacheValid').value;
+    const ilcorsarobluUid = document.getElementById('ilcorsaroblu-uid').value;
+    const ilcorsarobluPwd = document.getElementById('ilcorsaroblu-pwd').value;
     const cache = document.getElementById('cache')?.checked;
     const playtorrent = document.getElementById('playtorrent')?.checked;
     const search = document.getElementById('search')?.checked;
@@ -131,7 +142,7 @@ function getLink(method) {
         maxResults = 30;
     }
     if (minCacheResults === '' || isNaN(minCacheResults)) {
-        minCacheResults = 3;
+        minCacheResults = 10;
     }
     if (daysCacheValid === '' || isNaN(daysCacheValid)) {
         daysCacheValid = 30;
@@ -139,6 +150,7 @@ function getLink(method) {
     if (resultsPerQuality === '' || isNaN(resultsPerQuality)) {
         resultsPerQuality = 10;
     }
+    
     let data = {
         addonHost,
         service,
@@ -152,6 +164,8 @@ function getLink(method) {
         maxResults,
         minCacheResults,
         daysCacheValid,
+        'ilcorsarobluUid': ilcorsarobluUid,
+        'ilcorsarobluPwd': ilcorsarobluPwd,
         'exclusion': selectedQualityExclusion,
         tmdbApi,
         cache,
@@ -165,8 +179,14 @@ function getLink(method) {
         alert('Please fill all required fields');
         return false;
     }
-    let stremio_link = `${window.location.host}/${btoa(JSON.stringify(data))}/manifest.json`;
-    let config_link = `${window.location.host}/${btoa(JSON.stringify(data))}/configure`;
+    
+    // let stremio_link = `${window.location.host}/${btoa(JSON.stringify(data))}/manifest.json`;
+    // let config_link = `${window.location.host}/${btoa(JSON.stringify(data))}/configure`;
+
+    // codifica compressa al posto del btoa
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+    let stremio_link = `${window.location.host}/C_${compressed}/manifest.json`;
+    let config_link = `${window.location.host}/C_${compressed}/configure`;
 
     if (method === 'link') {
         window.open(`stremio://${stremio_link}`, "_blank");

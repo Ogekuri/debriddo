@@ -37,7 +37,6 @@
 #     with open(1, 'w', encoding='utf-8', closefd=False) as utf8stdout:
 #         print(outtext, file=utf8stdout)
 
-import json
 from utils.logger import setup_logger
 
 class PrettyPrint:

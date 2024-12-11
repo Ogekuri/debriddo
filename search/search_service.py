@@ -1,14 +1,7 @@
-import sys
-# serve per helpers.py e novaprinter.py che voglio tenere in quel percorso
-sys.path.append("search/plugins/")
-
-import os
-import queue
-import threading
 import time
 import xml.etree.ElementTree as ET
 
-import requests
+import asyncio
 
 from search.search_indexer import SearchIndexer
 from search.search_result import SearchResult
@@ -18,16 +11,10 @@ from utils.detection import detect_languages
 from utils.logger import setup_logger
 from utils.string_encoding import normalize
 
-import os
-import queue
-import threading
 import time
 import xml.etree.ElementTree as ET
 
-import requests
 from RTN import parse
-
-
 
 from search.plugins.thepiratebay_categories import thepiratebay
 from search.plugins.one337x import one337x
@@ -35,26 +22,28 @@ from search.plugins.limetorrents import limetorrents
 from search.plugins.torrentproject import torrentproject
 from search.plugins.ilcorsaronero import ilcorsaronero
 from search.plugins.torrentz import torrentz
-from search.plugins.torrentgalaxy import torrentgalaxy
+# from search.plugins.torrentgalaxyto import torrentgalaxy
+from search.plugins.torrentgalaxyone import torrentgalaxy
 from search.plugins.therarbg import therarbg
+from search.plugins.ilcorsaroblu import ilcorsaroblu
 
-from urllib.parse import quote_plus
-import io
-from contextlib import redirect_stdout
-import json
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor
 
-# define if it's run in multi-thread - False for debug
-MULTI_THREAD = True
+from itertools import chain
+from utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
+
+
+
+
+
 
 class SearchService:
     def __init__(self, config):
+        self.__config = config
+
         self.logger = setup_logger(__name__)
 
-        self.__search = config['search']
-        self.__engines = config['engines']
-        self.__session = requests.Session()
         self.__language_tags = {
             'en':'ENG', 
             'fr':'FRA', 
@@ -71,89 +60,53 @@ class SearchService:
             }
         self.__default_lang_tag = self.__language_tags['en']
 
+  
 
-    def search(self, media):
+    async def search(self, media):
         self.logger.debug("Started Search search for " + media.type + " " + media.titles[0])
 
         indexers = self.__get_indexers()
-        for indexer in indexers:
-            self.logger.info("Searchching for " + media.type + " '" + media.titles[0] + "' @" + indexer.engine_name)
 
-        threads = []
-        results_queue = queue.Queue()  # Create a Queue instance to hold the results
+        if isinstance(media, Movie):
+            if MULTI_THREAD:
+                loop = asyncio.get_event_loop()
 
-        if MULTI_THREAD:
-            if isinstance(media, Movie):
-                with ThreadPoolExecutor() as executor:
-                    futures = [executor.submit(self.__search_movie_indexer, media, indexer) for indexer in indexers]
-                    if futures is not None and type(futures) is list and len(futures) > 0:
-                        for future in futures:
-                            result = future.result() # Raccoglie il risultato
-                            if result is not None:
-                                results_queue.put(result)
-            elif isinstance(media, Series):
-                with ThreadPoolExecutor() as executor:
-                    futures = [executor.submit(self.__search_series_indexer, media, indexer) for indexer in indexers]
-                    if futures is not None and type(futures) is list and len(futures) > 0:
-                        for future in futures:
-                            result = future.result() # Raccoglie il risultato
-                            if result is not None:
-                                results_queue.put(result)
-        else:
-            if isinstance(media, Movie):
-                for indexer in indexers:
-                    result = self.__search_movie_indexer(media, indexer)
-                    if result is not None:
-                        results_queue.put(result)  # Put the result in the queue
-            elif isinstance(media, Series):
-                for indexer in indexers:
-                    result = self.__search_series_indexer(media, indexer)
-                    if result is not None:
-                        results_queue.put(result)  # Put the result in the queue
+                # Invece di eseguire le coroutine direttamente sul loop principale,
+                # le "incapsuliamo" in run_in_executor, cosi ciascuna gira in un proprio thread/loop
+                tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__search_movie_indexer(media, indexer)) for indexer in indexers.values()]
+                
+                # Ora attendiamo i risultati. Il loop principale non si bloccherà,
+                # perché quel codice gira in un thread separato.
+                tasks_results = await asyncio.gather(*tasks)
+            else:
+                tasks = [self.__search_movie_indexer(media, indexer) for indexer in indexers.values()] 
+                tasks_results = await asyncio.gather(*tasks)
+        elif isinstance(media, Series):
+            if MULTI_THREAD:
+                loop = asyncio.get_event_loop()
+                tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__search_series_indexer(media, indexer)) for indexer in indexers.values()]
+                tasks_results = await asyncio.gather(*tasks)
+            else:
+                tasks = [self.__search_series_indexer(media, indexer) for indexer in indexers.values()] 
+                tasks_results = await asyncio.gather(*tasks)
 
-        # Retrieve results from the queue and append them to the results list
-        search_results = []
-        while not results_queue.empty():
-            search_results.extend(results_queue.get())
-        # flatten_results = [result for sublist in results for result in sublist]       
-        # del threads, results_queue, results
-        del threads, results_queue
+        # concatena i risultati
+        search_results = list(chain.from_iterable(tasks_results))
+
 
         start_time = time.time()
         if search_results is not None and len(search_results) > 0:
             # spost process result ############################################
             self.logger.debug("Post process " + str(len(search_results)) + " results")
 
-            threads = []
-            results_queue = queue.Queue()  # Create a Queue instance to hold the results
-
             if MULTI_THREAD:
-                # Define a wrapper function that calls the actual target function and stores its return value in the queue
-                def thread_target(result, media):
-                    # Call the actual function
-                    res = self.__post_process_result(result, media)
-                    if res is not None:
-                        results_queue.put(res)  # Put the result in the queue
-
-                for result in search_results:
-                    # Pass the wrapper function as the target to Thread, with necessary arguments
-                    threads.append(threading.Thread(target=thread_target, args=(result, media)))
-
-                for thread in threads:
-                    thread.start()
-
-                for thread in threads:
-                    thread.join()
+                loop = asyncio.get_event_loop()
+                tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__post_process_result(indexers, result, media)) for result in search_results]
+                results = await asyncio.gather(*tasks)
             else:
-                for result in search_results:
-                    res = self.__post_process_result(result, media)
-                    if res is not None:
-                        results_queue.put(res)  # Put the result in the queue
+                tasks = [self.__post_process_result(indexers, result, media) for result in search_results] 
+                results = await asyncio.gather(*tasks)
 
-            # Retrieve results from the queue and append them to the results list
-            results = []
-            while not results_queue.empty():
-                results.append(results_queue.get()) # ogni processo ritorna un singolo SearchResult() e non un lista
         else:
             results = None
 
@@ -167,21 +120,23 @@ class SearchService:
 
     def __get_engine(self, engine_name):
         if engine_name == 'thepiratebay':
-            return thepiratebay()
+            return thepiratebay(self.__config)
         elif engine_name == 'one337x':
-            return one337x()
+            return one337x(self.__config)
         elif engine_name == 'limetorrents':
-            return limetorrents()
+            return limetorrents(self.__config)
         elif engine_name == 'torrentproject':
-            return torrentproject()
+            return torrentproject(self.__config)
         elif engine_name == 'torrentz':
-            return torrentz()
+            return torrentz(self.__config)
         elif engine_name == 'torrentgalaxy':
-            return torrentgalaxy()
+            return torrentgalaxy(self.__config)
         elif engine_name == 'therarbg':
-            return therarbg()
+            return therarbg(self.__config)
         elif engine_name == 'ilcorsaronero':
-            return ilcorsaronero()
+            return ilcorsaronero(self.__config)
+        elif engine_name == 'ilcorsaroblu':
+            return ilcorsaroblu(self.__config)
         else:
             raise ValueError(f"Torrent Search '{engine_name}' not supported")
 
@@ -201,13 +156,15 @@ class SearchService:
                 return "any"
             elif engine_name == 'therarbg':
                 return "any"
+            elif engine_name == 'ilcorsaroblu':
+                return "it"
             elif engine_name == 'ilcorsaronero':
                 return "it"
             else:
                 raise ValueError(f"Torrent Search '{engine_name}' not supported")
     
 
-    def __search_movie_indexer(self, movie, indexer):
+    async def __search_movie_indexer(self, movie, indexer):
         # get titles and languages
         if indexer.language == "any":
             languages = movie.languages
@@ -231,7 +188,7 @@ class SearchService:
                     search_string = str(title + ' ' + movie.year)   # no language tag for native language indexer
                 search_string = normalize(search_string)
                 category = str(indexer.movie_search_capatabilities)
-                list_of_dicts = indexer.engine.search(search_string, category)
+                list_of_dicts = await indexer.engine.search(search_string, category)
                 if list_of_dicts is not None and len(list_of_dicts) > 0:
                     torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
                     if torrents is not None and type(torrents) is list and len(torrents) >0:
@@ -243,7 +200,7 @@ class SearchService:
                         search_string = str(title)   # no language tag for native language indexer
                     search_string = normalize(search_string)
                     category = str(indexer.movie_search_capatabilities)
-                    list_of_dicts = indexer.engine.search(search_string, category)
+                    list_of_dicts = await indexer.engine.search(search_string, category)
                     if list_of_dicts is not None and len(list_of_dicts) > 0:
                         torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
                         if torrents is not None and type(torrents) is list and len(torrents) >0:
@@ -264,7 +221,7 @@ class SearchService:
         return results
     
 
-    def __search_series_indexer(self, series, indexer):
+    async def __search_series_indexer(self, series, indexer):
         # get titles and languages
         if indexer.language == "any":
             languages = series.languages
@@ -307,7 +264,7 @@ class SearchService:
                     search_string = str(title + ' ' + series.season)   # no language tag for native language indexer
                 search_string = normalize(search_string)
                 category = str(indexer.tv_search_capatabilities)
-                list_of_dicts = indexer.engine.search(search_string, category)
+                list_of_dicts = await indexer.engine.search(search_string, category)
                 if list_of_dicts is not None and len(list_of_dicts) > 0:
                     torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
                     if torrents is not None and type(torrents) is list and len(torrents) >0:
@@ -319,7 +276,7 @@ class SearchService:
                         search_string = str(title)   # no language tag for native language indexer
                     search_string = normalize(search_string)
                     category = str(indexer.tv_search_capatabilities)
-                    list_of_dicts = indexer.engine.search(search_string, category)
+                    list_of_dicts = await indexer.engine.search(search_string, category)
                     if list_of_dicts is not None and len(list_of_dicts) > 0:
                         torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
                         if torrents is not None and type(torrents) is list and len(torrents) >0:
@@ -342,8 +299,10 @@ class SearchService:
 
     def __get_indexers(self):
         try:
-            indexer_list = self.__get_indexer_from_engines(self.__engines)
-            return indexer_list
+            search_indexers = self.__get_indexer_from_engines(self.__config['engines'])
+            # creiamo un dizionario con title come chiave
+            indexers = {si.engine_name: si for si in search_indexers}
+            return indexers
         except Exception:
             self.logger.exception("An exception occured while getting indexers from Search.")
             return []
@@ -404,7 +363,7 @@ class SearchService:
             result.title = item['name']
             result.size = item['size']
             result.indexer = indexer.title              # engine name 'Il Corsaro Nero' 
-            result.engine_name = indexer.engine_name    # engine type 'ilcorsaronero'
+            result.engine_name = indexer.engine_name    # engine type 'ilcorsaronero' (minuscolo)
             result.type = media.type                    # series or movie
             result.privacy = 'public'                   # public or private (determina se sarà o meno salvato in cache)
 
@@ -439,13 +398,13 @@ class SearchService:
             raise ValueError("Magnet link invalid")
 
 
-    def __post_process_result(self, result, media):
+    async def __post_process_result(self, indexers, result, media):
         if self.__is_magnet_link(result.link):
             result.magnet = result.link
         else:
             start_time = time.time()
-            engine = self.__get_engine(result.engine_name)
-            res_link = engine.download_torrent(result.link)
+            indexer = indexers[result.engine_name]
+            res_link = await indexer.engine.download_torrent(result.link)
             if res_link is not None and self.__is_magnet_link(res_link):
                 result.magnet = res_link
                 result.link = result.magnet

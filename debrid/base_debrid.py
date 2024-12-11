@@ -1,61 +1,62 @@
-import time
-
-import requests
-
+import json
+import asyncio
+import httpx
 from utils.logger import setup_logger
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
 
 class BaseDebrid:
     def __init__(self, config):
         self.config = config
         self.logger = setup_logger(__name__)
-        self.__session = requests.Session()
 
-    def get_json_response(self, url, method='get', data=None, headers=None, files=None):
-        if method == 'get':
-            response = self.__session.get(url, headers=headers)
-        elif method == 'post':
-            response = self.__session.post(url, data=data, headers=headers, files=files)
-        elif method == 'put':
-            response = self.__session.put(url, data=data, headers=headers)
-        elif method == 'delete':
-            response = self.__session.delete(url, headers=headers)
-        else:
-            raise ValueError(f"Unsupported HTTP method: {method}")
-
-        # Check if the request was successful
-        if response.ok:
-            try:
-                return response.json()
-            except ValueError:
-                self.logger.error(f"Failed to parse response as JSON: {response.text}")
-                return None
-        else:
-            self.logger.error(f"Request failed with status code {response.status_code}")
-            return None
-
-    def wait_for_ready_status(self, check_status_func, timeout=30, interval=5):
+    async def wait_for_ready_status_async_func(self, check_status_func, timeout=30, interval=5):
         self.logger.debug(f"Waiting for {timeout} seconds to cache.")
-        start_time = time.time()
-        while time.time() - start_time < timeout:
+        start_time = asyncio.get_event_loop().time()
+        while asyncio.get_event_loop().time() - start_time < timeout:
+            # Se check_status_func è asincrona, uso `await check_status_func()`.
+            if await check_status_func():
+                self.logger.debug("File is ready!")
+                return True
+            await asyncio.sleep(interval)
+        self.logger.debug("Waiting timed out.")
+        return False
+    
+    async def wait_for_ready_status_sync_func(self, check_status_func, timeout=30, interval=5):
+        self.logger.debug(f"Waiting for {timeout} seconds to cache.")
+        start_time = asyncio.get_event_loop().time()
+        while asyncio.get_event_loop().time() - start_time < timeout:
+            # Se check_status_func è sincrona, la chiamiamo direttamente.
             if check_status_func():
                 self.logger.debug("File is ready!")
                 return True
-            time.sleep(interval)
-        self.logger.debug(f"Waiting timed out.")
+            await asyncio.sleep(interval)
+        self.logger.debug("Waiting timed out.")
         return False
 
-    def donwload_torrent_file(self, download_url):
-        response = requests.get(download_url)
-        response.raise_for_status()
 
-        return response.content
+    async def get_json_response(self, url, **kwargs):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
+        ret = await session.get_json_response(url, **kwargs)
+        await session.close()
+        return ret
 
-    def get_stream_link(self, query, ip=None):
+    async def download_torrent_file(self, download_url):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
+        ret = await session.download_torrent_file(download_url)
+        await session.close()
+        return ret
+
+
+    async def get_stream_link(self, query, ip=None):
         raise NotImplementedError
 
-    def add_magnet(self, magnet, ip=None):
+
+    async def add_magnet(self, magnet, ip=None):
         raise NotImplementedError
 
-    def get_availability_bulk(self, hashes_or_magnets, ip=None):
+
+    async def get_availability_bulk(self, hashes_or_magnets, ip=None):
         raise NotImplementedError
+
+

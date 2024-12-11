@@ -3,12 +3,13 @@
 
 import re
 from urllib.parse import quote_plus
-from helpers import retrieve_url
-from novaprinter import PrettyPrint
+from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 from utils.logger import setup_logger
+from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from search.plugins.base_plugin import BasePlugin
 
-class ilcorsaronero(object):
+class ilcorsaronero(BasePlugin):
     url = 'https://ilcorsaronero.link/'
     name = 'ilCorSaRoNeRo'
     supported_categories = {'all': '',
@@ -19,7 +20,7 @@ class ilcorsaronero(object):
                             'books': 'libri',
                             'software': 'software',
                             'tv': 'serie-tv'}
-    logger = setup_logger(__name__)
+    
 
     class HTMLParser:
 
@@ -68,27 +69,40 @@ class ilcorsaronero(object):
                     ])
             return torrents
 
-    def download_torrent(self, info):
-        torrent_page = ' '.join(retrieve_url(info).split())
-        magnet_match = re.search(r'href=\"(magnet:.*?)\"', torrent_page)
-        if magnet_match and magnet_match.groups():
-            magnet_str = magnet_match.groups()[0]
-            return(str(magnet_str + " " + magnet_str))
-        else:
-            raise Exception('Error, please fill a bug report!')
+    async def download_torrent(self, info):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
+        page = await session.retrieve_url(info)
+        if page is not None:
+            torrent_page = ' '.join((page).split())
+            magnet_match = re.search(r'href=\"(magnet:.*?)\"', torrent_page)
+            if magnet_match and magnet_match.groups():
+                magnet_str = magnet_match.groups()[0]
+                await session.close()
+                return(str(magnet_str + " " + magnet_str))
+            else:
+                await session.close()
+                raise Exception('Error, please fill a bug report!')
+        await session.close()
+        return None
 
-    def search(self, what, cat='all'):
+    async def search(self, what, cat='all'):
+        session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         what = quote_plus(what)
         parser = self.HTMLParser(self.url)
         counter: int = 1
-        filter = '&cat={0}'.format(self.supported_categories[cat])
+        # filter = '&cat={0}'.format(self.supported_categories[cat])
+        filter = self.supported_categories[cat]
+        # TODO: leggere il numero di pagine e fare una chiamata asincrona per ogni pagina
         while True:
             url = '{0}search?q={1}&cat={2}&page={3}'.format(self.url, what, filter, counter)
             # Some replacements to format the html source
-            html = ' '.join(retrieve_url(url).split())
-            parser.feed(html)
-            if parser.noTorrents:
-                break
-            counter += 1
+            page = await session.retrieve_url(url)
+            if page is not None:
+                html = ' '.join((page).split())
+                parser.feed(html)
+                if parser.noTorrents:
+                    break
+                counter += 1
+        await session.close()
         return prettyPrinter.get()
