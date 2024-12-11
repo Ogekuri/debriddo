@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 def get_index(app_name, app_version, app_environment):
     with open("web/index.html", 'r', encoding='utf-8') as file:
         index = file.read()

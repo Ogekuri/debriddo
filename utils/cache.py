@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 from typing import List
 import sqlite3
 import os

@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 import asyncio
 from constants import RUN_IN_MULTI_THREAD
 

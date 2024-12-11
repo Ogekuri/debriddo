@@ -1,7 +1,6 @@
-# VERSION: 4.1
+# VERSION: 0.0.26
 # AUTHORS: Scare! (https://Scare.ca/dl/qBittorrent/)
-
-# added categories to v1.0 by LightDestory https://github.com/LightDestory
+# CONTRIBUTORS: Ogekuri, LightDestory https://github.com/LightDestory
 
 import urllib.parse
 import json

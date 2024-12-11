@@ -1,4 +1,7 @@
-# alldebrid.py
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 import json
 import uuid
 from urllib.parse import unquote

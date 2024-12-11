@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 from bs4 import BeautifulSoup
 from urllib.parse import quote, quote_plus
 from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono

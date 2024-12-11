@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 from utils.filter.base_filter import BaseFilter
 from utils.logger import setup_logger
 

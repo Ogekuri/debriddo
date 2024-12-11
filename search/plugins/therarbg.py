@@ -1,5 +1,6 @@
-# VERSION: 1.3
+# VERSION: 0.0.26
 # AUTHORS: BurningMop (burning.mop@yandex.com)
+# CONTRIBUTORS: Ogekuri
 
 # LICENSING INFORMATION
 # Permission is hereby granted, free of charge, to any person obtaining a copy

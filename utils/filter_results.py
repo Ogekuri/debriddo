@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 import re
 
 from RTN import title_match, RTN, DefaultRanking, SettingsModel, sort_torrents

@@ -1,3 +1,8 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
+
 from typing import List, Dict
 
 from debrid.alldebrid import AllDebrid

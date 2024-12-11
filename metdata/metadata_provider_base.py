@@ -1,6 +1,8 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 from utils.logger import setup_logger
-
-
 
 class MetadataProvider:
 

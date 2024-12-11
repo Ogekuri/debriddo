@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 fastapi==0.115.5           # Framework web ad alte prestazioni per Python, basato su asyncio e type hints
 starlette==0.41.3          # Microframework ASGI leggero e veloce, base di FastAPI per routing e gestione richieste
 uvicorn==0.32.1            # Server ASGI veloce e leggero, comunemente utilizzato per eseguire applicazioni FastAPI/Starlette

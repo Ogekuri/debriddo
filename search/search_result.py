@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 from RTN import parse
 
 from models.series import Series

@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 from metdata.metadata_provider_base import MetadataProvider
 from models.movie import Movie
 from models.series import Series

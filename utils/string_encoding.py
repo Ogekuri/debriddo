@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 import base64
 import re
 from unidecode import unidecode

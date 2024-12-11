@@ -1,4 +1,4 @@
-# VERSION: 1.0
+# VERSION: 0.0.26
 # AUTHORS: Ogekuri
 
 import urllib.parse

@@ -1,5 +1,6 @@
-# VERSION: 2.2
+# VERSION: 0.0.26
 # AUTHORS: sa3dany, Alyetama, BurningMop, scadams
+# CONTRIBUTORS: Ogekuri
 
 # LICENSING INFORMATION
 # Permission is hereby granted, free of charge, to any person obtaining a copy

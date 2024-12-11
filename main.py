@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 import os
 import sys
 import re
@@ -92,7 +96,7 @@ is_reload_enabled = any("--reload" in arg for arg in sys.argv)
 # calcola il numero ottimale di thread
 def calculate_optimal_thread_count():
     """
-    Calcola il numero ottimale di workers per Uvicorn basato sui core della CPU.
+    Calcola il numero ottimale di thread basato sui core della CPU.
     Formula: (N CPU Cores * 2) + 1
     """
     try:
@@ -101,11 +105,11 @@ def calculate_optimal_thread_count():
         if cpu_cores is None:
             return 8
         
-        # Calcola il numero ottimale di workers
-        optimal_workers = (cpu_cores * 2) + 1
-        return optimal_workers
+        # Calcola il numero ottimale di threads
+        optimal_num_threads = (cpu_cores * 2) + 1
+        return optimal_num_threads
     except Exception as e:
-        logger.error(f"Errore nel calcolo dei workers: {e}")
+        logger.error(f"Errore nel calcolo dei numero dei threads: {e}")
         return 8
     
 
@@ -135,9 +139,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Imposta un maggior numero di thread, per esempio 16
-n_workers = calculate_optimal_thread_count()
-logger.info(f"Set numeber of thread to: {n_workers}")
-executor = ThreadPoolExecutor(max_workers=n_workers)
+n_threads = calculate_optimal_thread_count()
+logger.info(f"Set numeber of thread to: {n_threads}")
+executor = ThreadPoolExecutor(max_workers=n_threads)
 loop = asyncio.get_event_loop()
 loop.set_default_executor(executor)
 
@@ -485,12 +489,12 @@ async def get_playback(config_url: str, query: str, request: Request):
 
 async def update_app():
 
-    if development is not None:
-        logger.warning(f"Skipping software update, develoment version: {app_version} ({development})")
+    # senza --reload non gestisce l'upgrade, --reload implica --workers 1
+    if is_reload_enabled is False:
         return
 
-    if is_reload_enabled is False:
-        logger.info(f"Skipping software update, reload is disabled")
+    # in modalità sviluppo non fa l'upgrade
+    if development is not None:
         return
   
     try:

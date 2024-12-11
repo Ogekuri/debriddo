@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 class SearchIndexer:
     def __init__(self):
         self.title = None       # general name

@@ -1,6 +1,8 @@
 
 # Informazioni per gli sviluppatori
 
+**Version: Version: 0.0.26**
+
 ## TODO
 
 Attività ancora da portare a termine prima del primo rilascio.
@@ -21,6 +23,7 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Test da completare
 
+- Verificare come mai con --workers $NUM_WORKERS l'applicazione non funziona
 - Testare 'alldebrid', 'premiumize', 'torbox' che sono passati tutti a funzioni asincrone (e non testati)
 
 ## Esecuzione dei sorgenti

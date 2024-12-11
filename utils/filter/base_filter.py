@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 class BaseFilter:
     def __init__(self, config, additional_config=None):
         self.config = config

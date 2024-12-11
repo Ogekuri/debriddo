@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 from utils.logger import setup_logger

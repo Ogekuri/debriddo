@@ -1,3 +1,7 @@
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
+
 # Assuming the BaseDebrid class and necessary imports are already defined as shown previously
 import json
 

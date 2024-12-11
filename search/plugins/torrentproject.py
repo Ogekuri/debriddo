@@ -1,5 +1,6 @@
-#VERSION: 1.5
-#AUTHORS: mauricci
+# VERSION: 0.0.26
+# AUTHORS: mauricci
+# CONTRIBUTORS: Ogekuri
 
 from utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()

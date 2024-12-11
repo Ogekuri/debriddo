@@ -1,4 +1,6 @@
 #!/bin/bash
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
 
 # check parameters
 if [ -z $3 ]; then

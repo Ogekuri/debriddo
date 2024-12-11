@@ -1,3 +1,6 @@
+# VERSION: 0.0.26
+# AUTHORS: Ogekuri
+
 import time
 import xml.etree.ElementTree as ET
 
@@ -33,10 +36,8 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import chain
 from utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
-
-
-
-
+# Se non trova risultati prova una ricerca più estesa
+SEARCHE_FALL_BACK = False
 
 class SearchService:
     def __init__(self, config):
@@ -193,7 +194,7 @@ class SearchService:
                     torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
                     if torrents is not None and type(torrents) is list and len(torrents) >0:
                         results.extend(torrents)
-                else:
+                elif SEARCHE_FALL_BACK:
                     # se non ci sono risultati prova una ricerca più grossolana o in inglese
                     search_string = str(title + ' ' + movie.year  + ' ' +  self.__default_lang_tag)
                     if indexer.language == languages[index]:
@@ -269,7 +270,7 @@ class SearchService:
                     torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
                     if torrents is not None and type(torrents) is list and len(torrents) >0:
                         results.extend(torrents)
-                else:
+                elif SEARCHE_FALL_BACK:
                     # se non ci sono risultati prova una ricerca più grossolana o in inglese
                     search_string = str(title + ' ' + series.season  + ' ' + self.__default_lang_tag)
                     if indexer.language == languages[index]:

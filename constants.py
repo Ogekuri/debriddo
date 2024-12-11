@@ -1,6 +1,8 @@
+# AUTHORS: Ogekuri
+
 # Application name
 APPLICATION_NAME = "Debriddo"
-APPLICATION_VERSION = "0.0.25"
+APPLICATION_VERSION = "0.0.26"
 APPLICATION_DESCRIPTION = "Ricerca online i Film e le tue Serie Tv preferite."
 
 # SQL3llite database

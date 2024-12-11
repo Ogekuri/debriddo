@@ -1,5 +1,8 @@
-import re
+# VERSION: 0.0.26
+# AUTHORS: aymene69
+# CONTRIBUTORS: Ogekuri
 
+import re
 
 def detect_languages(torrent_name):
     language_patterns = {

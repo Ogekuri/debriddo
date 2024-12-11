@@ -1,5 +1,6 @@
-# VERSION: 1.8
+# VERSION: 0.0.26
 # AUTHORS: LightDestory (https://github.com/LightDestory)
+# CONTRIBUTORS: Ogekuri
 
 import re
 from urllib.parse import quote_plus
