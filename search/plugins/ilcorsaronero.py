@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: LightDestory (https://github.com/LightDestory)
 # CONTRIBUTORS: Ogekuri
 
@@ -13,6 +13,7 @@ from search.plugins.base_plugin import BasePlugin
 class ilcorsaronero(BasePlugin):
     url = 'https://ilcorsaronero.link/'
     name = 'ilCorSaRoNeRo'
+    language = "it"
     supported_categories = {'all': '',
                             'movies': 'film',
                             'music': 'musica',

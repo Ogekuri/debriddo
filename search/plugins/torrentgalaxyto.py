@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: nindogo (nindogo@gmail.com)
 # CONTRIBUTORS: Ogekuri
 
@@ -39,6 +39,7 @@ SITE_URL = "https://torrentgalaxy.to/"
 class torrentgalaxy(BasePlugin):
     url = SITE_URL
     name = "TorrentGalaxy"
+    language = "any"
     supported_categories = {
         'all': '',
         'movies': 'c3=1&c46=1&c45=1&c42=1&c4=1&c1=1&',

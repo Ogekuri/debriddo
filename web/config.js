@@ -185,6 +185,7 @@ function getLink(method) {
 
     // codifica compressa al posto del btoa
     const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+    
     let stremio_link = `${window.location.host}/C_${compressed}/manifest.json`;
     let config_link = `${window.location.host}/C_${compressed}/configure`;
 

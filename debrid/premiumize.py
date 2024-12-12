@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -52,7 +52,6 @@ class Premiumize(BaseDebrid):
         return await self.get_json_response(url)
 
     async def get_stream_link(self, query, ip=None):
-        query = json.loads(query)
         magnet = query['magnet']
         logger.debug(f"Received query for magnet: {magnet}")
         info_hash = get_info_hash_from_magnet(magnet)
@@ -63,7 +62,7 @@ class Premiumize(BaseDebrid):
         transfer_data = await self.add_magnet(magnet)
         if not transfer_data or 'id' not in transfer_data:
             logger.error("Failed to create transfer.")
-            return "Error: Failed to create transfer."
+            raise ValueError("Error: Failed to create transfer.")
         transfer_id = transfer_data['id']
         logger.debug(f"Transfer created with ID: {transfer_id}")
 
@@ -87,7 +86,7 @@ class Premiumize(BaseDebrid):
 
         if not item_id:
             logger.error("Transfer completed but no item ID found.")
-            return "Error: Transfer completed but no item ID found."
+            raise ValueError("Error: Transfer completed but no item ID found.")
 
         details = await self.get_folder_or_file_details(item_id, is_folder)
         logger.debug(f"Got details")
@@ -113,14 +112,14 @@ class Premiumize(BaseDebrid):
 
                 if len(matching_files) == 0:
                     logger.error(f"No matching files for {season} {episode} in torrent.")
-                    return f"Error: No matching files for {season} {episode} in torrent."
+                    raise ValueError(f"Error: No matching files for {season} {episode} in torrent.")
 
                 link = max(matching_files, key=lambda x: x["size"])["link"]
             else:
                 link = details.get('link')
         else:
             logger.error("Unsupported stream type.")
-            return "Error: Unsupported stream type."
+            raise ValueError("Error: Unsupported stream type.")
 
         logger.debug(f"Link generated: {link}")
         return link

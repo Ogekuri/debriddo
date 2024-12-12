@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -94,9 +94,7 @@ class RealDebrid(BaseDebrid):
                     ids.append(element["id"])
         return await self.get_json_response(url, headers=self.headers)
 
-    async def get_stream_link(self, query_string, ip=None):
-        query = json.loads(query_string)
-
+    async def get_stream_link(self, query, ip=None):
         magnet = query['magnet']
         stream_type = query['type']
         file_index = int(query['file_index']) if query['file_index'] is not None else None
@@ -116,13 +114,13 @@ class RealDebrid(BaseDebrid):
             elif stream_type == "series":
                 torrent_info = await self.__get_cached_torrent_info(cached_torrent_ids, file_index, season, episode)
             else:
-                return "Error: Unsupported stream type."
+                raise ValueError("Error: Unsupported stream type.")
 
         # The torrent is not yet added
         if torrent_info is None:
             torrent_info = await self.__add_magnet_or_torrent(magnet, torrent_download)
             if not torrent_info or 'files' not in torrent_info:
-                return "Error: Failed to get torrent info."
+                raise ValueError("Error: Failed to get torrent info.")
 
             logger.debug("Selecting file")
             await self.__select_file(torrent_info, stream_type, file_index, season, episode)
@@ -152,7 +150,7 @@ class RealDebrid(BaseDebrid):
         # Unrestricting the download link
         unrestrict_response = await self.unrestrict_link(download_link)
         if not unrestrict_response or 'download' not in unrestrict_response:
-            return "Error: Failed to unrestrict link."
+            raise ValueError("Error: Failed to unrestrict link.")
 
         logger.debug(f"Got download link: {unrestrict_response['download']}")
         return unrestrict_response['download']
@@ -208,7 +206,8 @@ class RealDebrid(BaseDebrid):
             logger.debug(f"RealDebrid add magnet response: {magnet_response}")
 
             if not magnet_response or 'id' not in magnet_response:
-                return "Error: Failed to add magnet."
+                logger.error("Error: Failed to add magnet.")
+                raise ValueError("Error: Failed to add magnet.")
 
             torrent_id = magnet_response['id']
         else:
@@ -221,7 +220,8 @@ class RealDebrid(BaseDebrid):
             logger.debug(f"RealDebrid add torrent file response: {upload_response}")
 
             if not upload_response or 'id' not in upload_response:
-                return "Error: Failed to add torrent file."
+                logger.error("Error: Failed to add torrent file.")
+                raise ValueError("Error: Failed to add torrent file.")
 
             torrent_id = upload_response['id']
 

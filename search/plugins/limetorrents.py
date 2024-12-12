@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: Lima66
 # CONTRIBUTORS: Ogekuri, Diego de las Heras (ngosang@hotmail.es)
 
@@ -20,6 +20,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 class limetorrents(BasePlugin):
     url = "https://www.limetorrents.lol"
     name = "LimeTorrents"
+    language = "any"
     supported_categories = {'all': 'all',
                             'anime': 'anime',
                             'software': 'applications',

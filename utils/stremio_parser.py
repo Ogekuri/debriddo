@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -9,7 +9,7 @@ from typing import List
 from models.media import Media
 from torrent.torrent_item import TorrentItem
 from utils.logger import setup_logger
-from utils.string_encoding import encodeb64
+from utils.parse_config import encode_query
 
 logger = setup_logger(__name__)
 
@@ -51,7 +51,7 @@ def filter_by_direct_torrnet(item):
         return 0
 
 
-def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, host, playtorrent, results: queue.Queue, media: Media):
+def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, playtorrent, results: queue.Queue, media: Media):
     if torrent_item.availability == True:
         name = f"{INSTANTLY_AVAILABLE}\n"
     else:
@@ -102,18 +102,25 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, host, playtorr
         title += f"{get_emoji(language)}/"
     title = title[:-1]
 
-    queryb64 = encodeb64(json.dumps(torrent_item.to_debrid_stream_query(media))).replace('=', '%3D')
+    # query_encoded = encode64(json.dumps(torrent_item.to_debrid_stream_query(media))).replace('=', '%3D')
+    # TODO: come mai sostituiva l'=?
+    query_encoded = encode_query(torrent_item.to_debrid_stream_query(media))
 
-    results.put({
+    item = {
         "name": name,
         "description": title,
-        "url": f"{host}/playback/{config_url}/{queryb64}",
+        "url": f"{node_url}/playback/{config_url}/{query_encoded}",
         "behaviorHints":{
             "bingeGroup": f"debriddo-{torrent_item.info_hash}",
             "filename": torrent_item.file_name if torrent_item.file_name is not None else torrent_item.raw_title # TODO: Use parsed title?
         }
-    })
+    }
+    results.put(item)
 
+    # warning per url troppo lunghi (da decidere il valore)
+    if len(item["url"]) > 2000:
+           logger.warning(f"Generated url is too long in item: {item["name"]}")
+   
     if playtorrent and torrent_item.privacy == "public":
         name = f"{DIRECT_TORRENT}\n"
         name += f"{resolution} {quality} {cache}"
@@ -121,7 +128,7 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, host, playtorr
         # if len(parsed_data.quality) > 0 and parsed_data.quality[0] != "Unknown" and \
         #         parsed_data.quality[0] != "":
         #     name += f"({'|'.join(parsed_data.quality)})"
-        results.put({
+        item = {
             "name": name,
             "description": title,
             "infoHash": torrent_item.info_hash,
@@ -131,17 +138,18 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, host, playtorr
                 "filename": torrent_item.file_name if torrent_item.file_name is not None else torrent_item.raw_title # TODO: Use parsed title?
             }
             # "sources": ["tracker:" + tracker for tracker in torrent_item.trackers]
-        })
+        }
+        results.put(item)
 
 
-def parse_to_stremio_streams(torrent_items: List[TorrentItem], config, config_url, media):
+def parse_to_stremio_streams(torrent_items: List[TorrentItem], config, config_url, node_url, media):
     stream_list = []
     threads = []
     thread_results_queue = queue.Queue()
 
     for torrent_item in torrent_items[:int(config['maxResults'])]:
         thread = threading.Thread(target=parse_to_debrid_stream,
-                                  args=(torrent_item, config_url, config['addonHost'], config['playtorrent'], thread_results_queue, media),
+                                  args=(torrent_item, config_url, node_url, config['playtorrent'], thread_results_queue, media),
                                   daemon=True)
         thread.start()
         threads.append(thread)

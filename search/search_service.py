@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: Ogekuri
 
 import time
@@ -140,29 +140,6 @@ class SearchService:
             return ilcorsaroblu(self.__config)
         else:
             raise ValueError(f"Torrent Search '{engine_name}' not supported")
-
-
-    def __get_engine_language(self, engine_name):
-            if engine_name == 'thepiratebay':
-                return "any"
-            elif engine_name == 'one337x':
-                return "any"
-            elif engine_name == 'limetorrents':
-                return "any"
-            elif engine_name == 'torrentproject':
-                return "any"
-            elif engine_name == 'torrentz':
-                return "any"
-            elif engine_name == 'torrentgalaxy':
-                return "any"
-            elif engine_name == 'therarbg':
-                return "any"
-            elif engine_name == 'ilcorsaroblu':
-                return "it"
-            elif engine_name == 'ilcorsaronero':
-                return "it"
-            else:
-                raise ValueError(f"Torrent Search '{engine_name}' not supported")
     
 
     async def __search_movie_indexer(self, movie, indexer):
@@ -317,7 +294,7 @@ class SearchService:
             indexer = SearchIndexer()
 
             indexer.engine = self.__get_engine(engine_name)
-            indexer.language = self.__get_engine_language(engine_name)
+            indexer.language = indexer.engine.language
 
             indexer.title = indexer.engine.name
             indexer.id = id

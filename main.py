@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -9,6 +9,7 @@ import shutil
 import time
 import zipfile
 import uvicorn
+import json
 import starlette.status as status
 
 from dotenv import load_dotenv
@@ -40,9 +41,8 @@ from torrent.torrent_smart_container import TorrentSmartContainer
 from utils.cache import search_cache
 from utils.filter_results import filter_items, sort_items
 from utils.logger import setup_logger
-from utils.parse_config import parse_config
+from utils.parse_config import parse_config, parse_query
 from utils.stremio_parser import parse_to_stremio_streams
-from utils.string_encoding import decodeb64
 from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
 from web.pages import get_index
@@ -163,11 +163,11 @@ class LogFilterMiddleware:
             path = request.url.path
                         
             
-            # GET - /C_<SENSITIVE_DATA>/config
-            sensible_path = re.sub(r'/C_.*?/', '/<SENSITIVE_DATA>/', path)
+            # GET - /C_<CONFIG>/config
+            sensible_path = re.sub(r'/C_.*?/', '/<CONFIG>/', path)
             
-            # GET - /playback/C_<SENSITIVE_DATA>/ey<QUERY>/
-            sensible_path = re.sub(r'/ey.*?$', '/<QUERY>', sensible_path)
+            # GET - /playback/C_<CONFIG>/Q_<QUERY>/
+            sensible_path = re.sub(r'/Q_.*?$', '/<QUERY>', sensible_path)
 
             logger.debug(f"{request.method} - {sensible_path}")
 
@@ -445,7 +445,7 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
         logger.debug("Got best matching results (results: " + str(len(best_matching_results)) + ")")
 
         logger.debug("Processing results")
-        stream_list = parse_to_stremio_streams(best_matching_results, config, config_url, media)
+        stream_list = parse_to_stremio_streams(best_matching_results, config, config_url, node_url, media)
         logger.info("Processed results (results: " + str(len(stream_list)) + ")")
 
         logger.info("Total time: " + str(time.time() - start) + "s")
@@ -463,14 +463,18 @@ async def head_playback(config: str, query: str, request: Request):
     return Response(status_code=status.HTTP_200_OK)
 
 # /playback/?/?
-@app.get("/playback/{config_url}/{query}")
-async def get_playback(config_url: str, query: str, request: Request):
+@app.get("/playback/{config_url}/{query_string}")
+async def get_playback(config_url: str, query_string: str, request: Request):
     try:
-        if not query:
+        if not query_string:
             raise HTTPException(status_code=400, detail="Query required.")
         config = parse_config(config_url)
-        query = decodeb64(query)
-        logger.debug(f"Decoded <QUERY>: {query}")
+
+        # decodifica la query
+        query = parse_query(query_string)
+
+        # logger.debug(f"Decoded <QUERY>: {query}")
+        logger.debug(f"Decoded <QUERY>: type: {str(query["type"])}, file_index: {str(query["file_index"])}, season: {str(query["season"])}, episode: {str(query["episode"])}, torrent_download: {str(query["torrent_download"])}")
         ip = request.client.host
         debrid_service = get_debrid_service(config)
         link = await debrid_service.get_stream_link(query, ip)

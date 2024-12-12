@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: Ogekuri
 
 import urllib.parse
@@ -15,6 +15,7 @@ class torrentz(BasePlugin):
     url = 'https://torrentz2.nz/'
     api_url = "https://torrentz2.nz/"
     name = 'Torrentz2'
+    language = "any"
     """ 
         TLDR; It is safer to force an 'all' research
         Torrentz2 categories not supported

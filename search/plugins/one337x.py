@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: sa3dany, Alyetama, BurningMop, scadams
 # CONTRIBUTORS: Ogekuri
 
@@ -33,6 +33,7 @@ from search.plugins.base_plugin import BasePlugin
 class one337x(BasePlugin):
     url = 'https://1337x.to'
     name = '1337x'
+    language = "any"
     supported_categories = {
         'all': None,
         'anime': 'Anime',

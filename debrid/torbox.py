@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -98,8 +98,7 @@ class TorBox(BaseDebrid):
             logger.error("Only magnet links are supported for TorBox.")
         return torrent_id
 
-    async def get_stream_link(self, query_string, ip):
-        query = json.loads(query_string)
+    async def get_stream_link(self, query, ip):
         magnet = query["magnet"]
         stream_type = query["type"]
         season = query.get("season")
@@ -150,7 +149,7 @@ class TorBox(BaseDebrid):
                 return NO_CACHE_VIDEO_URL
         else:
             logger.error("Unsupported stream type.")
-            return "Error: Unsupported stream type."
+            raise ValueError("Error: Unsupported stream type.")
 
     # def get_json_response(self, url, method='get', **kwargs):
     #     try:

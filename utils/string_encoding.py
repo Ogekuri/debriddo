@@ -1,18 +1,41 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-import base64
+import json
 import re
 from unidecode import unidecode
+import lzstring
 
 
-def encodeb64(data):
-    return base64.b64encode(data.encode('utf-8')).decode('utf-8')
+def encode_lzstring(json_value, tag):
+    lz = lzstring.LZString()
+    if type(tag) is not str and len(tag) != 2:
+        raise ValueError("Incompatible tag encoding lz-string")
+    try:
+        json_string = json.dumps(json_value)
+        data = tag + lz.compressToEncodedURIComponent(json_string)
+    except Exception as e:
+        raise ValueError(f"An error occurred decoding lz-string: {e}")
+    
+    return data
 
 
-def decodeb64(data):
-    return base64.b64decode(data).decode('utf-8')
+def decode_lzstring(data, tag):
+    lz = lzstring.LZString()
+
+    # Se il prefisso "C_" è presente, rimuovilo
+    if data.startswith(tag):
+        data = data[2:]
+    else:
+        raise ValueError("Incompatible tag decoding lz-string")
+    try:
+        decompressed = lz.decompressFromEncodedURIComponent(data)
+        json_value = json.loads(decompressed)
+    except Exception as e:
+        raise ValueError(f"An error occurred decoding lz-string: {e}")
+
+    return json_value
 
 def normalize(string):
     # kožušček -> kozuscek

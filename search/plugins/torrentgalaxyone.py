@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: Ogekuri
 
 from bs4 import BeautifulSoup
@@ -14,6 +14,7 @@ class torrentgalaxy(BasePlugin):
 	url='https://torrentgalaxy.one/'
 	api='https://torrentgalaxy.one'
 	name='TorrentGalaxy'
+	language = "any"
 	logger = setup_logger(__name__, True) # debug=True
 
 	# uncomment appropriate lines to include TPB category in qBittorrent search category

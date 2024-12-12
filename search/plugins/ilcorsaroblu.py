@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: Ogekuri
 
 from bs4 import BeautifulSoup
@@ -13,6 +13,7 @@ class ilcorsaroblu(BasePlugin):
 	url='https://ilcorsaroblu.org/'
 	api='https://ilcorsaroblu.org/'
 	name='IlCorsaroBlu'
+	language="it"
 
 	# uncomment appropriate lines to include TPB category in qBittorrent search category
 	# currently set to include only HD video for "movies" & "tv"

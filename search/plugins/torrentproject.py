@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: mauricci
 # CONTRIBUTORS: Ogekuri
 
@@ -15,6 +15,7 @@ from search.plugins.base_plugin import BasePlugin
 class torrentproject(BasePlugin):
     url = 'https://torrentproject.cc'
     name = 'TorrentProject'
+    language = "any"
     supported_categories = {'all': '0'}
 
 

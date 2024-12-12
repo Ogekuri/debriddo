@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: BurningMop (burning.mop@yandex.com)
 # CONTRIBUTORS: Ogekuri
 
@@ -34,6 +34,7 @@ from search.plugins.base_plugin import BasePlugin
 class therarbg(BasePlugin):
     url = 'https://therarbg.com'
     name = 'The RarBg'
+    language = "any"
     supported_categories = {
         'all':'All', 
         'movies':'Movies', 

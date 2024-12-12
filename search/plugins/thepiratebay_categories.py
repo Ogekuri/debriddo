@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: Scare! (https://Scare.ca/dl/qBittorrent/)
 # CONTRIBUTORS: Ogekuri, LightDestory https://github.com/LightDestory
 
@@ -16,6 +16,7 @@ class thepiratebay(BasePlugin):
 	url='https://thepiratebay.org'
 	api='https://apibay.org'
 	name='ThePirateBay'
+	language = "any"
 	logger = setup_logger(__name__)
 
 	# uncomment appropriate lines to include TPB category in qBittorrent search category

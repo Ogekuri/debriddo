@@ -1,4 +1,4 @@
-# VERSION: 0.0.27
+# VERSION: 0.0.28
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -36,9 +36,7 @@ class AllDebrid(BaseDebrid):
         url = f"{self.base_url}link/unlock?agent=debriddo&apikey={self.config['debridKey']}&link={link}&ip={ip}"
         return await self.get_json_response(url)
 
-    async def get_stream_link(self, query_string, ip):
-        query = json.loads(query_string)
-
+    async def get_stream_link(self, query, ip):
         magnet = query['magnet']
         stream_type = query['type']
         torrent_download = unquote(query["torrent_download"]) if query["torrent_download"] is not None else None
@@ -79,12 +77,12 @@ class AllDebrid(BaseDebrid):
 
             if len(matching_files) == 0:
                 logger.error(f"No matching files for {season} {episode} in torrent.")
-                return f"Error: No matching files for {season} {episode} in torrent."
+                raise ValueError(f"Error: No matching files for {season} {episode} in torrent.")
 
             link = max(matching_files, key=lambda x: x["s"])["l"]
         else:
             logger.error("Unsupported stream type.")
-            return "Error: Unsupported stream type."
+            raise ValueError("Error: Unsupported stream type.")
 
         if link == NO_CACHE_VIDEO_URL:
             return link
@@ -95,7 +93,7 @@ class AllDebrid(BaseDebrid):
 
         if not unlocked_link_data:
             logger.error("Failed to unlock link.")
-            return "Error: Failed to unlock link."
+            raise ValueError("Error: Failed to unlock link.")
 
         logger.debug(f"Unrestricted link: {unlocked_link_data['data']['link']}")
 
@@ -126,7 +124,7 @@ class AllDebrid(BaseDebrid):
             logger.debug(f"AllDebrid add magnet response: {magnet_response}")
 
             if not magnet_response or "status" not in magnet_response or magnet_response["status"] != "success":
-                return "Error: Failed to add magnet."
+                raise ValueError("Error: Failed to add magnet.")
 
             torrent_id = magnet_response["data"]["magnets"][0]["id"]
         else:
@@ -139,7 +137,7 @@ class AllDebrid(BaseDebrid):
             logger.debug(f"AllDebrid add torrent file response: {upload_response}")
 
             if not upload_response or "status" not in upload_response or upload_response["status"] != "success":
-                return "Error: Failed to add torrent file."
+                raise ValueError("Error: Failed to add torrent file.")
 
             torrent_id = upload_response["data"]["files"][0]["id"]
 
