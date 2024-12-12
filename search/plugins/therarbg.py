@@ -1,4 +1,4 @@
-# VERSION: 0.0.29
+# VERSION: 0.0.30
 # AUTHORS: BurningMop (burning.mop@yandex.com)
 # CONTRIBUTORS: Ogekuri
 

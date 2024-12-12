@@ -1,4 +1,4 @@
-# VERSION: 0.0.29
+# VERSION: 0.0.30
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -118,8 +118,8 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     results.put(item)
 
     # warning per url troppo lunghi (da decidere il valore)
-    if len(item["url"]) > 2000:
-           logger.warning(f"Generated url is too long in item: {item["name"]}")
+    if len(item['url']) > 2000:
+           logger.warning(f"Generated url is too long in item: {item['name']}")
    
     if playtorrent and torrent_item.privacy == "public":
         name = f"{DIRECT_TORRENT}\n"
