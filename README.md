@@ -1,6 +1,6 @@
 # Debriddo
 
-**Version: 0.0.30**
+**Version: 0.0.31**
 
 Debriddo è un addon per Stremio per la ricerca dei film e delle serie tv sui motori di ricerca online di torrent.
 

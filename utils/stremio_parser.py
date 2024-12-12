@@ -1,4 +1,4 @@
-# VERSION: 0.0.30
+# VERSION: 0.0.31
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -117,7 +117,8 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     }
     results.put(item)
 
-    # warning per url troppo lunghi (da decidere il valore)
+    # warning per url troppo lunghi
+    # TODO: da decidere il valore
     if len(item['url']) > 2000:
            logger.warning(f"Generated url is too long in item: {item['name']}")
    

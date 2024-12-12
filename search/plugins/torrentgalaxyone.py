@@ -1,4 +1,4 @@
-# VERSION: 0.0.30
+# VERSION: 0.0.31
 # AUTHORS: Ogekuri
 
 from bs4 import BeautifulSoup

@@ -1,4 +1,4 @@
-# VERSION: 0.0.30
+# VERSION: 0.0.31
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -310,18 +310,20 @@ async def get_manifest():
                 "purpose": "any maskable"
             }
         ],
-        "catalogs": [
-            {
-                "id": app_name_lc + "-realdebrid",
-                "name": "RealDebrid",
-                "type": "other",
-                "extra": [
-                    {
-                    "name": "skip"
-                    }
-                ]
-            }
-        ],
+        # TODO: da implementare (volendo)
+        # fornisce come catalogo la lista dei file su Real-Debird
+        # "catalogs": [
+        #     {
+        #         "id": app_name_lc + "-realdebrid",
+        #         "name": "RealDebrid",
+        #         "type": "other",
+        #         "extra": [
+        #             {
+        #             "name": "skip"
+        #             }
+        #         ]
+        #     }
+        # ],
         "resources": [
             {
                 "name": "stream",

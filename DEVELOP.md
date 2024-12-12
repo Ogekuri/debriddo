@@ -1,7 +1,7 @@
 
 # Informazioni per gli sviluppatori
 
-**Version: Version: 0.0.30**
+**Version: Version: 0.0.31**
 
 ## TODO
 
@@ -9,6 +9,8 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Implementazioni
 
+* Uniformare la gestione delle eccezioni a partire da async_httpx_session a salire
+* Implementare l'auto-disibiltazione di un plug-ins per un tempo configurabile in caso di down del servizio
 * Verificare queste funzioni di Read-Debird get_availability_bulk (serve ancora???) e select_files
 * Refactory dei Plug-Ins
   * Valutare se mantenere la compatibilità con i plug-ins d qTorrrentio o rifarli
