@@ -2,7 +2,7 @@
 
 # Application name
 APPLICATION_NAME = "Debriddo"
-APPLICATION_VERSION = "0.0.28"
+APPLICATION_VERSION = "0.0.29"
 APPLICATION_DESCRIPTION = "Ricerca online i Film e le tue Serie Tv preferite."
 
 # SQL3llite database

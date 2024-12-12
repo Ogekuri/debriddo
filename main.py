@@ -1,4 +1,4 @@
-# VERSION: 0.0.28
+# VERSION: 0.0.29
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -474,7 +474,7 @@ async def get_playback(config_url: str, query_string: str, request: Request):
         query = parse_query(query_string)
 
         # logger.debug(f"Decoded <QUERY>: {query}")
-        logger.debug(f"Decoded <QUERY>: type: {str(query["type"])}, file_index: {str(query["file_index"])}, season: {str(query["season"])}, episode: {str(query["episode"])}, torrent_download: {str(query["torrent_download"])}")
+        logger.debug(f"Decoded <QUERY>: type: {str(query['type'])}, file_index: {str(query['file_index'])}, season: {str(query['season'])}, episode: {str(query['episode'])}, torrent_download: {str(query['torrent_download'])}")
         ip = request.client.host
         debrid_service = get_debrid_service(config)
         link = await debrid_service.get_stream_link(query, ip)
