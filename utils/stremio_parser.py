@@ -1,4 +1,4 @@
-# VERSION: 0.0.31
+# VERSION: 0.0.32
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -12,11 +12,6 @@ from utils.logger import setup_logger
 from utils.parse_config import encode_query
 
 logger = setup_logger(__name__)
-
-INSTANTLY_AVAILABLE = "[⚡]"
-DOWNLOAD_REQUIRED = "[⬇️]"
-DIRECT_TORRENT = "[🏴‍☠️]"
-
 
 # TODO: Languages
 def get_emoji(language):
@@ -37,6 +32,11 @@ def get_emoji(language):
     return emoji_dict.get(language, "🇬🇧")
 
 
+INSTANTLY_AVAILABLE = "[⚡"
+DOWNLOAD_REQUIRED = "[⬇️"
+DIRECT_TORRENT = "[🏴‍☠️"
+
+
 def filter_by_availability(item):
     if item["name"].startswith(INSTANTLY_AVAILABLE):
         return 0
@@ -53,9 +53,9 @@ def filter_by_direct_torrnet(item):
 
 def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, playtorrent, results: queue.Queue, media: Media):
     if torrent_item.availability == True:
-        name = f"{INSTANTLY_AVAILABLE}\n"
+        name = f"{INSTANTLY_AVAILABLE}"
     else:
-        name = f"{DOWNLOAD_REQUIRED}\n"
+        name = f"{DOWNLOAD_REQUIRED}"
 
     parsed_data = torrent_item.parsed_data.data
 
@@ -63,24 +63,32 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     # resolution = parsed_data.resolution[0] if len(parsed_data.resolution) > 0 else "Unknown"
     # name += f"{resolution}" + (f"\n({'|'.join(parsed_data.quality)})" if len(parsed_data.quality) > 0 else "")
 
-    # TODO: 📦 (Package)
+    # from cache
+    if torrent_item.from_cache:
+        cache = "🔄"
+    else:
+        cache = ""
 
+    # seson package
+    if len(parsed_data.episodes) == 0 and len(parsed_data.seasons) > 0:
+        package = "📦"
+    else:
+        package = ""
+
+    # risoluzioni
     if parsed_data.resolution != None and parsed_data.resolution != "unknown":
         resolution = parsed_data.resolution 
     else:
         resolution = ""
     
+    # qualità
     if parsed_data.quality != None and parsed_data.quality != "unknown":
-        quality = '(' + parsed_data.quality + ')'
+        quality = parsed_data.quality
     else:
         quality = ""
 
-    if torrent_item.from_cache:
-        cache = "{🔄Cache}"
-    else:
-        cache = ""
-
-    name += f"{resolution} {quality} {cache}"
+    # formattazione pannello sinistro gui
+    name += f"{package}{cache}] \n{resolution} \n{quality} "
 
     size_in_gb = round(int(torrent_item.size) / 1024 / 1024 / 1024, 2)
 
@@ -120,11 +128,15 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     # warning per url troppo lunghi
     # TODO: da decidere il valore
     if len(item['url']) > 2000:
-           logger.warning(f"Generated url is too long in item: {item['name']}")
+           logger.warning(f"Generated url is too long in item: {torrent_item.raw_title}")
    
-    if playtorrent and torrent_item.privacy == "public":
-        name = f"{DIRECT_TORRENT}\n"
-        name += f"{resolution} {quality} {cache}"
+    # Se è abilitato il play diretto del torrent lo aggiunge in coda
+    if playtorrent: # Rimmosso 'and torrent_item.privacy == "public":', non devo condividere il torrent, non il file sulla rete torrent
+        name = f"{DIRECT_TORRENT}"
+        
+        # formattazione pannello sinistro gui
+        name += f"{package}{cache}] \n{resolution} \n{quality} "
+
 
         # if len(parsed_data.quality) > 0 and parsed_data.quality[0] != "Unknown" and \
         #         parsed_data.quality[0] != "":
@@ -165,6 +177,7 @@ def parse_to_stremio_streams(torrent_items: List[TorrentItem], config, config_ur
         return []
 
     if config['debrid']:
+        # ordinamento predefinito
         stream_list = sorted(stream_list, key=filter_by_availability)
         stream_list = sorted(stream_list, key=filter_by_direct_torrnet)
     return stream_list

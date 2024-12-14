@@ -1,4 +1,4 @@
-# VERSION: 0.0.31
+# VERSION: 0.0.32
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
@@ -377,7 +377,11 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
     else:
         metadata_provider = Cinemeta(config)
     media = await metadata_provider.get_metadata(stream_id, stream_type)
-    logger.info("Got media and properties: " + str(media.titles))
+    
+    if media.type == "movie":
+        logger.info(f"Got media and properties for Film: {str(media.titles)} ({str(media.year)}) {str(media.languages)}")
+    elif media.type == "series":
+        logger.info(f"Got media and properties for TV Episode: {str(media.titles)} ({str(media.season)} {str(media.episode)}) {str(media.languages)}")
 
     debrid_service = get_debrid_service(config)
 
@@ -407,7 +411,7 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
         if engine_results is not None:
             logger.debug("Got " + str(len(engine_results)) + " results from Torrent Search (Engines)")
             for result in engine_results:
-                if result.raw_title:
+                if result is not None and result.raw_title is not None:
                     logger.debug("- " + str(result.raw_title))
                 else:
                     logger.error(f"Error on result: {result}")        

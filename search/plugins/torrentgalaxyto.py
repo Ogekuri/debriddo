@@ -1,4 +1,4 @@
-# VERSION: 0.0.31
+# VERSION: 0.0.32
 # AUTHORS: nindogo (nindogo@gmail.com)
 # CONTRIBUTORS: Ogekuri
 

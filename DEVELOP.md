@@ -1,7 +1,7 @@
 
 # Informazioni per gli sviluppatori
 
-**Version: Version: 0.0.31**
+**Version: Version: 0.0.32**
 
 ## TODO
 
@@ -9,8 +9,9 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Implementazioni
 
+* Risolvere il problema che la engine_results = await search_service.search(media) ritorna None se c'è un errore 500 a livello basso
 * Uniformare la gestione delle eccezioni a partire da async_httpx_session a salire
-* Implementare l'auto-disibiltazione di un plug-ins per un tempo configurabile in caso di down del servizio
+* Implementare l'auto-disibiltazione di un plug-ins per un tempo configurabile in caso di down del servizio (importante)
 * Verificare queste funzioni di Read-Debird get_availability_bulk (serve ancora???) e select_files
 * Refactory dei Plug-Ins
   * Valutare se mantenere la compatibilità con i plug-ins d qTorrrentio o rifarli
@@ -25,7 +26,7 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ### Test da completare
 
-- Verificare come mai con --workers $NUM_WORKERS l'applicazione non funziona
+- Verificare come mai con --workers $NUM_WORKERS l'auto-update dell'applicazione non funziona
 - Testare 'alldebrid', 'premiumize', 'torbox' che sono passati tutti a funzioni asincrone (e non testati)
 
 ## Esecuzione dei sorgenti
@@ -45,11 +46,20 @@ Attività ancora da portare a termine prima del primo rilascio.
 
 ## Versionamento, repository e deployment
 
+La semantica di versionamento aderisce a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 La costante **APPLICATION_VERSION** nel constant.py contiene il numero di versione nel formato **X.Y.Z** (ad esempio 1.2.3).
+
+La sessa cosa vale per la **#VERSION** dei files.
 
 Le versioni rilasciate vengono taggate nel brench *master* nel formato **vX.Y.Z** (ad esempio v1.2.3).
 
-Ad ogni rilascio, quando il *master* viene taggato, una nuova immagine docker viene buildata e resa disponibile.
+Il rilascio del tag sul *master* è utilizzato per le automazioni di GitHub per la generazione della __release__ e del __package__ (immagine docker).
+
+Lo script [scripts/version.sh](scripts/version.sh) consente di aggiornare il numero di versione in tutti i file.
+
+Il file [CHANGELOG.md] deve essere aggiornato a mano, seguendo le linee guida di [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+
 
 ## Visual Studio Code
 
