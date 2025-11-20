@@ -51,9 +51,9 @@ jobs:
           asset_path: ./${{ github.ref_name }}.zip
           asset_name: ${{ env.repo_name }}_${{ github.ref_name }}.zip
           asset_content_type: application/zip
-        env:                                         # Se il GITHUB_TOKEN non funziona, puoi utilizzare un Personal Access Token (PAT) con i permessi adeguati.
+        env:                                         # Se il GITHUB_TOKEN non funziona, puoi utilizzare un Personal Access Token (PAT o GH_PAT) con i permessi adeguati.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Un PAT può essere utilizzato al posto di GITHUB_TOKEN
-                                                     # Usa il PAT come token, scade il 26/11/2025
+                                                     # Usa il PAT come token, scade il 20/11/2026, ricevi un'email per il rinnovo ogni anno
 
       # repository name must be lowercase => Ogekuri -> ogekuri
       - name: Convert repository name to lowercase
