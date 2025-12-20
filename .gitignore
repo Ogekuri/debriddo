@@ -163,3 +163,10 @@ cython_debug/
 
 # Database SQL2 dell'applicazione
 caches_items.db
+
+# Local tooling/config directories
+.gemini/
+.github/
+.codex/
+.req/
+.vscode/
