@@ -2,17 +2,17 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-fastapi==0.115.5           # Framework web ad alte prestazioni per Python, basato su asyncio e type hints
-starlette==0.41.3          # Microframework ASGI leggero e veloce, base di FastAPI per routing e gestione richieste
-uvicorn==0.32.1            # Server ASGI veloce e leggero, comunemente utilizzato per eseguire applicazioni FastAPI/Starlette
-APScheduler==3.11.0        # Libreria per schedulare job (compiti) in Python, con supporto a cron e diverse tipologie di store
-python-dotenv==1.0.1       # Permette di caricare variabili d'ambiente da file .env, utile per configurazioni
-requests==2.32.3           # Libreria HTTP user-friendly, la più diffusa per effettuare richieste web in Python
-PySocks==1.7.1             # Fornisce supporto per proxy SOCKS (incluso Tor) per client di rete Python
-Unidecode==1.3.8           # Converte caratteri unicode in ASCII approssimati, utile per "normalizzare" stringhe
-beautifulsoup4==4.12.3     # Libreria per il parsing di documenti HTML e XML, utile per il web scraping
-bs4==0.0.2                 # Pacchetto metapackage che punta a beautifulsoup4 (fornisce l'alias "bs4")
-bencode.py==4.0.0          # Implementazione in Python del formato Bencode, utilizzato dai file .torrent
-rank-torrent-name==1.6.0   # Libreria per analizzare e "rankare" i nomi dei torrent, utile per matching e parsing
-httpx[http2]==0.28.1       # Libreria per le chiamate HTTP/2 parallele (per la perfomance)
-lzstring==1.0.4            # Libreria per la codifica/decodifica dei parametri nell'url
+fastapi				# Framework web ad alte prestazioni per Python, basato su asyncio e type hints
+starlette			# Microframework ASGI leggero e veloce, base di FastAPI per routing e gestione richieste
+uvicorn				# Server ASGI veloce e leggero, comunemente utilizzato per eseguire applicazioni FastAPI/Starlette
+APScheduler			# Libreria per schedulare job (compiti) in Python, con supporto a cron e diverse tipologie di store
+python-dotenv			# Permette di caricare variabili d'ambiente da file .env, utile per configurazioni
+requests			# Libreria HTTP user-friendly, la più diffusa per effettuare richieste web in Python
+PySocks				# Fornisce supporto per proxy SOCKS (incluso Tor) per client di rete Python
+Unidecode			# Converte caratteri unicode in ASCII approssimati, utile per "normalizzare" stringhe
+beautifulsoup4			# Libreria per il parsing di documenti HTML e XML, utile per il web scraping
+bs4				# Pacchetto metapackage che punta a beautifulsoup4 (fornisce l'alias "bs4")
+bencode.py			# Implementazione in Python del formato Bencode, utilizzato dai file .torrent
+rank-torrent-name		# Libreria per analizzare e "rankare" i nomi dei torrent, utile per matching e parsing
+httpx[http2]			# Libreria per le chiamate HTTP/2 parallele (per la perfomance)
+lzstring			# Libreria per la codifica/decodifica dei parametri nell'url
