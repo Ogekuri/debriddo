@@ -35,13 +35,13 @@
 !tests/
 !tests/**/*
 # verificare
-debriddo.code-workspace
-DEVELOP.md
-docker-compose.yml
-Dockerfile
-.dockerignore
-pip-freeze.txt
-entrypoint.sh
+!debriddo.code-workspace
+!DEVELOP.md
+!docker-compose.yml
+!Dockerfile
+!.dockerignore
+!pip-freeze.txt
+!entrypoint.sh
 
 
 ##########################################
