@@ -1,4 +1,4 @@
-# VERSION: 0.0.32
+# VERSION: 0.0.33
 # AUTHORS: Ogekuri
 
 def get_index(app_name, app_version, app_environment):
