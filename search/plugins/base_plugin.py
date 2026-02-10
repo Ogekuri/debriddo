@@ -1,4 +1,4 @@
-# VERSION: 0.0.33
+# VERSION: 0.0.34
 # AUTHORS: Ogekuri
 
 from utils.logger import setup_logger
