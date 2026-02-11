@@ -2,10 +2,10 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-from metdata.metadata_provider_base import MetadataProvider
-from models.movie import Movie
-from models.series import Series
-from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.metdata.metadata_provider_base import MetadataProvider
+from debriddo.models.movie import Movie
+from debriddo.models.series import Series
+from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
 
 class Cinemeta(MetadataProvider):

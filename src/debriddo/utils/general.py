@@ -4,7 +4,7 @@
 
 from RTN import parse
 
-from utils.logger import setup_logger
+from debriddo.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

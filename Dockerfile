@@ -29,13 +29,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copia lo script di entrypoint nella directory di lavoro
-COPY entrypoint.sh /entrypoint.sh
+COPY docker-entrypoint.sh /docker-entrypoint.sh
 
 # Assicurati che lo script sia eseguibile
-RUN chmod +x /entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Espone la porta specificata
 EXPOSE $DOCKER_PORT
 
 # Imposta lo script di entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]

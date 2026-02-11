@@ -2,7 +2,7 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-from utils.string_encoding import decode_lzstring, encode_lzstring
+from debriddo.utils.string_encoding import decode_lzstring, encode_lzstring
 
 # wrapping alla decode_lzstring per gestire eventuali retro-compatibità
 def parse_config(encoded_config):

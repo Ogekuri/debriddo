@@ -6,10 +6,10 @@ import json
 import queue
 import threading
 from typing import List
-from models.media import Media
-from torrent.torrent_item import TorrentItem
-from utils.logger import setup_logger
-from utils.parse_config import encode_query
+from debriddo.models.media import Media
+from debriddo.torrent.torrent_item import TorrentItem
+from debriddo.utils.logger import setup_logger
+from debriddo.utils.parse_config import encode_query
 
 logger = setup_logger(__name__)
 

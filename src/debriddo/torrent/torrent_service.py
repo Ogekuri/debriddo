@@ -13,12 +13,12 @@ import asyncio
 
 from RTN import parse
 
-from search.search_result import SearchResult
-from torrent.torrent_item import TorrentItem
-from utils.general import get_info_hash_from_magnet
-from utils.logger import setup_logger
-from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
-from utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
+from debriddo.search.search_result import SearchResult
+from debriddo.torrent.torrent_item import TorrentItem
+from debriddo.utils.general import get_info_hash_from_magnet
+from debriddo.utils.logger import setup_logger
+from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 class TorrentService:
 

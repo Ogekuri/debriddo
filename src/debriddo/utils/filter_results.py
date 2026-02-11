@@ -6,12 +6,12 @@ import re
 
 from RTN import title_match, RTN, DefaultRanking, SettingsModel, sort_torrents
 from RTN.exceptions import GarbageTorrent
-from utils.filter.language_filter import LanguageFilter
-from utils.filter.max_size_filter import MaxSizeFilter
-from utils.filter.quality_exclusion_filter import QualityExclusionFilter
-from utils.filter.results_per_quality_filter import ResultsPerQualityFilter
-from utils.filter.title_exclusion_filter import TitleExclusionFilter
-from utils.logger import setup_logger
+from debriddo.utils.filter.language_filter import LanguageFilter
+from debriddo.utils.filter.max_size_filter import MaxSizeFilter
+from debriddo.utils.filter.quality_exclusion_filter import QualityExclusionFilter
+from debriddo.utils.filter.results_per_quality_filter import ResultsPerQualityFilter
+from debriddo.utils.filter.title_exclusion_filter import TitleExclusionFilter
+from debriddo.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

@@ -1,7 +1,7 @@
 # VERSION: 0.0.34
 # AUTHORS: Ogekuri
 
-from utils.logger import setup_logger
+from debriddo.utils.logger import setup_logger
 
 class BasePlugin:
     def __init__(self, config):

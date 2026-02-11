@@ -13,7 +13,7 @@
 #     with open(1, 'w', encoding='utf-8', closefd=False) as utf8stdout:
 #         print(outtext, file=utf8stdout)
 
-from utils.logger import setup_logger
+from debriddo.utils.logger import setup_logger
 
 class PrettyPrint:
     def __init__(self):

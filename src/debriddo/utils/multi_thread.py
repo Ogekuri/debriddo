@@ -2,7 +2,7 @@
 # AUTHORS: Ogekuri
 
 import asyncio
-from constants import RUN_IN_MULTI_THREAD
+from debriddo.constants import RUN_IN_MULTI_THREAD
 
 MULTI_THREAD = RUN_IN_MULTI_THREAD
 

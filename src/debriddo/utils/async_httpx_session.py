@@ -11,7 +11,7 @@ import asyncio
 import httpx
 import socks
 import json
-from utils.logger import setup_logger
+from debriddo.utils.logger import setup_logger
 
 DEFAULT_TIMEOUT = 20.0  # 20 secondi
 

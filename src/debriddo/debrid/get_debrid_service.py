@@ -4,10 +4,10 @@
 
 from fastapi.exceptions import HTTPException
 
-from debrid.alldebrid import AllDebrid
-from debrid.premiumize import Premiumize
-from debrid.realdebrid import RealDebrid
-from debrid.torbox import TorBox
+from debriddo.debrid.alldebrid import AllDebrid
+from debriddo.debrid.premiumize import Premiumize
+from debriddo.debrid.realdebrid import RealDebrid
+from debriddo.debrid.torbox import TorBox
 
 
 def get_debrid_service(config):

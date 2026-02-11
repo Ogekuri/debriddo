@@ -3,9 +3,9 @@
 
 from RTN import parse
 
-from models.series import Series
-from torrent.torrent_item import TorrentItem
-from utils.logger import setup_logger
+from debriddo.models.series import Series
+from debriddo.torrent.torrent_item import TorrentItem
+from debriddo.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

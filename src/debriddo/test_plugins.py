@@ -1,23 +1,25 @@
 # VERSION: 0.0.34
 # AUTHORS: Ogekuri
 
-# run from this path
 import sys
 import asyncio
+from pathlib import Path
 
-# serve per helpers.py e novaprinter.py che voglio tenere in quel percorso
-sys.path.append("search/plugins/")
+# Allow execution as a standalone script from any working directory.
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
-from search.plugins.thepiratebay_categories import thepiratebay
-from search.plugins.one337x import one337x
-from search.plugins.limetorrents import limetorrents
-from search.plugins.torrentproject import torrentproject
-from search.plugins.ilcorsaronero import ilcorsaronero
-from search.plugins.torrentz import torrentz
-# from search.plugins.torrentgalaxyto import torrentgalaxy
-from search.plugins.torrentgalaxyone import torrentgalaxy
-from search.plugins.therarbg import therarbg
-from search.plugins.ilcorsaroblu import ilcorsaroblu
+from debriddo.search.plugins.thepiratebay_categories import thepiratebay
+from debriddo.search.plugins.one337x import one337x
+from debriddo.search.plugins.limetorrents import limetorrents
+from debriddo.search.plugins.torrentproject import torrentproject
+from debriddo.search.plugins.ilcorsaronero import ilcorsaronero
+from debriddo.search.plugins.torrentz import torrentz
+# from debriddo.search.plugins.torrentgalaxyto import torrentgalaxy
+from debriddo.search.plugins.torrentgalaxyone import torrentgalaxy
+from debriddo.search.plugins.therarbg import therarbg
+from debriddo.search.plugins.ilcorsaroblu import ilcorsaroblu
 
 from urllib.parse import quote_plus
 

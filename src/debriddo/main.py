@@ -10,6 +10,7 @@ import time
 import zipfile
 import uvicorn
 import json
+from pathlib import Path
 import starlette.status as status
 
 from dotenv import load_dotenv
@@ -27,27 +28,30 @@ from starlette.responses import FileResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
-from debrid.get_debrid_service import get_debrid_service
+from debriddo.debrid.get_debrid_service import get_debrid_service
 
-from search.search_result import SearchResult
-from search.search_service import SearchService
+from debriddo.search.search_result import SearchResult
+from debriddo.search.search_service import SearchService
 
-from metdata.cinemeta import Cinemeta
-from metdata.tmdb import TMDB
+from debriddo.metdata.cinemeta import Cinemeta
+from debriddo.metdata.tmdb import TMDB
 
-from torrent.torrent_service import TorrentService
-from torrent.torrent_smart_container import TorrentSmartContainer
+from debriddo.torrent.torrent_service import TorrentService
+from debriddo.torrent.torrent_smart_container import TorrentSmartContainer
 
-from utils.cache import search_cache
-from utils.filter_results import filter_items, sort_items
-from utils.logger import setup_logger
-from utils.parse_config import parse_config, parse_query
-from utils.stremio_parser import parse_to_stremio_streams
-from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.cache import search_cache
+from debriddo.utils.filter_results import filter_items, sort_items
+from debriddo.utils.logger import setup_logger
+from debriddo.utils.parse_config import parse_config, parse_query
+from debriddo.utils.stremio_parser import parse_to_stremio_streams
+from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
-from web.pages import get_index
+from debriddo.web.pages import get_index
 
-from constants import APPLICATION_NAME, APPLICATION_VERSION, APPLICATION_DESCRIPTION
+from debriddo.constants import APPLICATION_NAME, APPLICATION_VERSION, APPLICATION_DESCRIPTION
+
+APP_DIR = Path(__file__).resolve().parent
+WEB_DIR = APP_DIR / "web"
 
 
 # load .env
@@ -213,28 +217,28 @@ async def root():
 # /favicon.ico
 @app.get("/favicon.ico")
 async def get_favicon():
-    response = FileResponse(f"web/images/favicon.ico")
+    response = FileResponse(str(WEB_DIR / "images" / "favicon.ico"))
     return response
 
 # /config.js
 @app.get("/config.js")
 @app.get("/{config}/config.js")
 async def get_favicon():
-    response = FileResponse(f"web/config.js")
+    response = FileResponse(str(WEB_DIR / "config.js"))
     return response
 
 # /lz-string.min.js
 @app.get("/lz-string.min.js")
 @app.get("/{config}/lz-string.min.js")
 async def get_favicon():
-    response = FileResponse(f"web/lz-string.min.js")
+    response = FileResponse(str(WEB_DIR / "lz-string.min.js"))
     return response
 
 # /styles.css
 @app.get("/styles.css")
 @app.get("/{config}/styles.css")
 async def get_favicon():
-    response = FileResponse(f"web/styles.css")
+    response = FileResponse(str(WEB_DIR / "styles.css"))
     return response
 
 # /configure
@@ -248,7 +252,7 @@ async def configure():
 @app.get("/images/{file_path:path}")
 @app.get("/{config}/images/{file_path:path}")
 async def function(file_path: str):
-    response = FileResponse(f"web/images/{file_path}")
+    response = FileResponse(str(WEB_DIR / "images" / file_path))
     return response
 
 # /site.webmanifest
@@ -555,4 +559,4 @@ async def update_app():
 ############
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("debriddo.main:app", host="127.0.0.1", port=8000, reload=True)

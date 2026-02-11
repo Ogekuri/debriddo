@@ -11,4 +11,4 @@ services:
     ports:
       # prende la porta e la passa al network component
       - ${DOCKER_PORT:-8000}:${DOCKER_PORT:-8000}
-    command: /entrypoint.sh
+    command: /docker-entrypoint.sh

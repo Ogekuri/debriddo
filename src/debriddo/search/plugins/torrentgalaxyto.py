@@ -25,13 +25,13 @@ import re
 import math
 import time
 from urllib.parse import quote_plus
-from utils.logger import setup_logger
-from utils.novaprinter import PrettyPrint
+from debriddo.utils.logger import setup_logger
+from debriddo.utils.novaprinter import PrettyPrint
 prettyPrinter = PrettyPrint()
 from html.parser import HTMLParser
 import asyncio
-from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
-from search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.search.plugins.base_plugin import BasePlugin
 
 
 SITE_URL = "https://torrentgalaxy.to/"

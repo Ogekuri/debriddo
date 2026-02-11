@@ -4,9 +4,9 @@
 
 from urllib.parse import quote
 
-from models.media import Media
-from models.series import Series
-from utils.logger import setup_logger
+from debriddo.models.media import Media
+from debriddo.models.series import Series
+from debriddo.utils.logger import setup_logger
 
 
 class TorrentItem:

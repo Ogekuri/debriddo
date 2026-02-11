@@ -5,10 +5,10 @@
 # Assuming the BaseDebrid class and necessary imports are already defined as shown previously
 import json
 
-from constants import NO_CACHE_VIDEO_URL
-from debrid.base_debrid import BaseDebrid
-from utils.general import get_info_hash_from_magnet, season_episode_in_filename
-from utils.logger import setup_logger
+from debriddo.constants import NO_CACHE_VIDEO_URL
+from debriddo.debrid.base_debrid import BaseDebrid
+from debriddo.utils.general import get_info_hash_from_magnet, season_episode_in_filename
+from debriddo.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

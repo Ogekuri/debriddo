@@ -4,11 +4,11 @@
 from typing import List
 import sqlite3
 import os
-from constants import CACHE_DATABASE_FILE
-from torrent.torrent_item import TorrentItem
-from utils.logger import setup_logger
+from debriddo.constants import CACHE_DATABASE_FILE
+from debriddo.torrent.torrent_item import TorrentItem
+from debriddo.utils.logger import setup_logger
 from datetime import datetime
-from utils.string_encoding import normalize
+from debriddo.utils.string_encoding import normalize
 
 TABLE_NAME = "cached_items"
 

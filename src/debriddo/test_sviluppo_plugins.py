@@ -3,9 +3,15 @@
 
 from bs4 import BeautifulSoup
 from urllib.parse import quote, quote_plus
-from utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from pathlib import Path
 import sys
 import asyncio
+
+SRC_DIR = Path(__file__).resolve().parents[1]
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
 async def main():
     session = AsyncThreadSafeSession()

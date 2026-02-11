@@ -2,7 +2,7 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-from utils.logger import setup_logger
+from debriddo.utils.logger import setup_logger
 
 class MetadataProvider:
 

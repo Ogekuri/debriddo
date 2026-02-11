@@ -2,8 +2,8 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-from utils.filter.base_filter import BaseFilter
-from utils.logger import setup_logger
+from debriddo.utils.filter.base_filter import BaseFilter
+from debriddo.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

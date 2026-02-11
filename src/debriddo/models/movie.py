@@ -2,7 +2,7 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-from models.media import Media
+from debriddo.models.media import Media
 
 class Movie(Media):
     def __init__(self, id, titles, year, languages):

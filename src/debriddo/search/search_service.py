@@ -6,35 +6,35 @@ import xml.etree.ElementTree as ET
 
 import asyncio
 
-from search.search_indexer import SearchIndexer
-from search.search_result import SearchResult
-from models.movie import Movie
-from models.series import Series
-from utils.detection import detect_languages
-from utils.logger import setup_logger
-from utils.string_encoding import normalize
+from debriddo.search.search_indexer import SearchIndexer
+from debriddo.search.search_result import SearchResult
+from debriddo.models.movie import Movie
+from debriddo.models.series import Series
+from debriddo.utils.detection import detect_languages
+from debriddo.utils.logger import setup_logger
+from debriddo.utils.string_encoding import normalize
 
 import time
 import xml.etree.ElementTree as ET
 
 from RTN import parse
 
-from search.plugins.thepiratebay_categories import thepiratebay
-from search.plugins.one337x import one337x
-from search.plugins.limetorrents import limetorrents
-from search.plugins.torrentproject import torrentproject
-from search.plugins.ilcorsaronero import ilcorsaronero
-from search.plugins.torrentz import torrentz
+from debriddo.search.plugins.thepiratebay_categories import thepiratebay
+from debriddo.search.plugins.one337x import one337x
+from debriddo.search.plugins.limetorrents import limetorrents
+from debriddo.search.plugins.torrentproject import torrentproject
+from debriddo.search.plugins.ilcorsaronero import ilcorsaronero
+from debriddo.search.plugins.torrentz import torrentz
 # from search.plugins.torrentgalaxyto import torrentgalaxy
-from search.plugins.torrentgalaxyone import torrentgalaxy
-from search.plugins.therarbg import therarbg
-from search.plugins.ilcorsaroblu import ilcorsaroblu
+from debriddo.search.plugins.torrentgalaxyone import torrentgalaxy
+from debriddo.search.plugins.therarbg import therarbg
+from debriddo.search.plugins.ilcorsaroblu import ilcorsaroblu
 
 from urllib.parse import urlparse, parse_qs
 from concurrent.futures import ThreadPoolExecutor
 
 from itertools import chain
-from utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
+from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 # Se non trova risultati prova una ricerca più estesa
 SEARCHE_FALL_BACK = False

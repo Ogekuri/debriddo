@@ -1,8 +1,13 @@
 # VERSION: 0.0.34
 # AUTHORS: Ogekuri
 
+from pathlib import Path
+
+WEB_DIR = Path(__file__).resolve().parent
+
+
 def get_index(app_name, app_version, app_environment):
-    with open("web/index.html", 'r', encoding='utf-8') as file:
+    with open(WEB_DIR / "index.html", 'r', encoding='utf-8') as file:
         index = file.read()
         index = index.replace( "$APP_NAME", app_name )
         index = index.replace( "$APP_VERSION", app_version )
@@ -60,4 +65,3 @@ def get_index(app_name, app_version, app_environment):
     </html>
     """
     return error
-

@@ -6,10 +6,10 @@ import json
 import uuid
 from urllib.parse import unquote
 
-from constants import NO_CACHE_VIDEO_URL
-from debrid.base_debrid import BaseDebrid
-from utils.general import season_episode_in_filename
-from utils.logger import setup_logger
+from debriddo.constants import NO_CACHE_VIDEO_URL
+from debriddo.debrid.base_debrid import BaseDebrid
+from debriddo.utils.general import season_episode_in_filename
+from debriddo.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
 

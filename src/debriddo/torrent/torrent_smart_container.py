@@ -5,16 +5,16 @@
 
 from typing import List, Dict
 
-from debrid.alldebrid import AllDebrid
-from debrid.premiumize import Premiumize
-from debrid.realdebrid import RealDebrid
-from debrid.torbox import TorBox
+from debriddo.debrid.alldebrid import AllDebrid
+from debriddo.debrid.premiumize import Premiumize
+from debriddo.debrid.realdebrid import RealDebrid
+from debriddo.debrid.torbox import TorBox
 
-from torrent.torrent_item import TorrentItem
+from debriddo.torrent.torrent_item import TorrentItem
 
-from utils.cache import cache_results
-from utils.general import season_episode_in_filename
-from utils.logger import setup_logger
+from debriddo.utils.cache import cache_results
+from debriddo.utils.general import season_episode_in_filename
+from debriddo.utils.logger import setup_logger
 
 
 class TorrentSmartContainer:
