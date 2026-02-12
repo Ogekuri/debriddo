@@ -141,6 +141,15 @@ def resolve_auto_thread_count():
     except Exception as exc:
         logger.error(f"Errore nel calcolo dei numero dei threads: {exc}")
         return 1
+
+
+def get_or_create_event_loop():
+    try:
+        return asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        return loop
     
 
 # Lifespan: gestisce startup e shutdown
@@ -172,7 +181,7 @@ app = FastAPI(lifespan=lifespan)
 n_threads = resolve_thread_count()
 logger.info(f"Set numeber of thread to: {n_threads}")
 executor = ThreadPoolExecutor(max_workers=n_threads)
-loop = asyncio.get_event_loop()
+loop = get_or_create_event_loop()
 loop.set_default_executor(executor)
 
 # Aggiunge il loggin del middleware fastapi

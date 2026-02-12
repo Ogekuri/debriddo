@@ -16,7 +16,11 @@
               - description: Reads os.cpu_count(), applies (cores*2)+1 heuristic, and raises if CPU core count is unavailable.
               - input: None
               - output: optimal_num_threads
-    - `lifespan()`: Configure scheduler and application lifecycle hooks. [src/debriddo/main.py, 146-166]
+    - `get_or_create_event_loop()`: Ensure an asyncio event loop is available. [src/debriddo/main.py, 146-152]
+      - description: Retrieves the current event loop or creates and sets a new loop when missing.
+      - input: None
+      - output: loop: asyncio.AbstractEventLoop, default loop for executor setup
+    - `lifespan()`: Configure scheduler and application lifecycle hooks. [src/debriddo/main.py, 155-175]
       - description: Starts APScheduler job for update checks, logs reload status, yields control, and shuts down scheduler on exit.
       - input: app
       - output: None

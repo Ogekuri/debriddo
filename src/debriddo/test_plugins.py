@@ -30,36 +30,14 @@ ilcorsaroblu_user = {
 }
 
 
-# engines = [thepiratebay(), one337x(), limetorrents(), torrentproject(), ilcorsaronero(), torrentz(), torrentgalaxy(), therarbg(), ilcorsaroblu(ilcorsaroblu_user['uid'], ilcorsaroblu_user['pwd'])]
-# engines = [thepiratebay()]
-# engines = [one337x()]
-# engines = [limetorrents()]
-# engines = [torrentproject()]
-# engines = [ilcorsaronero()]
-# engines = [torrentz()]
-engines = [torrentgalaxy()]
-# engines = [therarbg()]
-# engines = [ilcorsaroblu(ilcorsaroblu_user['uid'], ilcorsaroblu_user['pwd'])]
+def build_engines():
+    return [
+        torrentgalaxy({})
+    ]
 
-# SEARCH_STRING="Arcane S02 ITA"
-# SEARCH_TYPE="tv"
 
-# SEARCH_STRING="Wolfs 2024 ITA"
-# SEARCH_TYPE="movies"
-
-# SEARCH_STRING="Wolfs 2024"
-# SEARCH_TYPE="movies"
-
-SEARCH_STRING="The Fall Guy 2024 ITA"
-SEARCH_TYPE="movies"
-
-# SEARCH_STRING="Star Wars Tales of the Empire S01"
-# SEARCH_TYPE="tv"
-
-# SEARCH_STRING="Star Wars"
-# SEARCH_TYPE="tv"
-
-print(f"Search: {SEARCH_STRING}/{SEARCH_TYPE}")
+SEARCH_STRING = "The Fall Guy 2024 ITA"
+SEARCH_TYPE = "movies"
 
 def __is_torrent(link: str) -> bool:
     # Controlla se il link termina con ".torrent"
@@ -70,6 +48,8 @@ def __is_magnet_link(link: str) -> bool:
     return link.startswith("magnet:?")
 
 async def main():
+    engines = build_engines()
+    print(f"Search: {SEARCH_STRING}/{SEARCH_TYPE}")
     all_results = []
     for engine in engines:
         await engine.login()
@@ -103,4 +83,5 @@ async def main():
     for engine in engines:
         await engine.close()  # Buona pratica: chiudere manualmente
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
