@@ -782,7 +782,7 @@ Queste regole devono essere sempre rispettate:
   ID originale: `DES-115`.
   Comportamento atteso: i lettori possono validare comportamenti `REQ-*` senza affidarsi a test non documentati.  
   Criteri di accettazione: ogni requisito di test include un criterio pass/fail chiaro e referenzia almeno un requisito `REQ-*`.  
-  Evidenza: la repository contiene una directory `tests/` vuota e non contiene una suite convenzionale di unit test. Estratto: `tests/` (vuota).
+  Evidenza: la repository contiene una directory `tests/` che contiene una suite convenzionale di unit test.
 
 - **TST-501**: Il sistema deve essere verificabile per `REQ-511` inviando `GET /manifest.json` e asserendo che la risposta e' JSON contenente un array `resources` con una risorsa `stream` che supporta `movie` e `series`.  
   ID originale: `TST-001`.
