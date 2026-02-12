@@ -240,11 +240,11 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: il middleware e' aggiunto solo sotto `if development is not None:` e usa sostituzioni regex per `/C_.../` e `/Q_...`.  
   Evidenza: `src/debriddo/main.py` / `LogFilterMiddleware` e `app.add_middleware(LogFilterMiddleware)`. Estratto: `sensible_path = re.sub(r'/C_.*?/', '/<CONFIG>/', path)`.
 
-- **DES-517**: Il servizio deve configurare un `ThreadPoolExecutor` di default dimensionato da `calculate_optimal_thread_count()` e impostarlo come executor di default dell'event loop asyncio.  
+- **DES-517**: Il servizio deve configurare un `ThreadPoolExecutor` di default dimensionato in base a `N_THREADS` quando valido, altrimenti calcolato da `calculate_optimal_thread_count()` e impostarlo come executor di default dell'event loop asyncio.  
   ID originale: `DES-105`.
-  Comportamento atteso: `loop.run_in_executor` usa questo executor di default.  
-  Criteri di accettazione: il codice calcola `n_threads`, crea `ThreadPoolExecutor(max_workers=n_threads)` e invoca `loop.set_default_executor(executor)`.  
-  Evidenza: `src/debriddo/main.py` / simboli `calculate_optimal_thread_count`, `executor`, `loop`. Estratto: `executor = ThreadPoolExecutor(max_workers=n_threads)`.
+  Comportamento atteso: se `N_THREADS` non e' definita o contiene `auto`, il numero di thread e' calcolato con `calculate_optimal_thread_count(os.cpu_count())`; se `N_THREADS` contiene un intero, usa quel valore; se `N_THREADS` e' invalida o il calcolo fallisce, `n_threads` e' impostato a `1` e l'errore e' segnalato in output. `loop.run_in_executor` usa questo executor di default.  
+  Criteri di accettazione: il codice legge `N_THREADS`, determina `n_threads` seguendo la logica di fallback, gestisce gli errori di parsing o calcolo con una segnalazione in output, crea `ThreadPoolExecutor(max_workers=n_threads)` e invoca `loop.set_default_executor(executor)`.  
+  Evidenza: `src/debriddo/main.py` / simboli `calculate_optimal_thread_count`, `executor`, `loop`, `N_THREADS`. Estratto: `n_threads = ...`, `executor = ThreadPoolExecutor(max_workers=n_threads)`.
 
 - **DES-518**: Il servizio deve pianificare un task periodico `update_app` con intervallo 60 secondi per tutta la durata del lifespan FastAPI.  
   ID originale: `DES-106`.

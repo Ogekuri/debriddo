@@ -103,18 +103,44 @@ def calculate_optimal_thread_count():
     Calcola il numero ottimale di thread basato sui core della CPU.
     Formula: (N CPU Cores * 2) + 1
     """
+    # Ottieni il numero di core della CPU
+    cpu_cores = os.cpu_count()
+    if cpu_cores is None:
+        raise RuntimeError("os.cpu_count() non ha restituito un valore valido")
+
+    # Calcola il numero ottimale di threads
+    optimal_num_threads = (cpu_cores * 2) + 1
+    return optimal_num_threads
+
+
+def resolve_thread_count():
+    n_threads_env = os.getenv("N_THREADS")
+    if n_threads_env is None:
+        return resolve_auto_thread_count()
+
+    n_threads_value = n_threads_env.strip()
+    if n_threads_value.lower() == "auto":
+        return resolve_auto_thread_count()
+
     try:
-        # Ottieni il numero di core della CPU
-        cpu_cores = os.cpu_count()
-        if cpu_cores is None:
-            return 8
-        
-        # Calcola il numero ottimale di threads
-        optimal_num_threads = (cpu_cores * 2) + 1
-        return optimal_num_threads
-    except Exception as e:
-        logger.error(f"Errore nel calcolo dei numero dei threads: {e}")
-        return 8
+        n_threads = int(n_threads_value)
+    except ValueError as exc:
+        logger.error(f"N_THREADS non valido: '{n_threads_env}'. Errore: {exc}")
+        return 1
+
+    if n_threads <= 0:
+        logger.error(f"N_THREADS non valido: '{n_threads_env}'. Deve essere maggiore di 0.")
+        return 1
+
+    return n_threads
+
+
+def resolve_auto_thread_count():
+    try:
+        return calculate_optimal_thread_count()
+    except Exception as exc:
+        logger.error(f"Errore nel calcolo dei numero dei threads: {exc}")
+        return 1
     
 
 # Lifespan: gestisce startup e shutdown
@@ -143,7 +169,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Imposta un maggior numero di thread, per esempio 16
-n_threads = calculate_optimal_thread_count()
+n_threads = resolve_thread_count()
 logger.info(f"Set numeber of thread to: {n_threads}")
 executor = ThreadPoolExecutor(max_workers=n_threads)
 loop = asyncio.get_event_loop()

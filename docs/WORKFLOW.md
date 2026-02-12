@@ -2,16 +2,26 @@
 
 - Feature: Application startup and lifecycle
   - Component: src/debriddo/main.py
-    - `calculate_optimal_thread_count()`: Calculate thread pool size from CPU cores. [src/debriddo/main.py, 101-117]
-      - description: Reads os.cpu_count(), applies (cores*2)+1 heuristic, returns fallback 8 on error while logging.
+    - `resolve_thread_count()`: Resolve thread pool size from N_THREADS or CPU heuristic. [src/debriddo/main.py, 116-135]
+      - description: Reads N_THREADS, uses auto calculation when missing or "auto", logs parsing errors for invalid values, and falls back to 1 when invalid.
       - input: None
-      - output: optimal_num_threads
-    - `lifespan()`: Configure scheduler and application lifecycle hooks. [src/debriddo/main.py, 121-140]
+      - output: n_threads
+      - calls:
+        - `resolve_auto_thread_count()`: Calculate thread count from CPU with error fallback. [src/debriddo/main.py, 138-143]
+          - description: Calls calculate_optimal_thread_count and returns 1 when the calculation raises an error, logging the failure.
+          - input: None
+          - output: n_threads
+          - calls:
+            - `calculate_optimal_thread_count()`: Calculate thread pool size from CPU cores. [src/debriddo/main.py, 101-113]
+              - description: Reads os.cpu_count(), applies (cores*2)+1 heuristic, and raises if CPU core count is unavailable.
+              - input: None
+              - output: optimal_num_threads
+    - `lifespan()`: Configure scheduler and application lifecycle hooks. [src/debriddo/main.py, 146-166]
       - description: Starts APScheduler job for update checks, logs reload status, yields control, and shuts down scheduler on exit.
       - input: app
       - output: None
       - calls:
-        - `update_app()`: Self-update check and in-place upgrade routine. [src/debriddo/main.py, 504-554]
+        - `update_app()`: Self-update check and in-place upgrade routine. [src/debriddo/main.py, 530-580]
           - description: Calls GitHub releases API, downloads zip when version differs, extracts and copies files, then deletes update artifacts.
           - input: None
           - output: None
@@ -32,18 +42,18 @@
 
 - Feature: Request logging middleware
   - Component: src/debriddo/main.py
-    - `__call__()`: Log HTTP requests with sanitized path and body. [src/debriddo/main.py, 157-189]
+    - `__call__()`: Log HTTP requests with sanitized path and body. [src/debriddo/main.py, 183-215]
       - description: Builds Request, redacts config/query segments from path, logs method and body, and delegates to downstream app.
       - input: scope; receive; send
       - output: response
 
 - Feature: Configuration UI and static assets
   - Component: src/debriddo/main.py
-    - `root()`: Redirect root requests to configuration UI. [src/debriddo/main.py, 213-215]
+    - `root()`: Redirect root requests to configuration UI. [src/debriddo/main.py, 240-241]
       - description: Returns a RedirectResponse to /configure.
       - input: None
       - output: RedirectResponse: RedirectResponse, redirect to /configure
-    - `configure()`: Render configuration UI HTML. [src/debriddo/main.py, 246-249]
+    - `configure()`: Render configuration UI HTML. [src/debriddo/main.py, 274-275]
       - description: Uses get_index to substitute application metadata into web/index.html.
       - input: None
       - output: index: str, HTML content
@@ -52,41 +62,41 @@
           - description: Reads index.html from WEB_DIR and replaces $APP_NAME, $APP_VERSION, $APP_ENVIRONMENT.
           - input: app_name; app_version; app_environment
           - output: index: str, rendered HTML
-    - `get_favicon()`: Serve favicon.ico asset. [src/debriddo/main.py, 218-221]
+    - `get_favicon()`: Serve favicon.ico asset. [src/debriddo/main.py, 244-247]
       - description: Returns FileResponse for WEB_DIR/images/favicon.ico.
       - input: None
       - output: response: FileResponse, favicon asset
-    - `get_favicon()`: Serve config.js asset. [src/debriddo/main.py, 224-228]
+    - `get_favicon()`: Serve config.js asset. [src/debriddo/main.py, 252-254]
       - description: Returns FileResponse for WEB_DIR/config.js.
       - input: None
       - output: response: FileResponse, config.js asset
-    - `get_favicon()`: Serve lz-string.min.js asset. [src/debriddo/main.py, 230-235]
+    - `get_favicon()`: Serve lz-string.min.js asset. [src/debriddo/main.py, 259-261]
       - description: Returns FileResponse for WEB_DIR/lz-string.min.js.
       - input: None
       - output: response: FileResponse, lz-string asset
-    - `get_favicon()`: Serve styles.css asset. [src/debriddo/main.py, 238-242]
+    - `get_favicon()`: Serve styles.css asset. [src/debriddo/main.py, 266-268]
       - description: Returns FileResponse for WEB_DIR/styles.css.
       - input: None
       - output: response: FileResponse, styles asset
-    - `function()`: Serve images from WEB_DIR/images. [src/debriddo/main.py, 252-256]
+    - `function()`: Serve images from WEB_DIR/images. [src/debriddo/main.py, 280-282]
       - description: Maps image path to WEB_DIR/images and returns FileResponse.
       - input: file_path
       - output: response: FileResponse, image asset
 
 - Feature: Manifest endpoints
   - Component: src/debriddo/main.py
-    - `configure()`: Build site.webmanifest JSON response. [src/debriddo/main.py, 259-289]
+    - `configure()`: Build site.webmanifest JSON response. [src/debriddo/main.py, 286-315]
       - description: Constructs PWA manifest dict using app metadata and app_website URLs.
       - input: None
       - output: menifest_dict: dict, web manifest payload
-    - `get_manifest()`: Build Stremio add-on manifest JSON. [src/debriddo/main.py, 295-369]
+    - `get_manifest()`: Build Stremio add-on manifest JSON. [src/debriddo/main.py, 321-395]
       - description: Constructs manifest with stream/meta resources and icon URLs derived from app_website.
       - input: None
       - output: manifest_dict: dict, add-on manifest payload
 
 - Feature: Stream endpoint orchestration (GET /{config_url}/stream/{stream_type}/{stream_id})
   - Component: src/debriddo/main.py
-    - `get_results()`: Orchestrate metadata lookup, search, filtering, and stream formatting. [src/debriddo/main.py, 372-463]
+    - `get_results()`: Orchestrate metadata lookup, search, filtering, and stream formatting. [src/debriddo/main.py, 399-489]
       - description: Decodes config, fetches metadata, loads cached/search results, filters and converts torrents, updates availability, formats Stremio streams, and returns streams list when debrid is enabled.
       - input: config_url; stream_type; stream_id; request
       - output: stream_list: list, Stremio stream entries; None: None, no response when debrid disabled
@@ -544,7 +554,7 @@
 
 - Feature: Playback redirect (GET /playback/{config_url}/{query_string})
   - Component: src/debriddo/main.py
-    - `get_playback()`: Resolve debrid stream link and redirect. [src/debriddo/main.py, 476-497]
+    - `get_playback()`: Resolve debrid stream link and redirect. [src/debriddo/main.py, 503-519]
       - description: Decodes config/query, resolves debrid stream link, and returns HTTP 301 redirect to resolved URL.
       - input: config_url; query_string; request
       - output: RedirectResponse: RedirectResponse, playback redirect
