@@ -730,6 +730,79 @@
       - input: hashes_or_magnets; ip
       - output: available_torrents: dict
 
+- Feature: API tester CLI
+  - Component: src/api_tester/api_tester.py
+    - `main()`: Parse CLI and dispatch API test command. [src/api_tester/api_tester.py, 787-799]
+      - description: Validates that no Debriddo modules are loaded, builds the parser, parses CLI args, and executes the selected command handler with error handling.
+      - input: None
+      - output: exit_code: int, CLI exit status
+      - calls:
+        - `ensure_no_debriddo_modules_loaded()`: Block execution when Debriddo modules are loaded. [src/api_tester/api_tester.py, 38-47]
+          - description: Scans sys.modules for the debriddo namespace and raises CliError when found.
+          - input: None
+          - output: None
+        - `build_parser()`: Configure argparse CLI and subcommands. [src/api_tester/api_tester.py, 644-784]
+          - description: Declares CLI options and binds command handlers for target, stream, playback, and smoke tests.
+          - input: None
+          - output: parser: argparse.ArgumentParser, CLI parser with subcommands
+        - `cmd_smoke()`: Execute the API smoke suite and report summary. [src/api_tester/api_tester.py, 629-641]
+          - description: Resolves target URLs, runs the smoke workflow, prints PASS/FAIL results, and returns non-zero when failures occur.
+          - input: args: argparse.Namespace
+          - output: exit_code: int, 0 on success, 1 when failures exist
+          - calls:
+            - `get_target_from_args()`: Resolve configuration URL from CLI/env. [src/api_tester/api_tester.py, 101-107]
+              - description: Reads --config-url or env var and normalizes the configuration URL.
+              - input: args: argparse.Namespace
+              - output: target: TargetUrls
+              - calls:
+                - `normalize_config_url()`: Validate and normalize config URL into target parts. [src/api_tester/api_tester.py, 64-98]
+                  - description: Parses URL, extracts C_ segment, and builds base/config URLs.
+                  - input: raw_value: str
+                  - output: target: TargetUrls
+            - `run_smoke()`: Run HTTP checks across core endpoints. [src/api_tester/api_tester.py, 413-626]
+              - description: Issues HTTP requests to configuration, assets, manifest, stream, and playback endpoints and records per-check results.
+              - input: args: argparse.Namespace; target: TargetUrls
+              - output: results: list, CheckResult entries
+              - calls:
+                - `request_url()`: Issue HTTP request via requests.Session. [src/api_tester/api_tester.py, 110-125]
+                  - description: Executes the HTTP request with timeout and SSL options and returns the response.
+                  - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+                  - output: response: requests.Response
+                - `request_stream()`: Request stream endpoint for a media item. [src/api_tester/api_tester.py, 252-274]
+                  - description: Builds the stream URL, sends a GET request, and returns the response.
+                  - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; stream_type: str; stream_id: str; append_json_suffix: bool
+                  - output: response: requests.Response
+                  - calls:
+                    - `build_stream_path()`: Build stream endpoint path. [src/api_tester/api_tester.py, 175-184]
+                      - description: Encodes stream ID, appends .json when requested, and builds the stream path.
+                      - input: target: TargetUrls; stream_type: str; stream_id: str; append_json_suffix: bool
+                      - output: path: str
+                    - `request_url()`: Issue HTTP request via requests.Session. [src/api_tester/api_tester.py, 110-125]
+                      - description: Executes the HTTP request with timeout and SSL options and returns the response.
+                      - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+                      - output: response: requests.Response
+                - `request_playback()`: Request playback endpoint. [src/api_tester/api_tester.py, 335-350]
+                  - description: Builds playback URL and issues the HTTP request.
+                  - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; method: str; playback_path: str
+                  - output: response: requests.Response
+                  - calls:
+                    - `request_url()`: Issue HTTP request via requests.Session. [src/api_tester/api_tester.py, 110-125]
+                      - description: Executes the HTTP request with timeout and SSL options and returns the response.
+                      - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+                      - output: response: requests.Response
+                - `validate_manifest_payload()`: Validate Stremio manifest payload. [src/api_tester/api_tester.py, 394-406]
+                  - description: Confirms the manifest contains a stream resource supporting movie and series.
+                  - input: payload: Dict[str, Any]
+                  - output: ok: bool; detail: str
+                - `extract_playback_path_from_streams()`: Extract playback path from stream payload. [src/api_tester/api_tester.py, 318-332]
+                  - description: Scans stream entries for a playback URL and returns its path.
+                  - input: streams_payload: Dict[str, Any]
+                  - output: playback_path: str; None: None, when missing
+                - `add_check()`: Append a smoke check result. [src/api_tester/api_tester.py, 409-410]
+                  - description: Adds a CheckResult entry to the results list.
+                  - input: results: List[CheckResult]; name: str; ok: bool; detail: str
+                  - output: None
+
 - Feature: Release workflow automation
   - Component: .github/workflows/release.yml
     - `create-release job()`: Build release assets and publish Docker images on tag push. [.github/workflows/release.yml, 13-103]

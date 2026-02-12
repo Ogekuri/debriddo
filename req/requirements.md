@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.2"
+version: "0.3"
 date: "2026-02-12"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.2  
+**Versione**: 0.3  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-12
 
@@ -44,6 +44,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
     - [3.10 Formattazione stream Stremio](#310-formattazione-stream-stremio)
     - [3.11 Playback (redirect Debrid)](#311-playback-redirect-debrid)
     - [3.12 Servizi Debrid (implementazioni)](#312-servizi-debrid-implementazioni)
+    - [3.13 Script API tester](#313-script-api-tester)
   - [4. Requisiti di test](#4-requisiti-di-test)
   - [5. Storico revisioni](#5-storico-revisioni)
 <!-- TOC -->
@@ -766,6 +767,14 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: almeno una implementazione Debrid ritorna `NO_CACHE_VIDEO_URL` in condizioni di non-readiness; `NO_CACHE_VIDEO_URL` e' definito in `constants.py`.  
   Evidenza: `src/debriddo/constants.py` / `NO_CACHE_VIDEO_URL`. Estratto: `NO_CACHE_VIDEO_URL = \"https://github.com/Ogekuri/debriddo/raw/refs/heads/master/videos/nocache.mp4\"`; `src/debriddo/debrid/realdebrid.py` / `get_stream_link()`. Estratto: `if links is None: return NO_CACHE_VIDEO_URL`.
 
+### 3.13 Script API tester
+
+- **REQ-561**: Lo script `src/api_tester/api_tester.py` deve restare autonomo e non deve importare o utilizzare moduli/librerie dell'applicazione Debriddo presenti in `src/debriddo/`.  
+  ID originale: `REQ-912`.
+  Comportamento atteso: il tester API usa solo librerie standard e dipendenze esterne generiche senza accedere al namespace `debriddo`.  
+  Criteri di accettazione: il codice del tester include un controllo che rifiuta l'esecuzione se rileva moduli `debriddo` caricati e non contiene import diretti di `debriddo`.  
+  Evidenza: `src/api_tester/api_tester.py` / `ensure_no_debriddo_modules_loaded()`. Estratto: `loaded = sorted(name for name in sys.modules if name == \"debriddo\" or name.startswith(\"debriddo.\"))`.
+
 ## 4. Requisiti di test
 <!-- Requisiti di test legati a requisiti funzionali/non-funzionali o contesti di verifica -->
 
@@ -793,6 +802,12 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: PASS se status e' 301 e `Location` e' presente; FAIL altrimenti.  
   Evidenza: `src/debriddo/main.py` / `get_playback()` imposta `status_code=status.HTTP_301_MOVED_PERMANENTLY`. Estratto: `status_code=status.HTTP_301_MOVED_PERMANENTLY`.
 
+- **TST-504**: Il sistema deve essere verificabile per `REQ-561` eseguendo un'analisi statica del file `src/api_tester/api_tester.py` per assicurarsi che non contenga import di `debriddo` e che sia presente un controllo runtime di blocco moduli `debriddo`.  
+  ID originale: `TST-004`.
+  Comportamento atteso: il tester API non dipende dal codice applicativo Debriddo.  
+  Criteri di accettazione: PASS se non compaiono statement `import debriddo` e se `ensure_no_debriddo_modules_loaded()` e' definita ed invocata nel flusso principale; FAIL altrimenti.  
+  Evidenza: `src/api_tester/api_tester.py` / `ensure_no_debriddo_modules_loaded()` e `main()`. Estratto: `ensure_no_debriddo_modules_loaded()`; `loaded = sorted(...)`.
+
 ## 5. Storico revisioni
 <!-- A ogni modifica, aggiornare versione e aggiungere una riga -->
 
@@ -805,3 +820,4 @@ Queste regole devono essere sempre rispettate:
 | Data       | Versione | Motivazione e descrizione modifica |
 |------------|----------|------------------------------------|
 | 2026-02-12 | 0.2      | Riorganizzazione, traduzione in Italiano, integrazione di requisiti mancanti dal codice, e rinumerazione (vedi mapping nella risposta dell'agente). |
+| 2026-02-12 | 0.3      | Aggiunto requisito di autonomia per lo script API tester e relativo requisito di test. |

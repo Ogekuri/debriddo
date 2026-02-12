@@ -28,10 +28,23 @@ except ImportError as import_error:
 
 DEFAULT_CONFIG_ENV = "DEBRIDDO_CONFIG_URL"
 DEFAULT_TIMEOUT = 30.0
+DEBRIDDO_MODULE_PREFIX = "debriddo"
 
 
 class CliError(Exception):
     pass
+
+
+def ensure_no_debriddo_modules_loaded() -> None:
+    loaded = sorted(
+        name
+        for name in sys.modules
+        if name == DEBRIDDO_MODULE_PREFIX or name.startswith(f"{DEBRIDDO_MODULE_PREFIX}.")
+    )
+    if loaded:
+        raise CliError(
+            "Il tester API non deve utilizzare moduli Debriddo: rimuovi le importazioni."
+        )
 
 
 @dataclass
@@ -772,6 +785,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    ensure_no_debriddo_modules_loaded()
     parser = build_parser()
     args = parser.parse_args()
 
