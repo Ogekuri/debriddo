@@ -1,0 +1,781 @@
+# WORKFLOW
+
+- Feature: Application startup and lifecycle
+  - Component: src/debriddo/main.py
+    - `calculate_optimal_thread_count()`: Calculate thread pool size from CPU cores. [src/debriddo/main.py, 101-117]
+      - description: Reads os.cpu_count(), applies (cores*2)+1 heuristic, returns fallback 8 on error while logging.
+      - input: None
+      - output: optimal_num_threads
+    - `lifespan()`: Configure scheduler and application lifecycle hooks. [src/debriddo/main.py, 121-140]
+      - description: Starts APScheduler job for update checks, logs reload status, yields control, and shuts down scheduler on exit.
+      - input: app
+      - output: None
+      - calls:
+        - `update_app()`: Self-update check and in-place upgrade routine. [src/debriddo/main.py, 504-554]
+          - description: Calls GitHub releases API, downloads zip when version differs, extracts and copies files, then deletes update artifacts.
+          - input: None
+          - output: None
+          - calls:
+            - `request_get()`: Issue HTTP GET with AsyncThreadSafeSession headers. [src/debriddo/utils/async_httpx_session.py, 124-125]
+              - description: Wraps request() to perform HTTP GET via httpx client.
+              - input: url; kwargs
+              - output: response; None: None, on error
+              - calls:
+                - `request()`: Core HTTP request wrapper with error handling. [src/debriddo/utils/async_httpx_session.py, 98-122]
+                  - description: Executes async HTTPX request with default headers/timeout and returns response or None on errors.
+                  - input: method; url; kwargs
+                  - output: response; None: None, on HTTP or connection errors
+            - `close()`: Close AsyncThreadSafeSession client. [src/debriddo/utils/async_httpx_session.py, 41-45]
+              - description: Closes the underlying HTTPX client and marks session closed.
+              - input: None
+              - output: None
+
+- Feature: Request logging middleware
+  - Component: src/debriddo/main.py
+    - `__call__()`: Log HTTP requests with sanitized path and body. [src/debriddo/main.py, 157-189]
+      - description: Builds Request, redacts config/query segments from path, logs method and body, and delegates to downstream app.
+      - input: scope; receive; send
+      - output: response
+
+- Feature: Configuration UI and static assets
+  - Component: src/debriddo/main.py
+    - `root()`: Redirect root requests to configuration UI. [src/debriddo/main.py, 213-215]
+      - description: Returns a RedirectResponse to /configure.
+      - input: None
+      - output: RedirectResponse: RedirectResponse, redirect to /configure
+    - `configure()`: Render configuration UI HTML. [src/debriddo/main.py, 246-249]
+      - description: Uses get_index to substitute application metadata into web/index.html.
+      - input: None
+      - output: index: str, HTML content
+      - calls:
+        - `get_index()`: Load index.html and replace UI placeholders. [src/debriddo/web/pages.py, 9-15]
+          - description: Reads index.html from WEB_DIR and replaces $APP_NAME, $APP_VERSION, $APP_ENVIRONMENT.
+          - input: app_name; app_version; app_environment
+          - output: index: str, rendered HTML
+    - `get_favicon()`: Serve favicon.ico asset. [src/debriddo/main.py, 218-221]
+      - description: Returns FileResponse for WEB_DIR/images/favicon.ico.
+      - input: None
+      - output: response: FileResponse, favicon asset
+    - `get_favicon()`: Serve config.js asset. [src/debriddo/main.py, 224-228]
+      - description: Returns FileResponse for WEB_DIR/config.js.
+      - input: None
+      - output: response: FileResponse, config.js asset
+    - `get_favicon()`: Serve lz-string.min.js asset. [src/debriddo/main.py, 230-235]
+      - description: Returns FileResponse for WEB_DIR/lz-string.min.js.
+      - input: None
+      - output: response: FileResponse, lz-string asset
+    - `get_favicon()`: Serve styles.css asset. [src/debriddo/main.py, 238-242]
+      - description: Returns FileResponse for WEB_DIR/styles.css.
+      - input: None
+      - output: response: FileResponse, styles asset
+    - `function()`: Serve images from WEB_DIR/images. [src/debriddo/main.py, 252-256]
+      - description: Maps image path to WEB_DIR/images and returns FileResponse.
+      - input: file_path
+      - output: response: FileResponse, image asset
+
+- Feature: Manifest endpoints
+  - Component: src/debriddo/main.py
+    - `configure()`: Build site.webmanifest JSON response. [src/debriddo/main.py, 259-289]
+      - description: Constructs PWA manifest dict using app metadata and app_website URLs.
+      - input: None
+      - output: menifest_dict: dict, web manifest payload
+    - `get_manifest()`: Build Stremio add-on manifest JSON. [src/debriddo/main.py, 295-369]
+      - description: Constructs manifest with stream/meta resources and icon URLs derived from app_website.
+      - input: None
+      - output: manifest_dict: dict, add-on manifest payload
+
+- Feature: Stream endpoint orchestration (GET /{config_url}/stream/{stream_type}/{stream_id})
+  - Component: src/debriddo/main.py
+    - `get_results()`: Orchestrate metadata lookup, search, filtering, and stream formatting. [src/debriddo/main.py, 372-463]
+      - description: Decodes config, fetches metadata, loads cached/search results, filters and converts torrents, updates availability, formats Stremio streams, and returns streams list when debrid is enabled.
+      - input: config_url; stream_type; stream_id; request
+      - output: stream_list: list, Stremio stream entries; None: None, no response when debrid disabled
+      - calls:
+        - `parse_config()`: Decode compressed config payload. [src/debriddo/utils/parse_config.py, 8-13]
+          - description: Decompresses URL-safe LZString config with C_ prefix and returns JSON dict.
+          - input: encoded_config
+          - output: config
+          - calls:
+            - `decode_lzstring()`: Decode LZString payload with tag prefix validation. [src/debriddo/utils/string_encoding.py, 24-38]
+              - description: Strips tag prefix, decompresses URI component, and loads JSON payload.
+              - input: data; tag
+              - output: json_value
+        - `TMDB.get_metadata()`: Fetch metadata from TMDB per language. [src/debriddo/metdata/tmdb.py, 14-52]
+          - description: Issues TMDB API calls for each configured language and builds Movie/Series with multilingual titles.
+          - input: id; type
+          - output: result
+        - `Cinemeta.get_metadata()`: Fetch metadata from Cinemeta. [src/debriddo/metdata/cinemeta.py, 13-43]
+          - description: Calls Cinemeta API and returns Movie/Series with English-only language list.
+          - input: id; type
+          - output: result
+        - `get_debrid_service()`: Select debrid service implementation by config. [src/debriddo/debrid/get_debrid_service.py, 13-26]
+          - description: Instantiates RealDebrid, AllDebrid, Premiumize, or TorBox based on config['service'].
+          - input: config
+          - output: debrid_service
+        - `search_cache()`: Retrieve cached results from SQLite. [src/debriddo/utils/cache.py, 53-144]
+          - description: Deletes expired rows, queries cached_items by media identity, and returns matching cache rows.
+          - input: config; media
+          - output: cache_items: list, cached row dicts; None: None, when no cache results
+        - `SearchResult.from_cached_item()`: Convert cached row to SearchResult. [src/debriddo/search/search_result.py, 71-90]
+          - description: Maps cached dict fields into SearchResult attributes and parses raw title.
+          - input: cached_item
+          - output: self
+        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 161-198]
+          - description: Filters by season/episode and title, then applies configured filter instances in order.
+          - input: items; media; config
+          - output: items: list, filtered results
+        - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 66-119]
+          - description: Runs engine searches (multi-threaded if enabled), post-processes results, and returns SearchResult list.
+          - input: media
+          - output: results: list, post-processed SearchResult; None: None, when no results
+        - `TorrentService.convert_and_process()`: Convert SearchResult list into TorrentItem list. [src/debriddo/torrent/torrent_service.py, 62-72]
+          - description: Converts results to TorrentItem and processes magnet/torrent links concurrently.
+          - input: results
+          - output: torrent_items_result: list, TorrentItem list
+        - `TorrentSmartContainer.get_hashes()`: Extract info hashes for availability checks. [src/debriddo/torrent/torrent_smart_container.py, 26-27]
+          - description: Returns list of info_hash keys from the internal items dict.
+          - input: None
+          - output: hashes: list, info_hash values
+        - `TorrentSmartContainer.update_availability()`: Update availability for debrid services. [src/debriddo/torrent/torrent_smart_container.py, 67-77]
+          - description: Dispatches availability update to service-specific handlers based on debrid service type.
+          - input: debrid_response; debrid_type; media
+          - output: None
+        - `TorrentSmartContainer.cache_container_items()`: Persist torrent items to cache. [src/debriddo/torrent/torrent_smart_container.py, 56-61]
+          - description: Saves public torrent items to SQLite cache via cache_results.
+          - input: None
+          - output: None
+        - `TorrentSmartContainer.get_best_matching()`: Select best matching torrent items. [src/debriddo/torrent/torrent_smart_container.py, 38-54]
+          - description: Keeps all magnet-only items and torrent-download items with file_index for matching.
+          - input: None
+          - output: best_matching: list, TorrentItem list
+        - `sort_items()`: Sort torrent items according to config. [src/debriddo/utils/filter_results.py, 201-205]
+          - description: Applies RTN-based sorting when config['sort'] is set.
+          - input: items; config
+          - output: items: list, sorted items
+        - `parse_to_stremio_streams()`: Convert TorrentItem list to Stremio stream entries. [src/debriddo/utils/stremio_parser.py, 158-183]
+          - description: Builds stream entries via threaded parse_to_debrid_stream and sorts by availability/type.
+          - input: torrent_items; config; config_url; node_url; media
+          - output: stream_list: list, Stremio stream dicts
+
+- Feature: Configuration encoding and normalization helpers
+  - Component: src/debriddo/utils/parse_config.py
+    - `parse_config()`: Decode compressed config payload. [src/debriddo/utils/parse_config.py, 8-13]
+      - description: Decompresses URL-safe config using decode_lzstring with C_ prefix and returns dict.
+      - input: encoded_config
+      - output: config
+      - calls:
+        - `decode_lzstring()`: Decode LZString payload with tag prefix validation. [src/debriddo/utils/string_encoding.py, 24-38]
+          - description: Strips tag prefix, decompresses URI component, and loads JSON payload.
+          - input: data; tag
+          - output: json_value
+    - `parse_query()`: Decode compressed playback query payload. [src/debriddo/utils/parse_config.py, 17-22]
+      - description: Decompresses URL-safe query using decode_lzstring with Q_ prefix and returns dict.
+      - input: encoded_query
+      - output: query
+      - calls:
+        - `decode_lzstring()`: Decode LZString payload with tag prefix validation. [src/debriddo/utils/string_encoding.py, 24-38]
+          - description: Strips tag prefix, decompresses URI component, and loads JSON payload.
+          - input: data; tag
+          - output: json_value
+    - `encode_query()`: Encode playback query payload. [src/debriddo/utils/parse_config.py, 25-30]
+      - description: Compresses query dict into URL-safe LZString payload with Q_ prefix.
+      - input: query
+      - output: encoded_query
+      - calls:
+        - `encode_lzstring()`: Encode JSON payload into LZString with tag prefix. [src/debriddo/utils/string_encoding.py, 11-21]
+          - description: Serializes JSON and compresses with LZString URI component encoding.
+          - input: json_value; tag
+          - output: data
+  - Component: src/debriddo/utils/string_encoding.py
+    - `normalize()`: Normalize strings for search and cache keys. [src/debriddo/utils/string_encoding.py, 40-49]
+      - description: Transliterates to ASCII, strips punctuation, collapses spaces, and lowercases.
+      - input: string
+      - output: string
+
+- Feature: Metadata providers
+  - Component: src/debriddo/metdata/metadata_provider_base.py
+    - `replace_weird_characters()`: Normalize non-ASCII characters in titles. [src/debriddo/metdata/metadata_provider_base.py, 14-36]
+      - description: Replaces accented and special characters using a fixed transliteration map.
+      - input: string
+      - output: string
+  - Component: src/debriddo/metdata/cinemeta.py
+    - `get_metadata()`: Retrieve metadata from Cinemeta API. [src/debriddo/metdata/cinemeta.py, 13-43]
+      - description: Sends HTTP GET to Cinemeta endpoint and builds Movie/Series objects with English language list.
+      - input: id; type
+      - output: result
+      - calls:
+        - `request_get()`: Issue HTTP GET with AsyncThreadSafeSession headers. [src/debriddo/utils/async_httpx_session.py, 124-125]
+          - description: Wraps request() to perform HTTP GET via httpx client.
+          - input: url; kwargs
+          - output: response; None: None, on error
+          - calls:
+            - `request()`: Core HTTP request wrapper with error handling. [src/debriddo/utils/async_httpx_session.py, 98-122]
+              - description: Executes async HTTPX request with default headers/timeout and returns response or None on errors.
+              - input: method; url; kwargs
+              - output: response; None: None, on HTTP or connection errors
+        - `close()`: Close AsyncThreadSafeSession client. [src/debriddo/utils/async_httpx_session.py, 41-45]
+          - description: Closes the underlying HTTPX client and marks session closed.
+          - input: None
+          - output: None
+        - `replace_weird_characters()`: Normalize non-ASCII characters in titles. [src/debriddo/metdata/metadata_provider_base.py, 14-36]
+          - description: Replaces accented and special characters using a fixed transliteration map.
+          - input: string
+          - output: string
+  - Component: src/debriddo/metdata/tmdb.py
+    - `get_metadata()`: Retrieve metadata from TMDB API. [src/debriddo/metdata/tmdb.py, 14-52]
+      - description: Sends TMDB API requests for each configured language and accumulates translated titles.
+      - input: id; type
+      - output: result
+      - calls:
+        - `request_get()`: Issue HTTP GET with AsyncThreadSafeSession headers. [src/debriddo/utils/async_httpx_session.py, 124-125]
+          - description: Wraps request() to perform HTTP GET via httpx client.
+          - input: url; kwargs
+          - output: response; None: None, on error
+          - calls:
+            - `request()`: Core HTTP request wrapper with error handling. [src/debriddo/utils/async_httpx_session.py, 98-122]
+              - description: Executes async HTTPX request with default headers/timeout and returns response or None on errors.
+              - input: method; url; kwargs
+              - output: response; None: None, on HTTP or connection errors
+        - `close()`: Close AsyncThreadSafeSession client. [src/debriddo/utils/async_httpx_session.py, 41-45]
+          - description: Closes the underlying HTTPX client and marks session closed.
+          - input: None
+          - output: None
+        - `replace_weird_characters()`: Normalize non-ASCII characters in titles. [src/debriddo/metdata/metadata_provider_base.py, 14-36]
+          - description: Replaces accented and special characters using a fixed transliteration map.
+          - input: string
+          - output: string
+
+- Feature: Torrent search pipeline
+  - Component: src/debriddo/search/search_service.py
+    - `search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 66-119]
+      - description: Runs engine searches (multi-threaded if enabled), post-processes results, and returns SearchResult list.
+      - input: media
+      - output: results: list, post-processed SearchResult; None: None, when no results
+      - calls:
+        - `__get_indexers()`: Build SearchIndexer list from config engines. [src/debriddo/search/search_service.py, 278-286]
+          - description: Converts configured engine list into SearchIndexer instances for execution.
+          - input: None
+          - output: indexers: dict, engine_name to SearchIndexer
+          - calls:
+            - `__get_indexer_from_engines()`: Construct SearchIndexer objects from engine names. [src/debriddo/search/search_service.py, 289-327]
+              - description: Instantiates each engine plugin and resolves supported categories for movies/TV.
+              - input: engines
+              - output: indexer_list: list, SearchIndexer list
+              - calls:
+                - `__get_engine()`: Map engine name to plugin implementation. [src/debriddo/search/search_service.py, 122-142]
+                  - description: Returns plugin class instance based on engine_name.
+                  - input: engine_name
+                  - output: engine
+        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 145-199]
+          - description: Builds search strings per language/title and gathers torrent dicts from plugin search.
+          - input: movie; indexer
+          - output: results: list, SearchResult list
+          - calls:
+            - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 329-355]
+              - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
+              - input: media; indexer; list_of_dicts
+              - output: result_list: list, SearchResult list
+        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 202-275]
+          - description: Builds search strings per language/season and gathers torrent dicts from plugin search.
+          - input: series; indexer
+          - output: results: list, SearchResult list
+          - calls:
+            - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 329-355]
+              - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
+              - input: media; indexer; list_of_dicts
+              - output: result_list: list, SearchResult list
+        - `__post_process_result()`: Normalize and enrich SearchResult after search. [src/debriddo/search/search_service.py, 379-405]
+          - description: Ensures magnet availability, parses RTN metadata, detects languages, and extracts info hash.
+          - input: indexers; result; media
+          - output: result; None: None, when magnet retrieval fails
+          - calls:
+            - `__is_magnet_link()`: Detect magnet URLs. [src/debriddo/search/search_service.py, 358-360]
+              - description: Returns True when link starts with magnet:? prefix.
+              - input: link
+              - output: True: bool, magnet link; False: bool, non-magnet link
+            - `__extract_info_hash()`: Extract info hash from magnet link. [src/debriddo/search/search_service.py, 363-376]
+              - description: Parses magnet xt parameter and returns hash or raises on invalid link.
+              - input: magnet_link
+              - output: info_hash
+            - `detect_languages()`: Detect torrent languages by regex. [src/debriddo/utils/detection.py, 7-31]
+              - description: Applies language regex patterns and returns detected codes or ["en"] fallback.
+              - input: torrent_name
+              - output: languages: list, language codes
+
+- Feature: Filtering and sorting
+  - Component: src/debriddo/utils/filter_results.py
+    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 161-198]
+      - description: Filters by season/episode and title similarity, then applies configured filters sequentially.
+      - input: items; media; config
+      - output: items: list, filtered SearchResult list
+      - calls:
+        - `filter_out_non_matching()`: Remove non-matching series items. [src/debriddo/utils/filter_results.py, 112-142]
+          - description: Matches season/episode via regex and parsed data, keeping only valid series entries.
+          - input: items; season; episode
+          - output: filtered_items: list, matched items
+        - `remove_non_matching_title()`: Filter by title similarity. [src/debriddo/utils/filter_results.py, 145-158]
+          - description: Uses RTN title_match with threshold 0.5 to retain matching titles.
+          - input: items; titles
+          - output: filtered_items: list, matched items
+        - `LanguageFilter.filter()`: Filter items by language selection. [src/debriddo/utils/filter/language_filter.py, 15-28]
+          - description: Keeps items matching configured languages or multi-language items.
+          - input: data
+          - output: filtered_data: list, language-matched items
+        - `MaxSizeFilter.filter()`: Filter items by max size. [src/debriddo/utils/filter/max_size_filter.py, 15-20]
+          - description: Keeps items with size <= maxSize GB for movie types.
+          - input: data
+          - output: filtered_data: list, size-filtered items
+        - `TitleExclusionFilter.filter()`: Exclude items by title keywords. [src/debriddo/utils/filter/title_exclusion_filter.py, 15-24]
+          - description: Removes items containing excluded keywords in title.
+          - input: data
+          - output: filtered_items: list, filtered items
+        - `QualityExclusionFilter.filter()`: Exclude items by quality. [src/debriddo/utils/filter/quality_exclusion_filter.py, 18-36]
+          - description: Skips items whose parsed quality or category matches exclusion list.
+          - input: data
+          - output: filtered_items: list, filtered items
+        - `ResultsPerQualityFilter.filter()`: Limit items per quality bucket. [src/debriddo/utils/filter/results_per_quality_filter.py, 15-29]
+          - description: Retains up to resultsPerQuality items per resolution value.
+          - input: data
+          - output: filtered_items: list, filtered items
+    - `sort_items()`: Sort items based on config setting. [src/debriddo/utils/filter_results.py, 201-205]
+      - description: Delegates to items_sort when config['sort'] is set, otherwise returns items unchanged.
+      - input: items; config
+      - output: items: list, sorted items
+      - calls:
+        - `items_sort()`: Apply RTN ranking and sort criteria. [src/debriddo/utils/filter_results.py, 43-93]
+          - description: Ranks torrents with RTN, assigns parsed_data, and sorts by quality/size criteria.
+          - input: items; config
+          - output: items: list, sorted items
+          - calls:
+            - `sort_quality()`: Compute sort key by resolution. [src/debriddo/utils/filter_results.py, 21-40]
+              - description: Returns quality order or infinity when resolution is missing.
+              - input: item
+              - output: quality_key: tuple, (rank, missing_flag)
+
+- Feature: Torrent processing and availability
+  - Component: src/debriddo/torrent/torrent_service.py
+    - `convert_and_process()`: Convert SearchResult list into processed TorrentItem list. [src/debriddo/torrent/torrent_service.py, 62-72]
+      - description: Converts results to TorrentItem and processes web URLs or magnet links concurrently.
+      - input: results
+      - output: torrent_items_result: list, TorrentItem list
+      - calls:
+        - `__process_web_url_or_process_magnet()`: Route torrent processing by link type. [src/debriddo/torrent/torrent_service.py, 52-59]
+          - description: Converts SearchResult to TorrentItem, then processes magnet or torrent URL.
+          - input: result
+          - output: torrent_item
+          - calls:
+            - `__process_magnet()`: Populate hash and trackers from magnet. [src/debriddo/torrent/torrent_service.py, 127-136]
+              - description: Extracts info_hash and tracker list from magnet when missing.
+              - input: result
+              - output: result
+              - calls:
+                - `get_info_hash_from_magnet()`: Extract info hash from magnet string. [src/debriddo/utils/general.py, 25-38]
+                  - description: Parses xt parameter to return lowercased info hash.
+                  - input: magnet
+                  - output: info_hash
+                - `__get_trackers_from_magnet()`: Parse trackers from magnet query string. [src/debriddo/torrent/torrent_service.py, 174-182]
+                  - description: Extracts tracker list from magnet URL query params.
+                  - input: magnet
+                  - output: trackers: list, tracker URLs
+            - `__process_web_url()`: Download and parse torrent file URL. [src/debriddo/torrent/torrent_service.py, 75-96]
+              - description: Downloads torrent content via AsyncThreadSafeSession and processes torrent metadata.
+              - input: result
+              - output: result; None: None, on failure
+              - calls:
+                - `request_get()`: Issue HTTP GET with AsyncThreadSafeSession headers. [src/debriddo/utils/async_httpx_session.py, 124-125]
+                  - description: Wraps request() to perform HTTP GET via httpx client.
+                  - input: url; kwargs
+                  - output: response; None: None, on error
+                - `close()`: Close AsyncThreadSafeSession client. [src/debriddo/utils/async_httpx_session.py, 41-45]
+                  - description: Closes the underlying HTTPX client and marks session closed.
+                  - input: None
+                  - output: None
+                - `__process_torrent()`: Parse torrent metadata and select file. [src/debriddo/torrent/torrent_service.py, 99-125]
+                  - description: Decodes torrent file, builds magnet, selects file index, and updates TorrentItem fields.
+                  - input: result; torrent_file
+                  - output: result
+    - `__process_torrent()`: Parse torrent metadata and select file. [src/debriddo/torrent/torrent_service.py, 99-125]
+      - description: Builds magnet and info hash, sets trackers, selects movie/series file index and updates size/name.
+      - input: result; torrent_file
+      - output: result
+      - calls:
+        - `__get_trackers_from_torrent()`: Extract tracker URLs from torrent metadata. [src/debriddo/torrent/torrent_service.py, 152-172]
+          - description: Normalizes announce/announce-list into unique tracker list.
+          - input: torrent_metadata
+          - output: trackers: list, tracker URLs
+        - `__convert_torrent_to_hash()`: Compute info hash from torrent info. [src/debriddo/torrent/torrent_service.py, 138-141]
+          - description: Bencodes info dict and returns SHA1 hex digest.
+          - input: torrent_contents
+          - output: hexHash
+        - `__build_magnet()`: Build magnet URI from hash and trackers. [src/debriddo/torrent/torrent_service.py, 143-150]
+          - description: Formats magnet URI with display name and tracker parameters.
+          - input: hash; display_name; trackers
+          - output: magnet
+        - `__find_episode_file()`: Choose series episode file by season/episode. [src/debriddo/torrent/torrent_service.py, 184-207]
+          - description: Parses filenames with RTN and returns largest matching episode file.
+          - input: file_structure; season; episode
+          - output: file_details
+        - `__find_movie_file()`: Choose largest movie file from torrent. [src/debriddo/torrent/torrent_service.py, 209-219]
+          - description: Picks the largest file by size to serve for movies.
+          - input: file_structure
+          - output: max_file_index
+  - Component: src/debriddo/torrent/torrent_smart_container.py
+    - `update_availability()`: Dispatch availability update by service type. [src/debriddo/torrent/torrent_smart_container.py, 67-77]
+      - description: Routes availability response to RealDebrid, AllDebrid, Premiumize, or TorBox handlers.
+      - input: debrid_response; debrid_type; media
+      - output: None
+      - calls:
+        - `__update_availability_realdebrid()`: Update availability from RealDebrid response. [src/debriddo/torrent/torrent_smart_container.py, 79-115]
+          - description: Matches selected files, updates file details when season/episode match.
+          - input: response; media
+          - output: None
+          - calls:
+            - `season_episode_in_filename()`: Match season/episode against filename. [src/debriddo/utils/general.py, 18-22]
+              - description: Parses filename with RTN and checks season/episode membership.
+              - input: filename; season; episode
+              - output: True: bool, matches; False: bool, no match
+            - `__update_file_details()`: Update TorrentItem fields from file list. [src/debriddo/torrent/torrent_smart_container.py, 164-172]
+              - description: Sets availability, file_index, file_name, and size from largest file entry.
+              - input: torrent_item; files
+              - output: None
+        - `__update_availability_alldebrid()`: Update availability from AllDebrid response. [src/debriddo/torrent/torrent_smart_container.py, 117-133]
+          - description: Traverses AllDebrid file tree and updates file details for matching items.
+          - input: response; media
+          - output: None
+          - calls:
+            - `__explore_folders()`: Traverse file tree and collect matching files. [src/debriddo/torrent/torrent_smart_container.py, 186-231]
+              - description: Recursively traverses folder structures and captures matching file entries.
+              - input: folder; files; file_index; type; season; episode
+              - output: file_index
+            - `__update_file_details()`: Update TorrentItem fields from file list. [src/debriddo/torrent/torrent_smart_container.py, 164-172]
+              - description: Sets availability, file_index, file_name, and size from largest file entry.
+              - input: torrent_item; files
+              - output: None
+        - `__update_availability_torbox()`: Update availability from TorBox response. [src/debriddo/torrent/torrent_smart_container.py, 134-152]
+          - description: Traverses TorBox file list and updates matching items.
+          - input: response; media
+          - output: None
+          - calls:
+            - `__explore_folders()`: Traverse file tree and collect matching files. [src/debriddo/torrent/torrent_smart_container.py, 186-231]
+              - description: Recursively traverses folder structures and captures matching file entries.
+              - input: folder; files; file_index; type; season; episode
+              - output: file_index
+            - `__update_file_details()`: Update TorrentItem fields from file list. [src/debriddo/torrent/torrent_smart_container.py, 164-172]
+              - description: Sets availability, file_index, file_name, and size from largest file entry.
+              - input: torrent_item; files
+              - output: None
+        - `__update_availability_premiumize()`: Update availability from Premiumize response. [src/debriddo/torrent/torrent_smart_container.py, 153-162]
+          - description: Marks availability based on Premiumize response arrays.
+          - input: response
+          - output: None
+    - `cache_container_items()`: Persist torrent items to cache. [src/debriddo/torrent/torrent_smart_container.py, 56-61]
+      - description: Filters public items and writes them to SQLite cache via cache_results.
+      - input: None
+      - output: None
+      - calls:
+        - `__save_to_cache()`: Filter public torrents and call cache_results. [src/debriddo/torrent/torrent_smart_container.py, 63-66]
+          - description: Filters items by privacy=="public" and delegates persistence.
+          - input: None
+          - output: None
+          - calls:
+            - `cache_results()`: Insert torrents into SQLite cache. [src/debriddo/utils/cache.py, 147-298]
+              - description: Ensures cache DB/table exist, prepares cache item rows, and inserts them into cached_items.
+              - input: torrents; media
+              - output: None
+
+- Feature: Stream formatting
+  - Component: src/debriddo/utils/stremio_parser.py
+    - `parse_to_stremio_streams()`: Convert TorrentItems to Stremio stream list. [src/debriddo/utils/stremio_parser.py, 158-183]
+      - description: Spawns threads to create stream items, collects results, and sorts by availability/type.
+      - input: torrent_items: List[TorrentItem]; config; config_url; node_url; media
+      - output: stream_list: list, Stremio stream dicts
+      - calls:
+        - `parse_to_debrid_stream()`: Build stream entries for Debrid and direct torrent. [src/debriddo/utils/stremio_parser.py, 54-155]
+          - description: Formats stream name/description, builds playback URL or infoHash entry, and enqueues results.
+          - input: torrent_item: TorrentItem; config_url; node_url; playtorrent; results: queue.Queue; media: Media
+          - output: item: dict, stream entry
+          - calls:
+            - `get_emoji()`: Map language code to emoji. [src/debriddo/utils/stremio_parser.py, 17-32]
+              - description: Returns emoji flag or default for language code.
+              - input: language
+              - output: emoji
+            - `encode_query()`: Encode playback query payload. [src/debriddo/utils/parse_config.py, 25-30]
+              - description: Compresses query dict into URL-safe LZString payload with Q_ prefix.
+              - input: query
+              - output: encoded_query
+              - calls:
+                - `encode_lzstring()`: Encode JSON payload into LZString with tag prefix. [src/debriddo/utils/string_encoding.py, 11-21]
+                  - description: Serializes JSON and compresses with LZString URI component encoding.
+                  - input: json_value; tag
+                  - output: data
+            - `to_debrid_stream_query()`: Build playback query dict from TorrentItem. [src/debriddo/torrent/torrent_item.py, 41-49]
+              - description: Builds dict with magnet, type, file_index, season/episode, and torrent_download info.
+              - input: media: Media
+              - output: query: dict, playback query
+        - `filter_by_availability()`: Sort by instant availability. [src/debriddo/utils/stremio_parser.py, 40-44]
+          - description: Returns 0 for instantly available items, 1 otherwise.
+          - input: item
+          - output: sort_key: int
+        - `filter_by_direct_torrnet()`: Sort direct torrent entries last. [src/debriddo/utils/stremio_parser.py, 47-51]
+          - description: Returns 1 for direct torrent entries, 0 otherwise.
+          - input: item
+          - output: sort_key: int
+
+- Feature: Cache persistence
+  - Component: src/debriddo/utils/cache.py
+    - `search_cache()`: Query cached results from SQLite. [src/debriddo/utils/cache.py, 53-144]
+      - description: Deletes expired rows, queries cached_items by media attributes, and returns matching rows.
+      - input: config; media
+      - output: cache_items: list, cached row dicts; None: None, no matches
+      - calls:
+        - `normalize()`: Normalize strings for search and cache keys. [src/debriddo/utils/string_encoding.py, 40-49]
+          - description: Transliterates to ASCII, strips punctuation, collapses spaces, and lowercases.
+          - input: string
+          - output: string
+    - `cache_results()`: Write torrent results to SQLite cache. [src/debriddo/utils/cache.py, 147-298]
+      - description: Creates DB/table as needed, builds cache rows per language, and inserts into cached_items.
+      - input: torrents; media
+      - output: None
+      - calls:
+        - `normalize()`: Normalize strings for search and cache keys. [src/debriddo/utils/string_encoding.py, 40-49]
+          - description: Transliterates to ASCII, strips punctuation, collapses spaces, and lowercases.
+          - input: string
+          - output: string
+
+- Feature: Playback redirect (GET /playback/{config_url}/{query_string})
+  - Component: src/debriddo/main.py
+    - `get_playback()`: Resolve debrid stream link and redirect. [src/debriddo/main.py, 476-497]
+      - description: Decodes config/query, resolves debrid stream link, and returns HTTP 301 redirect to resolved URL.
+      - input: config_url; query_string; request
+      - output: RedirectResponse: RedirectResponse, playback redirect
+      - calls:
+        - `parse_config()`: Decode compressed config payload. [src/debriddo/utils/parse_config.py, 8-13]
+          - description: Decompresses URL-safe LZString config with C_ prefix and returns JSON dict.
+          - input: encoded_config
+          - output: config
+        - `parse_query()`: Decode compressed playback query payload. [src/debriddo/utils/parse_config.py, 17-22]
+          - description: Decompresses URL-safe query using decode_lzstring with Q_ prefix and returns dict.
+          - input: encoded_query
+          - output: query
+        - `get_debrid_service()`: Select debrid service implementation by config. [src/debriddo/debrid/get_debrid_service.py, 13-26]
+          - description: Instantiates RealDebrid, AllDebrid, Premiumize, or TorBox based on config['service'].
+          - input: config
+          - output: debrid_service
+        - `get_stream_link()`: Resolve stream link for selected debrid service. [src/debriddo/debrid/base_debrid.py, 55-56]
+          - description: Abstract method implemented by specific debrid services to return stream link.
+          - input: query; ip
+          - output: link
+
+- Feature: Debrid service selection and clients
+  - Component: src/debriddo/debrid/get_debrid_service.py
+    - `get_debrid_service()`: Select debrid service implementation by config. [src/debriddo/debrid/get_debrid_service.py, 13-26]
+      - description: Instantiates RealDebrid, AllDebrid, Premiumize, or TorBox based on config['service'].
+      - input: config
+      - output: debrid_service
+  - Component: src/debriddo/debrid/base_debrid.py
+    - `wait_for_ready_status_async_func()`: Poll readiness using async status function. [src/debriddo/debrid/base_debrid.py, 17-27]
+      - description: Polls async status until timeout, returning True when ready.
+      - input: check_status_func; timeout; interval
+      - output: True: bool, ready; False: bool, timed out
+    - `get_json_response()`: Fetch JSON via AsyncThreadSafeSession. [src/debriddo/debrid/base_debrid.py, 42-46]
+      - description: Uses AsyncThreadSafeSession.get_json_response to fetch JSON and close session.
+      - input: url; kwargs
+      - output: ret
+    - `download_torrent_file()`: Download torrent file bytes. [src/debriddo/debrid/base_debrid.py, 48-52]
+      - description: Uses AsyncThreadSafeSession.download_torrent_file to fetch torrent bytes.
+      - input: download_url
+      - output: ret
+  - Component: src/debriddo/debrid/realdebrid.py
+    - `get_stream_link()`: Resolve RealDebrid stream URL. [src/debriddo/debrid/realdebrid.py, 97-156]
+      - description: Checks cached torrents, adds magnet or torrent file when needed, selects file, waits for link, and unrestricts download link.
+      - input: query; ip
+      - output: download: str, resolved stream URL
+      - calls:
+        - `__get_cached_torrent_ids()`: List cached torrent IDs for hash. [src/debriddo/debrid/realdebrid.py, 158-169]
+          - description: Fetches user torrents and filters by info hash.
+          - input: info_hash
+          - output: torrent_ids: list
+        - `__get_cached_torrent_info()`: Resolve cached torrent info. [src/debriddo/debrid/realdebrid.py, 171-185]
+          - description: Selects cached torrent info that contains requested file.
+          - input: cached_ids; file_index; season; episode
+          - output: cached_torrent_info
+        - `__add_magnet_or_torrent()`: Add magnet or torrent file to RealDebrid. [src/debriddo/debrid/realdebrid.py, 201-229]
+          - description: Adds magnet or torrent file and returns torrent info.
+          - input: magnet; torrent_download
+          - output: torrent_info
+          - calls:
+            - `add_magnet()`: Add magnet to RealDebrid. [src/debriddo/debrid/realdebrid.py, 26-29]
+              - description: Calls RealDebrid addMagnet endpoint.
+              - input: magnet; ip
+              - output: response
+            - `add_torrent()`: Upload torrent file to RealDebrid. [src/debriddo/debrid/realdebrid.py, 31-34]
+              - description: Calls RealDebrid addTorrent endpoint.
+              - input: torrent_file
+              - output: response
+        - `__select_file()`: Select torrent file for playback. [src/debriddo/debrid/realdebrid.py, 247-276]
+          - description: Selects file by index or largest matching episode file.
+          - input: torrent_info; stream_type; file_index; season; episode
+          - output: None
+        - `wait_for_link()`: Poll for ready download links. [src/debriddo/debrid/realdebrid.py, 73-81]
+          - description: Polls torrent info until links are available or timeout expires.
+          - input: torrent_id; timeout; interval
+          - output: links; None: None, timeout
+        - `unrestrict_link()`: Unrestrict RealDebrid link. [src/debriddo/debrid/realdebrid.py, 58-61]
+          - description: Calls RealDebrid unrestrict endpoint to resolve download URL.
+          - input: link
+          - output: response
+        - `__find_appropiate_link()`: Select appropriate link for requested file. [src/debriddo/debrid/realdebrid.py, 277-307]
+          - description: Maps selected file index to download link and returns fallback NO_CACHE_VIDEO_URL when out of range.
+          - input: torrent_info; links; file_index; season; episode
+          - output: link
+    - `get_availability_bulk()`: Query RealDebrid availability by hash. [src/debriddo/debrid/realdebrid.py, 83-95]
+      - description: Looks up cached hashes and returns availability response.
+      - input: hashes_or_magnets; ip
+      - output: response
+  - Component: src/debriddo/debrid/alldebrid.py
+    - `get_stream_link()`: Resolve AllDebrid stream URL. [src/debriddo/debrid/alldebrid.py, 39-100]
+      - description: Adds magnet/torrent, waits for readiness, selects matching file, and unlocks link.
+      - input: query; ip
+      - output: link: str, resolved stream URL
+      - calls:
+        - `__add_magnet_or_torrent()`: Add magnet or torrent to AllDebrid. [src/debriddo/debrid/alldebrid.py, 119-145]
+          - description: Adds magnet or uploads torrent file and returns torrent ID.
+          - input: magnet; torrent_download; ip
+          - output: torrent_id
+          - calls:
+            - `add_magnet()`: Add magnet to AllDebrid. [src/debriddo/debrid/alldebrid.py, 22-24]
+              - description: Calls AllDebrid magnet upload endpoint.
+              - input: magnet; ip
+              - output: response
+            - `add_torrent()`: Upload torrent file to AllDebrid. [src/debriddo/debrid/alldebrid.py, 26-29]
+              - description: Calls AllDebrid upload endpoint with multipart file.
+              - input: torrent_file; ip
+              - output: response
+        - `check_magnet_status()`: Query AllDebrid magnet status. [src/debriddo/debrid/alldebrid.py, 31-33]
+          - description: Retrieves magnet status details via AllDebrid API.
+          - input: id; ip
+          - output: response
+        - `wait_for_ready_status_async_func()`: Poll readiness using async status function. [src/debriddo/debrid/base_debrid.py, 17-27]
+          - description: Polls async status until timeout, returning True when ready.
+          - input: check_status_func; timeout; interval
+          - output: True: bool, ready; False: bool, timed out
+        - `unrestrict_link()`: Unlock AllDebrid link. [src/debriddo/debrid/alldebrid.py, 35-37]
+          - description: Calls AllDebrid link unlock endpoint.
+          - input: link; ip
+          - output: response
+    - `get_availability_bulk()`: Query AllDebrid availability by hash. [src/debriddo/debrid/alldebrid.py, 102-117]
+      - description: Reads AllDebrid magnet status and collects matching IDs.
+      - input: hashes_or_magnets; ip
+      - output: ids: list
+  - Component: src/debriddo/debrid/premiumize.py
+    - `get_stream_link()`: Resolve Premiumize stream URL. [src/debriddo/debrid/premiumize.py, 54-125]
+      - description: Creates transfer, waits for cached availability, resolves file/folder details, and returns link.
+      - input: query; ip
+      - output: link: str, resolved stream URL
+      - calls:
+        - `add_magnet()`: Create Premiumize transfer for magnet. [src/debriddo/debrid/premiumize.py, 21-24]
+          - description: Calls Premiumize transfer/create endpoint.
+          - input: magnet; ip
+          - output: response
+        - `wait_for_ready_status_async_func()`: Poll readiness using async status function. [src/debriddo/debrid/base_debrid.py, 17-27]
+          - description: Polls async status until timeout, returning True when ready.
+          - input: check_status_func; timeout; interval
+          - output: True: bool, ready; False: bool, timed out
+        - `list_transfers()`: List active Premiumize transfers. [src/debriddo/debrid/premiumize.py, 32-34]
+          - description: Calls Premiumize transfer/list endpoint.
+          - input: None
+          - output: response
+        - `get_folder_or_file_details()`: Fetch file/folder details. [src/debriddo/debrid/premiumize.py, 36-43]
+          - description: Calls Premiumize folder/list or item/details based on is_folder.
+          - input: item_id; is_folder
+          - output: response
+        - `get_availability()`: Check cached availability for hash. [src/debriddo/debrid/premiumize.py, 45-47]
+          - description: Calls Premiumize cache/check endpoint for hash.
+          - input: hash
+          - output: response
+  - Component: src/debriddo/debrid/torbox.py
+    - `get_stream_link()`: Resolve TorBox stream URL. [src/debriddo/debrid/torbox.py, 101-152]
+      - description: Adds magnet, waits for cached files or polling, then selects largest matching file and requests download link.
+      - input: query; ip
+      - output: link: str, resolved stream URL
+      - calls:
+        - `add_magnet()`: Add magnet to TorBox. [src/debriddo/debrid/torbox.py, 42-68]
+          - description: Calls TorBox createtorrent endpoint and returns torrent_id/hash metadata.
+          - input: magnet
+          - output: data
+        - `check_magnet_status()`: Query TorBox cached status. [src/debriddo/debrid/torbox.py, 70-79]
+          - description: Calls TorBox checkcached endpoint and returns data list.
+          - input: torrent_hash
+          - output: response
+        - `wait_for_files()`: Poll TorBox for file availability. [src/debriddo/debrid/torbox.py, 26-40]
+          - description: Polls check_magnet_status until files are available or timeout occurs.
+          - input: torrent_hash; timeout; interval
+          - output: files; None: None, timeout
+        - `get_file_download_link()`: Request TorBox file download URL. [src/debriddo/debrid/torbox.py, 81-89]
+          - description: Calls TorBox requestdl endpoint for selected file index.
+          - input: torrent_id; file_name
+          - output: response
+    - `get_availability_bulk()`: Query TorBox availability by hash. [src/debriddo/debrid/torbox.py, 169-192]
+      - description: Calls TorBox checkcached endpoint per hash and returns available torrent metadata.
+      - input: hashes_or_magnets; ip
+      - output: available_torrents: dict
+
+- Feature: Release workflow automation
+  - Component: .github/workflows/release.yml
+    - `create-release job()`: Build release assets and publish Docker images on tag push. [.github/workflows/release.yml, 13-103]
+      - description: Runs on tag pushes, creates GitHub release, uploads zip asset, builds and pushes container images, and attests provenance.
+      - input: github.ref_name; github.repository; env.REGISTRY; env.IMAGE_NAME
+      - output: release_asset: zip; docker_images: tags; attestation: build provenance
+      - calls:
+        - `Checkout code()`: Pull repository contents. [.github/workflows/release.yml, 23-24]
+          - description: Uses actions/checkout to fetch repository sources.
+          - input: None
+          - output: workspace
+        - `Create GitHub Release()`: Publish GitHub release with changelog. [.github/workflows/release.yml, 26-36]
+          - description: Uses softprops/action-gh-release to create release with CHANGELOG.md body.
+          - input: github.ref_name; CHANGELOG.md
+          - output: upload_url
+        - `Download auto-generated ZIP()`: Download tag archive zip. [.github/workflows/release.yml, 38-39]
+          - description: Uses curl to download GitHub tag zip archive.
+          - input: github.ref_name; github.repository
+          - output: zip_file
+        - `Set repository name as output()`: Export repo name to env. [.github/workflows/release.yml, 41-45]
+          - description: Extracts repo name and exports to GITHUB_ENV.
+          - input: github.repository
+          - output: env.repo_name
+        - `Upload Asset on Release()`: Upload zip asset to release. [.github/workflows/release.yml, 47-55]
+          - description: Uploads zip artifact to release using upload-release-asset.
+          - input: upload_url; asset_path; asset_name
+          - output: release_asset
+        - `Convert repository name to lowercase()`: Normalize image name. [.github/workflows/release.yml, 59-61]
+          - description: Sets IMAGE_NAME_LC in GITHUB_ENV.
+          - input: IMAGE_NAME
+          - output: env.IMAGE_NAME_LC
+        - `Set up QEMU()`: Enable multi-arch builds. [.github/workflows/release.yml, 63-64]
+          - description: Uses docker/setup-qemu-action to enable emulation.
+          - input: None
+          - output: qemu
+        - `Set up Docker Buildx()`: Initialize buildx builder. [.github/workflows/release.yml, 66-67]
+          - description: Uses docker/setup-buildx-action to configure builder.
+          - input: None
+          - output: buildx
+        - `Log in to GitHub Container Registry()`: Authenticate to registry. [.github/workflows/release.yml, 69-75]
+          - description: Uses docker/login-action to authenticate to ghcr.io.
+          - input: env.REGISTRY; secrets.GITHUB_TOKEN
+          - output: auth_session
+        - `Extract metadata (tags, labels) for Docker()`: Generate Docker tags/labels. [.github/workflows/release.yml, 76-81]
+          - description: Uses docker/metadata-action to produce tags and labels.
+          - input: env.REGISTRY; env.IMAGE_NAME_LC
+          - output: meta.outputs.labels
+        - `Build and push Docker image()`: Build/push multi-arch images. [.github/workflows/release.yml, 82-93]
+          - description: Uses docker/build-push-action to build and push images with tag and latest.
+          - input: platforms; tags; labels
+          - output: push.outputs.digest
+        - `Generate artifact attestation()`: Attest build provenance. [.github/workflows/release.yml, 94-99]
+          - description: Uses actions/attest-build-provenance to publish provenance.
+          - input: subject-name; subject-digest
+          - output: attestation
+        - `Notify success()`: Emit success message. [.github/workflows/release.yml, 101-102]
+          - description: Prints "Release created!" to workflow logs.
+          - input: None
+          - output: log_line
