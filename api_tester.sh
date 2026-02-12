@@ -1,0 +1,46 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+# VERSION: 0.0.1
+# AUTHORS: Ogekuri
+
+now=$(date '+%Y-%m-%d_%H-%M-%S')
+
+# 1. Ottieni il percorso assoluto completo del file (risolvendo i link simbolici)
+FULL_PATH=$(readlink -f "$0")
+
+# 2. Estrai la directory (il percorso senza il nome del file)
+SCRIPT_PATH=$(dirname "$FULL_PATH")
+
+# 3. Estrai il nome del file
+SCRIPT_NAME=$(basename "$FULL_PATH")
+
+# --- Test di output (puoi rimuoverli) ---
+#echo "Full Path:   $FULL_PATH"
+#echo "Directory:   $SCRIPT_PATH"
+#echo "Script Name: $SCRIPT_NAME"
+
+VENVDIR="${SCRIPT_PATH}/.venv"
+#echo ${VENVDIR}
+
+# Se non c'è il ${VENVDIR} lo crea
+if ! [ -d "${VENVDIR}/" ]; then
+  echo -n "Create virtual environment ..."
+  mkdir ${VENVDIR}/
+  virtualenv --python=python3 ${VENVDIR}/ >/dev/null
+  echo "done."
+
+  # Install requirements
+  source ${VENVDIR}/bin/activate
+
+  echo -n "Install python requirements ..."
+  ${VENVDIR}/bin/pip install -r "${SCRIPT_PATH}/requirements.txt" >/dev/null
+  echo "done." 
+else
+  # echo "Virtual environment found."
+  source ${VENVDIR}/bin/activate
+fi
+
+export DEBRIDDO_CONFIG_URL='http://localhost:58443/C_N4IghgJhD2B2AS0DOAXEAuEALFKAOS6A9EQO7kB0e0ATgMZgoCmFtA5ugKwBsALLwGYQAGhBImNAG4BLOkwwgaTMABsITAEY1pEESHVadAaSYBPBQHYAogC0j8eAHkA4gCFnRgIoAFAEyuBABFAgRsAVQBNADkAQV5OZwtAgDUogBUAdU4IzgBhVKibNNyAGQApXOcASV9vMM89AFswAA8AZWkAL3lMTgAGPSYWuhUAVyRpOBNTUloIJAwAbQBdURUwWDZRsDYmBfRFkGk0VZAmTelYPaWjlTpaJDAaOAloPWk7h6foDTGQU6QtDQmAAjtsVMdzKIlEhRioUEhvBJPODIQoAIwDUTNFoAJT2cIRCgEWJAjUuuTAdCwTHxsPh+xAmL0EDApiQlOpTGSqh0xNJH3uNEez1+ozCfMw0F2AGtRtp3p9hd8xd5SLpMI5dgBCdG+ATxbiDYZjCZwJanFCNCAaGJ4aQYjQQbgAM3UfSYAg0nosFgAHLx0WALGAAy7uBALBA+rwA3oGFyMCgaKMmKI8OtTChaEpYMDk6nROIntSkym0-pNNoNQWK40mChIIwwN5njJ1DQFFabSAAL5AA/manifest.json'
+
+# Execute application:
+exec ${VENVDIR}/bin/python3 src/api_tester/api_tester.py "$@"

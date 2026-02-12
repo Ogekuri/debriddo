@@ -24,4 +24,4 @@ cd "${SCRIPT_PATH}"
 # Run
 export NUM_WORKERS=1
 export N_THREADS=1
-./run-python-sources.sh 0.0.0.0 58443 https://www.porcate.org:57443 develop
+./run-python-sources.sh 0.0.0.0 58443 https://localhost:57443 develop

@@ -91,20 +91,19 @@ CFG_NODE_ENV=${4:-$DEFAULT_NODE_ENV}
 
 echo "Run debriddo.main:app @"$CFG_NODE_HOST":"$CFG_NODE_PORT" from "$(pwd -P)
 
-PYTHONPATH="$(pwd -P)/src${PYTHONPATH:+:$PYTHONPATH}" \
-NODE_URL=$CFG_NODE_URL NODE_ENV=$CFG_NODE_ENV \
-
 # pass number of thread, if exist
 if [ -n "$N_THREADS" ]; then
     export N_THREADS=$N_THREADS
 fi
 
 if [ -n "$WORKERS" ]; then
-    PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" \
-	${VENVDIR}/bin/python3 -m uvicorn debriddo.main:app --workers $WORKERS --log-level warning --host $CFG_NODE_HOST --port $CFG_NODE_PORT
+    PYTHONPATH="$(pwd -P)/src${PYTHONPATH:+:$PYTHONPATH}" \
+    NODE_URL=$CFG_NODE_URL NODE_ENV=$CFG_NODE_ENV \
+    ${VENVDIR}/bin/python3 -m uvicorn debriddo.main:app --workers $WORKERS --log-level warning --host $CFG_NODE_HOST --port $CFG_NODE_PORT
 else
-    PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" \
-	${VENVDIR}/bin/python3 -m uvicorn debriddo.main:app --log-level warning --host $CFG_NODE_HOST --port $CFG_NODE_PORT
+    PYTHONPATH="$(pwd -P)/src${PYTHONPATH:+:$PYTHONPATH}" \
+    NODE_URL=$CFG_NODE_URL NODE_ENV=$CFG_NODE_ENV \
+    ${VENVDIR}/bin/python3 -m uvicorn debriddo.main:app --log-level warning --host $CFG_NODE_HOST --port $CFG_NODE_PORT
 fi
 
 # termina il venv
