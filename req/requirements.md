@@ -154,7 +154,7 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: le operazioni di cache leggono/scrivono un file SQLite chiamato `caches_items.db`.  
   Evidenza: `src/debriddo/constants.py` / `CACHE_DATABASE_FILE`. Estratto: `CACHE_DATABASE_FILE = \"caches_items.db\"`.
 
-- **PRJ-506**: Il sistema deve poter filtrare e ordinare i candidati torrent in base a selezione lingua, parole chiave escluse, qualita escluse, dimensione massima e limiti per qualita.  
+- **PRJ-506**: Il sistema deve poter filtrare e ordinare i candidati torrent in base a selezione lingua quando configurata, parole chiave escluse, qualita escluse, dimensione massima e limiti per qualita.  
   ID originale: `PRJ-006`.
   Comportamento atteso: un set di candidati e' ridotto e ordinato secondo configurazione.  
   Criteri di accettazione: `filter_items()` applica filtri e `sort_items()` applica l'ordinamento configurato.  
@@ -577,10 +577,10 @@ Queste regole devono essere sempre rispettate:
 
 ### 3.7 Filtraggio e ordinamento
 
-- **REQ-531**: La pipeline di filtraggio deve applicare i seguenti filtri nell'ordine dichiarato quando abilitati da configurazione: filtro lingua, filtro dimensione massima (solo film), esclusione parole chiave titolo, esclusione qualita, risultati-per-qualita.  
+- **REQ-531**: La pipeline di filtraggio deve applicare i seguenti filtri nell'ordine dichiarato quando abilitati da configurazione: filtro lingua (solo se `config['languages']` e' valorizzato), filtro dimensione massima (solo film), esclusione parole chiave titolo, esclusione qualita, risultati-per-qualita.  
   ID originale: `REQ-022`.
   Comportamento atteso: i filtri si compongono deterministicamente.  
-  Criteri di accettazione: `filter_items()` costruisce il dict `filters` in tale ordine e applica ogni filtro in ordine di iterazione.  
+  Criteri di accettazione: `filter_items()` costruisce il dict `filters` in tale ordine e applica ogni filtro in ordine di iterazione; quando `config['languages']` e' vuoto o mancante, il filtro `LanguageFilter` non viene applicato.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `filters = {\"languages\": LanguageFilter(config), \"maxSize\": MaxSizeFilter(config, media.type), ...}`.
 
 - **REQ-532**: Per media di tipo serie, la pipeline di filtraggio deve rimuovere torrent che non matchano stagione/episodio richiesti, includendo un caso speciale che accetta pattern testuali “stagione <n>” e “season <n>”.  

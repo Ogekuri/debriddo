@@ -134,8 +134,8 @@
           - description: Maps cached dict fields into SearchResult attributes and parses raw title.
           - input: cached_item
           - output: self
-        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 161-198]
-          - description: Filters by season/episode and title, then applies configured filter instances in order.
+        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 161-201]
+          - description: Filters by season/episode and title, then applies configured filter instances in order, skipping language filtering when no languages are configured.
           - input: items; media; config
           - output: items: list, filtered results
         - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 67-120]
@@ -318,8 +318,8 @@
 
 - Feature: Filtering and sorting
   - Component: src/debriddo/utils/filter_results.py
-    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 161-198]
-      - description: Filters by season/episode and title similarity, then applies configured filters sequentially.
+    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 161-201]
+      - description: Filters by season/episode and title similarity, then applies configured filters sequentially, skipping language filtering when no languages are configured.
       - input: items; media; config
       - output: items: list, filtered SearchResult list
       - calls:

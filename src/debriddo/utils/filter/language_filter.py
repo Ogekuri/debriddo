@@ -28,4 +28,4 @@ class LanguageFilter(BaseFilter):
         return filtered_data
 
     def can_filter(self):
-        return self.config['languages'] is not None
+        return bool(self.config.get('languages'))

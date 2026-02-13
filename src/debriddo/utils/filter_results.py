@@ -182,6 +182,9 @@ def filter_items(items, media, config):
     for filter_name, filter_instance in filters.items():
         try:
             if len(items) > 0:  # finché ci sono risultati
+                if filter_name == "languages" and not config.get("languages"):
+                    logger.debug("Skipping language filtering: no languages configured")
+                    continue
                 logger.debug(f"Filtering by {filter_name}: " + str(config[filter_name]))
                 new_items = filter_instance(items)
                 if len(new_items) > 0:
