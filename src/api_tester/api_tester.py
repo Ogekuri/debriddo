@@ -27,7 +27,7 @@ except ImportError as import_error:
 
 
 DEFAULT_CONFIG_ENV = "DEBRIDDO_CONFIG_URL"
-DEFAULT_TIMEOUT = 30.0
+DEFAULT_TIMEOUT = 180.0
 DEBRIDDO_MODULE_PREFIX = "debriddo"
 
 

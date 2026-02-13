@@ -814,8 +814,8 @@ Queste regole devono essere sempre rispettate:
 - **REQ-564**: I comandi `root`, `configure`, `manifest`, `site-webmanifest` devono invocare gli endpoint HTTP corrispondenti con timeout/TLS configurabili e restituire codice uscita `0` su risposta `2xx/3xx` e `1` su errore HTTP.  
   ID originale: `REQ-915`.
   Comportamento atteso: il tester fornisce check endpoint basilari riutilizzando un flusso di richiesta/summary comune.  
-  Criteri di accettazione: i comandi usano `call_simple_endpoint()`; `configure` e `manifest` supportano `--with-config` per prefisso `/{config}/`; `call_simple_endpoint()` ritorna `0 if response.ok else 1`.  
-  Evidenza: `src/api_tester/api_tester.py` / `cmd_root()`, `cmd_configure()`, `cmd_manifest()`, `cmd_site_webmanifest()`, `call_simple_endpoint()`. Estratto: `path = f\"/{target.config_segment}/configure\" if args.with_config else \"/configure\"`; `return 0 if response.ok else 1`.
+  Criteri di accettazione: i comandi usano `call_simple_endpoint()`; `configure` e `manifest` supportano `--with-config` per prefisso `/{config}/`; `call_simple_endpoint()` ritorna `0 if response.ok else 1`; `build_parser()` espone `--timeout` con default `180` secondi (`DEFAULT_TIMEOUT = 180.0`).  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_root()`, `cmd_configure()`, `cmd_manifest()`, `cmd_site_webmanifest()`, `call_simple_endpoint()`, `build_parser()`, `DEFAULT_TIMEOUT`. Estratto: `path = f\"/{target.config_segment}/configure\" if args.with_config else \"/configure\"`; `return 0 if response.ok else 1`; `default=DEFAULT_TIMEOUT`; `DEFAULT_TIMEOUT = 180.0`.
 
 - **REQ-565**: Il comando `asset` deve supportare i tipi `favicon`, `configjs`, `lzstring`, `styles`, `image` e deve mappare ciascun tipo al path statico previsto, con prefisso `/{config}/` opzionale per i tipi applicabili.  
   ID originale: `REQ-916`.

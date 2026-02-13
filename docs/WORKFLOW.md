@@ -826,7 +826,7 @@
 
 - Feature: API tester CLI
   - Component: src/api_tester/api_tester.py
-    - `main()`: Parse CLI and dispatch API test command. [src/api_tester/api_tester.py, 831-843]
+    - `main()`: Parse CLI and dispatch API test command. [src/api_tester/api_tester.py, 833-845]
       - description: Validates that no Debriddo modules are loaded, builds the parser, parses CLI args, and executes the selected command handler with error handling.
       - input: None
       - output: exit_code: int, CLI exit status
@@ -835,11 +835,11 @@
           - description: Scans sys.modules for the debriddo namespace and raises CliError when found.
           - input: None
           - output: None
-        - `build_parser()`: Configure argparse CLI and subcommands. [src/api_tester/api_tester.py, 675-829]
-          - description: Declares CLI options and binds command handlers for target, stream, search, playback, and smoke tests.
+        - `build_parser()`: Configure argparse CLI and subcommands. [src/api_tester/api_tester.py, 677-830]
+          - description: Declares CLI options (including `--timeout` default 180s) and binds command handlers for target, stream, search, playback, and smoke tests.
           - input: None
           - output: parser: argparse.ArgumentParser, CLI parser with subcommands
-        - `cmd_smoke()`: Execute the API smoke suite and report summary. [src/api_tester/api_tester.py, 660-672]
+        - `cmd_smoke()`: Execute the API smoke suite and report summary. [src/api_tester/api_tester.py, 662-674]
           - description: Resolves target URLs, runs the smoke workflow, prints PASS/FAIL results, and returns non-zero when failures occur.
           - input: args: argparse.Namespace
           - output: exit_code: int, 0 on success, 1 when failures exist
@@ -853,7 +853,7 @@
                   - description: Parses URL, extracts C_ segment, and builds base/config URLs.
                   - input: raw_value: str
                   - output: target: TargetUrls
-            - `run_smoke()`: Run HTTP checks across core endpoints. [src/api_tester/api_tester.py, 444-657]
+            - `run_smoke()`: Run HTTP checks across core endpoints. [src/api_tester/api_tester.py, 444-659]
               - description: Issues HTTP requests to configuration, assets, manifest, stream, and playback endpoints and records per-check results.
               - input: args: argparse.Namespace; target: TargetUrls
               - output: results: list, CheckResult entries
@@ -959,7 +959,7 @@
 
 - Feature: API Tester startup, isolation guard, and command dispatch
   - Component: src/api_tester/api_tester.py
-    - `main()`: Bootstrap CLI execution with isolation checks and controlled error codes. [src/api_tester/api_tester.py, 831-843]
+    - `main()`: Bootstrap CLI execution with isolation checks and controlled error codes. [src/api_tester/api_tester.py, 833-845]
       - description: Enforces anti-debriddo guard, builds parser, resolves subcommand dispatch through `args.func(args)`, and maps transport/input failures to exit code `2`.
       - input: None
       - output: int, process exit code
@@ -968,8 +968,8 @@
           - description: Scans `sys.modules` for `debriddo` namespace prefixes and raises `CliError` if any module is already loaded.
           - input: None
           - output: None
-        - `build_parser()`: Build CLI arguments and bind subcommands to handlers. [src/api_tester/api_tester.py, 675-829]
-          - description: Configures shared options (`--config-url`, `--timeout`, TLS/body flags) and binds `target/root/configure/manifest/site-webmanifest/asset/stream/search/playback/smoke` handlers.
+        - `build_parser()`: Build CLI arguments and bind subcommands to handlers. [src/api_tester/api_tester.py, 677-830]
+          - description: Configures shared options (`--config-url`, `--timeout` default 180s, TLS/body flags) and binds `target/root/configure/manifest/site-webmanifest/asset/stream/search/playback/smoke` handlers.
           - input: None
           - output: parser: argparse.ArgumentParser, configured CLI parser
 
@@ -1190,7 +1190,7 @@
 
 - Feature: Smoke suite orchestration and structured PASS/FAIL output
   - Component: src/api_tester/api_tester.py
-    - `cmd_smoke()`: Execute integrated smoke checks and return aggregated status. [src/api_tester/api_tester.py, 660-672]
+    - `cmd_smoke()`: Execute integrated smoke checks and return aggregated status. [src/api_tester/api_tester.py, 662-674]
       - description: Resolves target, executes smoke pipeline, prints one line per check with `[PASS|FAIL]`, and returns non-zero when failures exist.
       - input: args: argparse.Namespace
       - output: int, `0` when no failures else `1`
@@ -1199,7 +1199,7 @@
           - description: Resolves and validates target URL from CLI/env.
           - input: args: argparse.Namespace
           - output: TargetUrls
-        - `run_smoke()`: Execute multi-endpoint smoke checks. [src/api_tester/api_tester.py, 444-657]
+        - `run_smoke()`: Execute multi-endpoint smoke checks. [src/api_tester/api_tester.py, 444-659]
           - description: Probes root/configure/assets/site webmanifest/manifest/stream/playback endpoints and records each check as `CheckResult`.
           - input: args: argparse.Namespace; target: TargetUrls
           - output: List[CheckResult], ordered smoke results
