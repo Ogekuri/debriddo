@@ -372,3 +372,71 @@ def test_search_series_indexer_skips_fallback_when_any_primary_result_exists():
         primary_season_it,
     ]
     assert len(results) == 1
+
+
+def _extract_logged_query(message):
+    match = re.search(r"for '(.+)' @", message)
+    return match.group(1) if match else None
+
+
+def test_search_series_indexer_logs_every_primary_query_without_config_languages():
+    service = SearchService({})
+    primary_episode = normalize("Person of Interest S03E01")
+    primary_pack = normalize_keep_dash("Person of Interest S03E01-")
+    indexer = SearchIndexer()
+    indexer.engine = DummyEngine(
+        results_by_query={primary_pack: build_result("Pack")},
+        language="it",
+    )
+    indexer.language = indexer.engine.language
+    indexer.title = indexer.engine.name
+    indexer.engine_name = "dummy"
+    indexer.tv_search_capatabilities = "tv"
+
+    series = Series(
+        id="tt1839578:3:1",
+        titles=["Person of Interest"],
+        season="S03",
+        episode="E01",
+        languages=["en"],
+    )
+
+    info_messages = []
+    service.logger.info = info_messages.append
+
+    asyncio.run(service._SearchService__search_series_indexer(series, indexer))
+
+    logged_queries = [_extract_logged_query(msg) for msg in info_messages]
+    assert logged_queries == [primary_episode, primary_pack]
+
+
+def test_search_series_indexer_logs_every_primary_query_with_single_language():
+    service = SearchService({"languages": ["it"]})
+    primary_episode = normalize("Person of Interest S03E01")
+    primary_pack = normalize_keep_dash("Person of Interest S03E01-")
+    primary_season = normalize("Person of Interest Stagione 3")
+    indexer = SearchIndexer()
+    indexer.engine = DummyEngine(
+        results_by_query={primary_season: build_result("Season pack")},
+        language="it",
+    )
+    indexer.language = indexer.engine.language
+    indexer.title = indexer.engine.name
+    indexer.engine_name = "dummy"
+    indexer.tv_search_capatabilities = "tv"
+
+    series = Series(
+        id="tt1839578:3:1",
+        titles=["Person of Interest"],
+        season="S03",
+        episode="E01",
+        languages=["it"],
+    )
+
+    info_messages = []
+    service.logger.info = info_messages.append
+
+    asyncio.run(service._SearchService__search_series_indexer(series, indexer))
+
+    logged_queries = [_extract_logged_query(msg) for msg in info_messages]
+    assert logged_queries == [primary_episode, primary_pack, primary_season]

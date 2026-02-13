@@ -211,9 +211,30 @@ class SearchService:
         return torrents
 
 
+    def __log_query_result(
+        self,
+        search_string,
+        indexer,
+        category,
+        query_start_time,
+        result_count,
+    ):
+        elapsed = round(time.time() - query_start_time, 1)
+        if result_count > 0:
+            self.logger.info(
+                f"Found {result_count} for '{search_string}' @ "
+                f"{indexer.engine_name}/{category} in {elapsed} [s]"
+            )
+        else:
+            self.logger.info(
+                f"No results found for '{search_string}' @ "
+                f"{indexer.engine_name}/{category} in {elapsed} [s]"
+            )
+
+
     async def __search_movie_indexer(self, movie, indexer):
         results = []
-        start_time = time.time()
+        indexer_start_time = time.time()
         base_title = movie.titles[0] if movie.titles else ""
         search_string = base_title
         category = str(indexer.movie_search_capatabilities)
@@ -226,7 +247,15 @@ class SearchService:
                 lang_tag = self.__get_lang_tag(indexer.language, lang)
                 search_string = self.__build_query(title, movie.year, lang_tag)
 
+                query_start_time = time.time()
                 torrents = await self.__search_torrents(movie, indexer, search_string, category)
+                self.__log_query_result(
+                    search_string,
+                    indexer,
+                    category,
+                    query_start_time,
+                    len(torrents),
+                )
                 if len(torrents) > 0:
                     results.extend(torrents)
                     primary_results_found = True
@@ -242,7 +271,15 @@ class SearchService:
                     lang_tag = self.__get_lang_tag(indexer.language, lang)
                     search_string = self.__build_query(title, lang_tag)
 
+                    query_start_time = time.time()
                     torrents = await self.__search_torrents(movie, indexer, search_string, category)
+                    self.__log_query_result(
+                        search_string,
+                        indexer,
+                        category,
+                        query_start_time,
+                        len(torrents),
+                    )
                     if len(torrents) > 0:
                         results.extend(torrents)
                 except Exception:
@@ -250,17 +287,18 @@ class SearchService:
                         f"An exception occured while searching for a movie on Search with indexer {indexer.title} and "
                         f"language {lang}.")
 
-        if len(results) > 0:
-            self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
-        else:
-            self.logger.info(f"No results found for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+        self.logger.debug(
+            f"Movie search completed with {len(results)} results for "
+            f"{indexer.engine_name}/{category} in "
+            f"{round(time.time() - indexer_start_time, 1)} [s]"
+        )
 
         return results
     
 
     async def __search_series_indexer(self, series, indexer):
         results = []
-        start_time = time.time()
+        indexer_start_time = time.time()
         base_title = series.titles[0] if series.titles else ""
         search_string = base_title
         category = str(indexer.tv_search_capatabilities)
@@ -299,7 +337,15 @@ class SearchService:
 
                 for candidate in primary_candidates:
                     search_string = candidate
+                    query_start_time = time.time()
                     torrents = await self.__search_torrents(series, indexer, search_string, category)
+                    self.__log_query_result(
+                        search_string,
+                        indexer,
+                        category,
+                        query_start_time,
+                        len(torrents),
+                    )
                     if len(torrents) > 0:
                         results.extend(torrents)
                         primary_results_found = True
@@ -315,17 +361,26 @@ class SearchService:
                     lang_tag = self.__get_lang_tag(indexer.language, lang)
                     search_string = self.__build_query(title, lang_tag)
 
+                    query_start_time = time.time()
                     torrents = await self.__search_torrents(series, indexer, search_string, category)
+                    self.__log_query_result(
+                        search_string,
+                        indexer,
+                        category,
+                        query_start_time,
+                        len(torrents),
+                    )
                     if len(torrents) > 0:
                         results.extend(torrents)
                 except Exception:
                     self.logger.exception(
                         f"An exception occured while searching for a series on Search with indexer {indexer.title} and language {lang}.")
 
-        if len(results) > 0:
-            self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
-        else:
-            self.logger.info(f"No results found for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
+        self.logger.debug(
+            f"Series search completed with {len(results)} results for "
+            f"{indexer.engine_name}/{category} in "
+            f"{round(time.time() - indexer_start_time, 1)} [s]"
+        )
 
         return results
 

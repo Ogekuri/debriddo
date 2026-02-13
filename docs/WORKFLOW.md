@@ -284,12 +284,12 @@
       - input: media
       - output: results: list, post-processed SearchResult; None: None, when no results
       - calls:
-        - `__get_indexers()`: Build SearchIndexer list from config engines. [src/debriddo/search/search_service.py, 333-341]
+        - `__get_indexers()`: Build SearchIndexer list from config engines. [src/debriddo/search/search_service.py, 388-396]
           - description: Converts configured engine list into SearchIndexer instances for execution.
           - input: None
           - output: indexers: dict, engine_name to SearchIndexer
           - calls:
-            - `__get_indexer_from_engines()`: Construct SearchIndexer objects from engine names. [src/debriddo/search/search_service.py, 344-382]
+            - `__get_indexer_from_engines()`: Construct SearchIndexer objects from engine names. [src/debriddo/search/search_service.py, 399-437]
               - description: Instantiates each engine plugin and resolves supported categories for movies/TV.
               - input: engines
               - output: indexer_list: list, SearchIndexer list
@@ -298,8 +298,8 @@
                   - description: Returns plugin class instance based on engine_name.
                   - input: engine_name
                   - output: engine
-        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 214-258]
-          - description: Iterates languages from config (or one null-language cycle), runs all primary `<title> <year> [lang_tag]` searches first, and runs fallback `<title> [lang_tag]` only when every primary query is empty.
+        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 235-296]
+          - description: Iterates languages from config (or one null-language cycle), runs all primary `<title> <year> [lang_tag]` searches first, logs each query outcome, and runs fallback `<title> [lang_tag]` only when every primary query is empty.
           - input: movie; indexer
           - output: results: list, SearchResult list
           - calls:
@@ -324,12 +324,16 @@
               - input: media; indexer; search_string; category
               - output: torrents: list, SearchResult list; []: list, when query has no valid hits
               - calls:
-                - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 385-411]
+                - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 440-467]
                   - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
                   - input: media; indexer; list_of_dicts
                   - output: result_list: list, SearchResult list
-        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 261-330]
-          - description: For each config language (or one null cycle), always runs episode and `SnnE01-` pack primaries, adds localized season primary only when a real config language is present, then runs fallback title query only if all primaries return no results.
+            - `__log_query_result()`: Emit per-query search log. [src/debriddo/search/search_service.py, 214-232]
+              - description: Logs `Found/No results found` for each query string with indexer/category and per-query elapsed time.
+              - input: search_string; indexer; category; query_start_time; result_count
+              - output: None
+        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 299-385]
+          - description: For each config language (or one null cycle), always runs episode and `SnnE01-` pack primaries, adds localized season primary only when a real config language is present, logs each query outcome, then runs fallback title query only if all primaries return no results.
           - input: series; indexer
           - output: results: list, SearchResult list
           - calls:
@@ -358,20 +362,24 @@
               - input: media; indexer; search_string; category
               - output: torrents: list, SearchResult list; []: list, when query has no valid hits
               - calls:
-                - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 385-411]
+                - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 440-467]
                   - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
                   - input: media; indexer; list_of_dicts
                   - output: result_list: list, SearchResult list
-        - `__post_process_result()`: Normalize and enrich SearchResult after search. [src/debriddo/search/search_service.py, 435-461]
+            - `__log_query_result()`: Emit per-query search log. [src/debriddo/search/search_service.py, 214-232]
+              - description: Logs `Found/No results found` for each query string with indexer/category and per-query elapsed time.
+              - input: search_string; indexer; category; query_start_time; result_count
+              - output: None
+        - `__post_process_result()`: Normalize and enrich SearchResult after search. [src/debriddo/search/search_service.py, 490-516]
           - description: Ensures magnet availability, parses RTN metadata, detects languages, and extracts info hash.
           - input: indexers; result; media
           - output: result; None: None, when magnet retrieval fails
           - calls:
-            - `__is_magnet_link()`: Detect magnet URLs. [src/debriddo/search/search_service.py, 414-416]
+            - `__is_magnet_link()`: Detect magnet URLs. [src/debriddo/search/search_service.py, 469-471]
               - description: Returns True when link starts with magnet:? prefix.
               - input: link
               - output: True: bool, magnet link; False: bool, non-magnet link
-            - `__extract_info_hash()`: Extract info hash from magnet link. [src/debriddo/search/search_service.py, 419-432]
+            - `__extract_info_hash()`: Extract info hash from magnet link. [src/debriddo/search/search_service.py, 474-487]
               - description: Parses magnet xt parameter and returns hash or raises on invalid link.
               - input: magnet_link
               - output: info_hash
