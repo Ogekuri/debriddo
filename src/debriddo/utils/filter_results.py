@@ -35,7 +35,9 @@ season_labels = {
 def _match_complete_season(raw_title, numeric_season):
     title = str(raw_title or "")
     season_prefix_match = re.compile(
-        r"\bS0?" + str(numeric_season) + r"E0?1\s*-\s*E(?:\d{0,2})?\b",
+        r"\bS0?"
+        + str(numeric_season)
+        + r"(?:\s*-\s*|\s+)?E0?1\s*-\s*(?:E(?:\s*\d{1,3})?|\d{1,3})\b",
         re.IGNORECASE,
     )
     if season_prefix_match.search(title):
@@ -51,6 +53,19 @@ def _match_complete_season(raw_title, numeric_season):
             return True
 
     return False
+
+
+def _match_season_episode_pair(raw_title, numeric_season, numeric_episode):
+    title = str(raw_title or "")
+    season_episode_match = re.compile(
+        r"\bS0?"
+        + str(numeric_season)
+        + r"(?:\s*-\s*|\s+)?E0?"
+        + str(numeric_episode)
+        + r"\b",
+        re.IGNORECASE,
+    )
+    return season_episode_match.search(title) is not None
 
 
 def sort_quality(item):
@@ -154,6 +169,9 @@ def filter_out_non_matching(items, season, episode):
         numeric_season = int(clean_season)
         numeric_episode = int(clean_episode)
         try:
+            if _match_season_episode_pair(item.raw_title, numeric_season, numeric_episode):
+                filtered_items.append(item)
+                continue
             if _match_complete_season(item.raw_title, numeric_season):
                 filtered_items.append(item)
                 continue

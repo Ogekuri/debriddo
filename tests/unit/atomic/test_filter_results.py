@@ -25,6 +25,30 @@ def test_filter_out_non_matching_keeps_classic_episode_match():
     assert filtered[0].raw_title == "Person of Interest S03E01"
 
 
+def test_filter_out_non_matching_keeps_snn_space_emm_episode_match():
+    items = [
+        build_item("Person of Interest S03 E01", seasons=[], episodes=[]),
+        build_item("Person of Interest S03 E02", seasons=[], episodes=[]),
+    ]
+
+    filtered = filter_out_non_matching(items, "S03", "E01")
+
+    assert len(filtered) == 1
+    assert filtered[0].raw_title == "Person of Interest S03 E01"
+
+
+def test_filter_out_non_matching_keeps_snn_dash_emm_episode_match():
+    items = [
+        build_item("Person of Interest S03-E01", seasons=[], episodes=[]),
+        build_item("Person of Interest S03-E02", seasons=[], episodes=[]),
+    ]
+
+    filtered = filter_out_non_matching(items, "S03", "E01")
+
+    assert len(filtered) == 1
+    assert filtered[0].raw_title == "Person of Interest S03-E01"
+
+
 def test_filter_out_non_matching_keeps_complete_pack_snn_e01_e_pattern():
     items = [
         build_item("Person of Interest S03E01-E10 1080p", seasons=[], episodes=[]),
@@ -35,6 +59,18 @@ def test_filter_out_non_matching_keeps_complete_pack_snn_e01_e_pattern():
 
     assert len(filtered) == 1
     assert filtered[0].raw_title == "Person of Interest S03E01-E10 1080p"
+
+
+def test_filter_out_non_matching_keeps_complete_pack_snn_e01_range_without_second_e():
+    items = [
+        build_item("Person of Interest S03E01-23 1080p", seasons=[], episodes=[]),
+        build_item("Person of Interest S02E01-23 1080p", seasons=[], episodes=[]),
+    ]
+
+    filtered = filter_out_non_matching(items, "S03", "E01")
+
+    assert len(filtered) == 1
+    assert filtered[0].raw_title == "Person of Interest S03E01-23 1080p"
 
 
 def test_filter_out_non_matching_keeps_localized_season_label():
