@@ -603,8 +603,8 @@ Queste regole devono essere sempre rispettate:
 
 - **REQ-552**: Dopo la fase di filtraggio "non matching series torrents", la pipeline deve loggare il nuovo conteggio item rimasti con il messaggio `Item count changed to <n>`.  
   ID originale: `N/A`.
-  Comportamento atteso: subito dopo `filter_out_non_matching(...)` il log DEBUG riporta il numero di item rimasti.  
-  Criteri di accettazione: nel ramo `media.type == "series"` di `filter_items()`, il codice chiama `filter_out_non_matching(...)` e poi `logger.debug(f"Item count changed to {len(items)}")`.  
+  Comportamento atteso: subito dopo il log `Filtering out non matching series torrents` e la chiamata `filter_out_non_matching(...)`, il log DEBUG riporta il numero di item rimasti prima del log `Filter results for season: ...`.  
+  Criteri di accettazione: nel ramo `media.type == "series"` di `filter_items()`, il codice chiama `filter_out_non_matching(...)`, poi `logger.debug(f"Item count changed to {len(items)}")` e successivamente `logger.debug("Filter results for season: " + media.season + ", spisode: " + media.episode)`.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `items = filter_out_non_matching(...); logger.debug(f"Item count changed to {len(items)}")`.
 
 - **REQ-533**: La pipeline di filtraggio deve rimuovere torrent il cui titolo parsato non matcha alcun titolo media sopra una soglia di similarita 0.5.  

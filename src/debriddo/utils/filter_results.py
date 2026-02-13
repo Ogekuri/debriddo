@@ -194,7 +194,6 @@ def items_sort(items, config):
 
 # TODO: not needed anymore because of RTN
 def filter_out_non_matching(items, season, episode):
-    logger.debug("Filter results for season: " + season + ", spisode: " + episode)
     filtered_items = []
     for item in items:
         # logger.debug(item.parsed_data)
@@ -254,6 +253,7 @@ def filter_items(items, media, config):
         logger.debug(f"Filtering out non matching series torrents")
         items = filter_out_non_matching(items, media.season, media.episode)
         logger.debug(f"Item count changed to {len(items)}")
+        logger.debug("Filter results for season: " + media.season + ", spisode: " + media.episode)
 
     # TODO: is titles[0] always the correct title? Maybe loop through all titles and get the highest match?
     items = remove_non_matching_title(items, media.titles)

@@ -134,12 +134,12 @@
           - description: Maps cached dict fields into SearchResult attributes and parses raw title.
           - input: cached_item
           - output: self
-        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 241-281]
-          - description: Logs item count before filtering and after series non-matching filtering ("Item count changed to <n>"), then filters by series patterns, title similarity, and configured filter instances in order.
+        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 240-281]
+          - description: Logs item count before filtering, emits "Item count changed to <n>" immediately after series non-matching filtering and before the season/episode debug line, then filters by title similarity and configured filter instances in order.
           - input: items; media; config
           - output: items: list, filtered results
           - calls:
-            - `filter_out_non_matching()`: Keep only matching season/episode, range-pack, or localized complete-season items for series requests. [src/debriddo/utils/filter_results.py, 196-222]
+            - `filter_out_non_matching()`: Keep only matching season/episode, range-pack, or localized complete-season items for series requests. [src/debriddo/utils/filter_results.py, 196-221]
               - description: Applies OR logic over exact pair, range pack, complete-season labels, and parsed season/episode matches; excludes season-only labels without completion markers.
               - input: items; season; episode
               - output: filtered_items: list, matched items
@@ -336,12 +336,12 @@
 
 - Feature: Filtering and sorting
   - Component: src/debriddo/utils/filter_results.py
-    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 241-281]
-      - description: Logs item count before filtering and after series non-matching filtering ("Item count changed to <n>"), then filters by series patterns, title similarity, and applies configured filters sequentially.
+    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 240-281]
+      - description: Logs item count before filtering, emits "Item count changed to <n>" immediately after series non-matching filtering and before the season/episode debug line, then filters by title similarity and applies configured filters sequentially.
       - input: items; media; config
       - output: items: list, filtered SearchResult list
       - calls:
-        - `filter_out_non_matching()`: Remove non-matching series items while preserving valid pair/range/complete-season matches. [src/debriddo/utils/filter_results.py, 196-222]
+        - `filter_out_non_matching()`: Remove non-matching series items while preserving valid pair/range/complete-season matches. [src/debriddo/utils/filter_results.py, 196-221]
           - description: Applies OR matching over exact episode pair, pack ranges including the requested episode, localized complete-season markers, and parsed season/episode match.
           - input: items; season; episode
           - output: filtered_items: list, matched items
