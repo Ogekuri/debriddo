@@ -68,7 +68,7 @@ def items_sort(items, config):
     torrents = []
     for item in items:
         try:
-            torrent = rtn.rank(item.raw_title, item.info_hash, False) # remove_trash: bool = False
+            torrent = rtn.rank(item.raw_title, item.info_hash, remove_trash=False)
             torrents.append(torrent)
         except GarbageTorrent as e:
             logger.error(f"Error while ranking the torrent: {item.raw_title} - {str(e)}")

@@ -52,7 +52,10 @@ class TorrentService:
     async def __process_web_url_or_process_magnet(self, result: SearchResult):
         
         torrent_item = result.convert_to_torrent_item()
-        
+
+        if not isinstance(torrent_item.link, str):
+            return None
+
         if torrent_item.link.startswith("magnet:"):
             return self.__process_magnet(torrent_item)
         else:
@@ -74,6 +77,8 @@ class TorrentService:
 
     async def __process_web_url(self, result: TorrentItem):
         try:
+            if not isinstance(result.link, str):
+                return None
             # TODO: is the timeout enough?
             session = AsyncThreadSafeSession()  # Usa il client asincrono
             # response = await session.request_get(result.link, allow_redirects=False, timeout=2)
@@ -111,7 +116,10 @@ class TorrentService:
         result.files = metadata["info"]["files"]
 
         if result.type == "series":
-            file_details = self.__find_episode_file(result.files, result.parsed_data.seasons, result.parsed_data.episodes)
+            parsed_data = result.parsed_data
+            seasons = parsed_data.seasons if parsed_data is not None and hasattr(parsed_data, "seasons") else []
+            episodes = parsed_data.episodes if parsed_data is not None and hasattr(parsed_data, "episodes") else []
+            file_details = self.__find_episode_file(result.files, seasons, episodes)
 
             if file_details is not None:
                 self.logger.debug("File details")
@@ -182,6 +190,8 @@ class TorrentService:
         return trackers
 
     def __find_episode_file(self, file_structure, season, episode):
+        season = season or []
+        episode = episode or []
 
         if len(season) == 0 or len(episode) == 0:
             return None
@@ -203,6 +213,9 @@ class TorrentService:
 
             # Doesn't that need to be indented?
             file_index += 1
+
+        if len(episode_files) == 0:
+            return None
 
         return max(episode_files, key=lambda file: file["size"])
 

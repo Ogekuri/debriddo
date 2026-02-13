@@ -4,6 +4,7 @@
 import re
 import time
 import xml.etree.ElementTree as ET
+from typing import Any
 
 import asyncio
 
@@ -71,6 +72,7 @@ class SearchService:
         self.logger.debug("Started Search search for " + media.type + " " + media.titles[0])
 
         indexers = self.__get_indexers()
+        tasks_results = []
 
         if isinstance(media, Movie):
             if MULTI_THREAD:
@@ -94,6 +96,8 @@ class SearchService:
             else:
                 tasks = [self.__search_series_indexer(media, indexer) for indexer in indexers.values()] 
                 tasks_results = await asyncio.gather(*tasks)
+        else:
+            return []
 
         # concatena i risultati
         search_results = list(chain.from_iterable(tasks_results))
@@ -165,7 +169,7 @@ class SearchService:
             try:
                 title = titles[index] if index < len(titles) else base_title
                 include_lang_tag = lang is not None and indexer.language != lang
-                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag)
+                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag) if isinstance(lang, str) else self.__default_lang_tag
 
                 search_string = str(title + ' ' + movie.year)
                 if include_lang_tag:
@@ -243,7 +247,7 @@ class SearchService:
 
                 title = titles[index] if index < len(titles) else base_title
                 include_lang_tag = lang is not None and indexer.language != lang
-                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag)
+                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag) if isinstance(lang, str) else self.__default_lang_tag
 
                 search_strings = []
                 episode_search = str(title + ' ' + series.season + series.episode)
@@ -256,7 +260,7 @@ class SearchService:
                     pack_search = str(pack_search + ' ' + lang_tag)
                 search_strings.append(pack_search)
 
-                season_label = self.__season_labels.get(lang, "Season")
+                season_label = self.__season_labels.get(lang, "Season") if isinstance(lang, str) else "Season"
                 season_number = int(series.season[1:])
                 season_search = str(title + ' ' + season_label + ' ' + str(season_number))
                 if include_lang_tag:
@@ -312,7 +316,7 @@ class SearchService:
             return indexers
         except Exception:
             self.logger.exception("An exception occured while getting indexers from Search.")
-            return []
+            return {}
 
 
     def __get_indexer_from_engines(self, engines):
@@ -321,15 +325,16 @@ class SearchService:
         id = 0
         for engine_name in engines:
             indexer = SearchIndexer()
+            engine = self.__get_engine(engine_name)
+            supported_categories = engine.supported_categories
 
-            indexer.engine = self.__get_engine(engine_name)
-            indexer.language = indexer.engine.language
+            indexer.engine = engine
+            indexer.language = engine.language
 
-            indexer.title = indexer.engine.name
+            indexer.title = engine.name
             indexer.id = id
             indexer.engine_name = engine_name
 
-            supported_categories = indexer.engine.supported_categories
             if ('movies' in supported_categories) and (supported_categories['movies'] is not None):
                 indexer.movie_search_capatabilities = 'movies'
             else:

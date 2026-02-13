@@ -77,6 +77,9 @@ def search_cache(config, media):
             # cicla sulle lingue
             index = 0
             for language in media.languages:
+                year = -1
+                clean_season = -1
+                clean_episode = -1
 
                 title = media.titles[index]
                 title = normalize(title)
@@ -103,6 +106,7 @@ def search_cache(config, media):
                     cache_search['episode'] = clean_episode
 
                 try:
+                    filters = []
                     # Costruisci la query di filtro in base a `cache_search`
                     if media.type == "movie":
                         filters = [ "( (media_id = :media_id) OR (title = :title AND language = :language AND year = :year) )" ]
@@ -192,6 +196,13 @@ def cache_results(torrents: List[TorrentItem], media):
                 try:
                     # cicla sulle lingue
                     for language in torrent.languages:
+                        year = -1
+                        seasonfile = False
+                        season_first = -1
+                        season_last = -1
+                        episode_first = -1
+                        episode_last = -1
+
                         if language in media.languages:
                             title = titles[language]
                         else:
@@ -209,30 +220,33 @@ def cache_results(torrents: List[TorrentItem], media):
                             year = -1
                             clean_season = int(media.season.replace("S", ""))
                             # clean_episode = int(media.episode.replace("E", ""))
+                            parsed_data = torrent.parsed_data
+                            parsed_seasons = parsed_data.seasons if parsed_data is not None and hasattr(parsed_data, "seasons") else []
+                            parsed_episodes = parsed_data.episodes if parsed_data is not None and hasattr(parsed_data, "episodes") else []
 
                             # parsed_result = parse(result.raw_title) - già popolato
-                            if type(torrent.parsed_data.seasons) is list and len(torrent.parsed_data.seasons) > 0:
-                                season_first = min(torrent.parsed_data.seasons)
-                                season_last = max(torrent.parsed_data.seasons)
-                            elif type(torrent.parsed_data.seasons) is int and torrent.parsed_data.seasons > 0:
-                                season_first = torrent.parsed_data.seasons
-                                season_last = torrent.parsed_data.seasons
+                            if type(parsed_seasons) is list and len(parsed_seasons) > 0:
+                                season_first = min(parsed_seasons)
+                                season_last = max(parsed_seasons)
+                            elif type(parsed_seasons) is int and parsed_seasons > 0:
+                                season_first = parsed_seasons
+                                season_last = parsed_seasons
                             else:
                                 season_first = clean_season
                                 season_last = clean_season
 
-                            if type(torrent.parsed_data.episodes) is list and len(torrent.parsed_data.episodes) > 1:
+                            if type(parsed_episodes) is list and len(parsed_episodes) > 1:
                                 seasonfile = True  # True = contiene la stagione intera
-                                episode_first = min(torrent.parsed_data.episodes)
-                                episode_last = max(torrent.parsed_data.episodes)
-                            elif type(torrent.parsed_data.episodes) is list and len(torrent.parsed_data.episodes) == 1:
+                                episode_first = min(parsed_episodes)
+                                episode_last = max(parsed_episodes)
+                            elif type(parsed_episodes) is list and len(parsed_episodes) == 1:
                                 seasonfile = False  # True = contiene la stagione intera
-                                episode_first = min(torrent.parsed_data.episodes)
-                                episode_last = max(torrent.parsed_data.episodes)
-                            elif type(torrent.parsed_data.episodes) is int and torrent.parsed_data.episodes > 0:
+                                episode_first = min(parsed_episodes)
+                                episode_last = max(parsed_episodes)
+                            elif type(parsed_episodes) is int and parsed_episodes > 0:
                                 seasonfile = False  # False = contiene un episodio
-                                episode_first = torrent.parsed_data.episodes
-                                episode_last = torrent.parsed_data.episodes
+                                episode_first = parsed_episodes
+                                episode_last = parsed_episodes
                             else:
                                 seasonfile = True  # False = contiene un episodio
                                 episode_first = 0

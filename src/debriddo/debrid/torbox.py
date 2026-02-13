@@ -39,7 +39,7 @@ class TorBox(BaseDebrid):
         logger.error("Timeout while waiting for torrent files.")
         return None
 
-    async def add_magnet(self, magnet):
+    async def add_magnet(self, magnet, ip=None):
         url = f"{self.base_url}torrents/createtorrent"
         data = {
             "magnet": magnet,
@@ -98,7 +98,7 @@ class TorBox(BaseDebrid):
             logger.error("Only magnet links are supported for TorBox.")
         return torrent_id
 
-    async def get_stream_link(self, query, ip):
+    async def get_stream_link(self, query, ip=None):
         magnet = query["magnet"]
         stream_type = query["type"]
         season = query.get("season")
@@ -118,8 +118,12 @@ class TorBox(BaseDebrid):
 
         if is_cached:
             logger.debug("Magnet is already cached. Files are ready.")
-            files = await self.check_magnet_status(magnet_data["hash"])[magnet_data["hash"]]
-            if not files or "files" not in files:
+            cached_status = await self.check_magnet_status(magnet_data["hash"])
+            if not isinstance(cached_status, dict):
+                logger.error("Invalid cached torrent status response.")
+                return NO_CACHE_VIDEO_URL
+            files = cached_status.get(magnet_data["hash"])
+            if not isinstance(files, dict) or "files" not in files:
                 logger.error("Files not found in cached torrent.")
                 return NO_CACHE_VIDEO_URL
         else:

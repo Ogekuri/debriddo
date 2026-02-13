@@ -61,6 +61,13 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     if hasattr(parsed_data, "data"):
         parsed_data = parsed_data.data
 
+    episodes = parsed_data.episodes if parsed_data is not None and hasattr(parsed_data, "episodes") else []
+    seasons = parsed_data.seasons if parsed_data is not None and hasattr(parsed_data, "seasons") else []
+    resolution = parsed_data.resolution if parsed_data is not None and hasattr(parsed_data, "resolution") else ""
+    quality = parsed_data.quality if parsed_data is not None and hasattr(parsed_data, "quality") else ""
+    codec = parsed_data.codec if parsed_data is not None and hasattr(parsed_data, "codec") else None
+    audio = parsed_data.audio if parsed_data is not None and hasattr(parsed_data, "audio") else None
+
     # TODO: Always take the first resolution, is that the best one?
     # resolution = parsed_data.resolution[0] if len(parsed_data.resolution) > 0 else "Unknown"
     # name += f"{resolution}" + (f"\n({'|'.join(parsed_data.quality)})" if len(parsed_data.quality) > 0 else "")
@@ -72,21 +79,14 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
         cache = ""
 
     # seson package
-    if len(parsed_data.episodes) == 0 and len(parsed_data.seasons) > 0:
+    if len(episodes) == 0 and len(seasons) > 0:
         package = "📦"
     else:
         package = ""
 
-    # risoluzioni
-    if parsed_data.resolution != None and parsed_data.resolution != "unknown":
-        resolution = parsed_data.resolution 
-    else:
+    if resolution is None or resolution == "unknown":
         resolution = ""
-    
-    # qualità
-    if parsed_data.quality != None and parsed_data.quality != "unknown":
-        quality = parsed_data.quality
-    else:
+    if quality is None or quality == "unknown":
         quality = ""
 
     # formattazione pannello sinistro gui
@@ -101,11 +101,11 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
 
     title += f"👥 {torrent_item.seeders}   💾 {size_in_gb}GB   🔍 {torrent_item.indexer}\n"
 
-    if parsed_data.codec:
-        title += f"🎥 {parsed_data.codec.upper()}   "
-    if parsed_data.audio:
-        title += f"🎧 {', '.join(parsed_data.audio)}"
-    if parsed_data.codec or parsed_data.audio:
+    if codec:
+        title += f"🎥 {codec.upper()}   "
+    if audio:
+        title += f"🎧 {', '.join(audio)}"
+    if codec or audio:
         title += "\n"
 
     for language in torrent_item.languages:

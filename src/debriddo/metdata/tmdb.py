@@ -44,6 +44,8 @@ class TMDB(MetadataProvider):
                             languages=languages
                         )
                 else:
+                    if result is None:
+                        continue
                     if type == "movie":
                         result.titles.append(self.replace_weird_characters(data["movie_results"][0]["title"]))
                     else:

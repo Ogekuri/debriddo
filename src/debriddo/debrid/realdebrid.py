@@ -88,7 +88,10 @@ class RealDebrid(BaseDebrid):
         # TODO: verificare che cazzo fa sta cosa
         url = f"{self.base_url}/torrents/"
         ids = []
-        for element in await self.get_json_response(url)["data"]["hash"]:
+        availability_response = await self.get_json_response(url)
+        if not isinstance(availability_response, dict):
+            return dict()
+        for element in availability_response.get("data", {}).get("hash", []):
             if element is not None:
                 if element["hash"] in hashes_or_magnets:
                     ids.append(element["id"])
@@ -108,7 +111,7 @@ class RealDebrid(BaseDebrid):
         logger.debug(f"Found {len(cached_torrent_ids)} cached torrents with hash: {info_hash}")
 
         torrent_info = None
-        if len(cached_torrent_ids) > 0:
+        if cached_torrent_ids:
             if stream_type == "movie":
                 torrent_info = await self.get_torrent_info(cached_torrent_ids[0])
             elif stream_type == "series":
@@ -126,10 +129,10 @@ class RealDebrid(BaseDebrid):
             await self.__select_file(torrent_info, stream_type, file_index, season, episode)
 
             # == operator, to avoid adding the season pack twice and setting 5 as season pack treshold
-            if len(cached_torrent_ids) == 0 and stream_type == "series" and len(torrent_info["files"]) > 5:
+            if not cached_torrent_ids and stream_type == "series" and len(torrent_info["files"]) > 5:
                 logger.debug("Prefetching season pack")
                 prefetched_torrent_info = await self.__prefetch_season_pack(magnet, torrent_download)
-                if len(prefetched_torrent_info["links"]) > 0:
+                if prefetched_torrent_info and len(prefetched_torrent_info.get("links", [])) > 0:
                     await self.delete_torrent(torrent_info["id"])
                     torrent_info = prefetched_torrent_info
 
@@ -166,14 +169,16 @@ class RealDebrid(BaseDebrid):
                     torrent_ids.append(torrent['id'])
 
             return torrent_ids
-        return None
+        return []
 
     async def __get_cached_torrent_info(self, cached_ids, file_index, season, episode):
         cached_torrents = []
         for cached_torrent_id in cached_ids:
             cached_torrent_info = await self.get_torrent_info(cached_torrent_id)
+            if not cached_torrent_info:
+                continue
             if self.__torrent_contains_file(cached_torrent_info, file_index, season, episode):
-                if len(cached_torrent_info["links"]) > 0:  # If the links are ready
+                if len(cached_torrent_info.get("links", [])) > 0:  # If the links are ready
                     return cached_torrent_info
 
                 cached_torrents.append(cached_torrent_info)
@@ -212,11 +217,11 @@ class RealDebrid(BaseDebrid):
             torrent_id = magnet_response['id']
         else:
             logger.debug(f"Downloading torrent file from Jackett")
-            torrent_file = self.donwload_torrent_file(torrent_download)
+            torrent_file = await self.download_torrent_file(torrent_download)
             logger.debug(f"Torrent file downloaded from Jackett")
 
             logger.debug(f"Adding torrent file to RealDebrid")
-            upload_response = self.add_torrent(torrent_file)
+            upload_response = await self.add_torrent(torrent_file)
             logger.debug(f"RealDebrid add torrent file response: {upload_response}")
 
             if not upload_response or 'id' not in upload_response:
@@ -230,6 +235,8 @@ class RealDebrid(BaseDebrid):
 
     async def __prefetch_season_pack(self, magnet, torrent_download, timeout=30, interval=2):
         torrent_info = await self.__add_magnet_or_torrent(magnet, torrent_download)
+        if not torrent_info:
+            return None
         video_file_indexes = []
 
         for file in torrent_info["files"]:
@@ -270,6 +277,8 @@ class RealDebrid(BaseDebrid):
             if len(strict_matching_files) > 0:
                 matching_files = strict_matching_files
 
+            if len(matching_files) == 0:
+                raise ValueError("Error: No matching file found in torrent.")
             largest_file_id = max(matching_files, key=lambda x: x['bytes'])['id']
             logger.debug(f"Selecting file_index: {largest_file_id}")
             await self.select_files(torrent_id, largest_file_id)
@@ -298,6 +307,8 @@ class RealDebrid(BaseDebrid):
             if len(strict_matching_indexes) > 0:
                 matching_indexes = strict_matching_indexes
 
+            if len(matching_indexes) == 0:
+                return NO_CACHE_VIDEO_URL
             index = max(matching_indexes, key=lambda x: x["file"]["bytes"])["index"]
 
         if len(links) - 1 < index:

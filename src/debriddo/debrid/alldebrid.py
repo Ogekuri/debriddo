@@ -19,7 +19,7 @@ class AllDebrid(BaseDebrid):
         super().__init__(config)
         self.base_url = "https://api.alldebrid.com/v4.1/"
 
-    async def add_magnet(self, magnet, ip):
+    async def add_magnet(self, magnet, ip=None):
         url = f"{self.base_url}magnet/upload?agent=debriddo&apikey={self.config['debridKey']}&magnet={magnet}&ip={ip}"
         return await self.get_json_response(url)
 
@@ -36,7 +36,7 @@ class AllDebrid(BaseDebrid):
         url = f"{self.base_url}link/unlock?agent=debriddo&apikey={self.config['debridKey']}&link={link}&ip={ip}"
         return await self.get_json_response(url)
 
-    async def get_stream_link(self, query, ip):
+    async def get_stream_link(self, query, ip=None):
         magnet = query['magnet']
         stream_type = query['type']
         torrent_download = unquote(query["torrent_download"]) if query["torrent_download"] is not None else None
@@ -44,14 +44,24 @@ class AllDebrid(BaseDebrid):
         torrent_id = await self.__add_magnet_or_torrent(magnet, torrent_download, ip)
         logger.debug(f"Torrent ID: {torrent_id}")
 
-        if not await self.wait_for_ready_status_async_func(
-                lambda: self.check_magnet_status(torrent_id, ip)["data"]["magnets"]["status"] == "Ready"):
+        async def is_ready():
+            status_response = await self.check_magnet_status(torrent_id, ip)
+            if not isinstance(status_response, dict):
+                return False
+            return status_response.get("data", {}).get("magnets", {}).get("status") == "Ready"
+
+        if not await self.wait_for_ready_status_async_func(is_ready):
             logger.error("Torrent not ready, caching in progress.")
             return NO_CACHE_VIDEO_URL
         logger.debug("Torrent is ready.")
 
         logger.debug(f"Getting data for torrent id: {torrent_id}")
-        data = await self.check_magnet_status(torrent_id, ip)["data"]
+        status_response = await self.check_magnet_status(torrent_id, ip)
+        if not isinstance(status_response, dict):
+            return NO_CACHE_VIDEO_URL
+        data = status_response.get("data")
+        if not isinstance(data, dict):
+            return NO_CACHE_VIDEO_URL
         logger.debug(f"Retrieved data for torrent id")
 
         link = NO_CACHE_VIDEO_URL
@@ -102,10 +112,14 @@ class AllDebrid(BaseDebrid):
     async def get_availability_bulk(self, hashes_or_magnets, ip=None):
         torrents = f"{self.base_url}magnet/status?agent=debriddo&apikey={self.config['debridKey']}&ip={ip}"
         ids = []
-        for element in await self.get_json_response(torrents)["data"]["magnets"]:
+        availability_response = await self.get_json_response(torrents)
+        if not isinstance(availability_response, dict):
+            return ids
+        for element in availability_response.get("data", {}).get("magnets", []):
             if element is not None:
                 if element["hash"] in hashes_or_magnets:
                     ids.append(element["id"])
+        return ids
 
         # if len(hashes_or_magnets) == 0:
         #     logger.debug("No hashes to be sent to All-Debrid.")
@@ -129,7 +143,7 @@ class AllDebrid(BaseDebrid):
             torrent_id = magnet_response["data"]["magnets"][0]["id"]
         else:
             logger.debug(f"Downloading torrent file")
-            torrent_file = self.donwload_torrent_file(torrent_download)
+            torrent_file = await self.download_torrent_file(torrent_download)
             logger.debug(f"Torrent file downloaded")
 
             logger.debug(f"Adding torrent file to AllDebrid")

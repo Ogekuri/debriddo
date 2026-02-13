@@ -568,7 +568,8 @@ def run_smoke(args: argparse.Namespace, target: TargetUrls) -> List[CheckResult]
         movie_stream_payload = parse_json_body(movie_stream_response)
         movie_stream_ok = movie_stream_response.ok and isinstance(movie_stream_payload, dict)
         if movie_stream_ok:
-            streams = movie_stream_payload.get("streams")
+            payload_dict = movie_stream_payload if isinstance(movie_stream_payload, dict) else {}
+            streams = payload_dict.get("streams")
             movie_stream_ok = isinstance(streams, list)
             stream_count = len(streams) if isinstance(streams, list) else 0
         else:
@@ -592,7 +593,8 @@ def run_smoke(args: argparse.Namespace, target: TargetUrls) -> List[CheckResult]
             series_stream_payload = parse_json_body(series_stream_response)
             series_stream_ok = series_stream_response.ok and isinstance(series_stream_payload, dict)
             if series_stream_ok:
-                streams = series_stream_payload.get("streams")
+                payload_dict = series_stream_payload if isinstance(series_stream_payload, dict) else {}
+                streams = payload_dict.get("streams")
                 series_stream_ok = isinstance(streams, list)
                 series_stream_count = len(streams) if isinstance(streams, list) else 0
             else:

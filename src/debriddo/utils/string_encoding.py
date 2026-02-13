@@ -31,6 +31,8 @@ def decode_lzstring(data, tag):
         raise ValueError("Incompatible tag decoding lz-string")
     try:
         decompressed = lz.decompressFromEncodedURIComponent(data)
+        if decompressed is None:
+            raise ValueError("Failed to decompress lz-string payload")
         json_value = json.loads(decompressed)
     except Exception as e:
         raise ValueError(f"An error occurred decoding lz-string: {e}")

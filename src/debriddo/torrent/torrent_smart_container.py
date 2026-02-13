@@ -20,7 +20,7 @@ from debriddo.utils.logger import setup_logger
 class TorrentSmartContainer:
     def __init__(self, torrent_items: List[TorrentItem], media):
         self.logger = setup_logger(__name__)
-        self.__itemsDict: Dict[TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
+        self.__itemsDict: Dict[str, TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
         self.__media = media
 
     def get_hashes(self):
@@ -34,6 +34,7 @@ class TorrentSmartContainer:
         for torrent_item in self.__itemsDict.values():
             if torrent_item.privacy == "public" and torrent_item.file_index is not None:
                 direct_torrentable_items.append(torrent_item)
+        return direct_torrentable_items
 
     def get_best_matching(self):
         best_matching = []

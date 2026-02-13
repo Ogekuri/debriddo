@@ -3,6 +3,7 @@
 # CONTRIBUTORS: Ogekuri
 
 from urllib.parse import quote
+from typing import Any
 
 from debriddo.models.media import Media
 from debriddo.models.series import Series
@@ -28,15 +29,15 @@ class TorrentItem:
         self.type = type  # "series" or "movie"
         self.from_cache = from_cache # by default is not from cache
 
-        self.file_name = None  # it may be updated during __process_torrent()
-        self.files = None  # The files inside of the torrent. If it's None, it means that there is only one file inside of the torrent
-        self.torrent_download = None  # The torrent download url if its None, it means that there is only a magnet link provided by Jackett. It also means, that we cant do series file filtering before debrid.
-        self.trackers = []  # Trackers of the torrent
-        self.file_index = None  # Index of the file inside of the torrent - it may be updated durring __process_torrent() and update_availability(). If the index is None and torrent is not None, it means that the series episode is not inside of the torrent.
-        self.availability = False  # If it's instantly available on the debrid service
+        self.file_name: str | None = None  # it may be updated during __process_torrent()
+        self.files: list[dict[str, Any]] | None = None  # The files inside of the torrent. If it's None, it means that there is only one file inside of the torrent
+        self.torrent_download: str | None = None  # The torrent download url if its None, it means that there is only a magnet link provided by Jackett. It also means, that we cant do series file filtering before debrid.
+        self.trackers: list[str] = []  # Trackers of the torrent
+        self.file_index: int | None = None  # Index of the file inside of the torrent - it may be updated durring __process_torrent() and update_availability(). If the index is None and torrent is not None, it means that the series episode is not inside of the torrent.
+        self.availability: bool = False  # If it's instantly available on the debrid service
 
 
-        self.parsed_data = parsed_data  # Ranked result
+        self.parsed_data: Any = parsed_data  # Ranked result
 
     def to_debrid_stream_query(self, media: Media) -> dict:
         return {

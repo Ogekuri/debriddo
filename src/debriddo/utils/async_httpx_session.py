@@ -246,6 +246,7 @@ class AsyncThreadSafeSession:
         # Usa un timeout personalizzato o quello predefinito
         timeout = kwargs.pop("timeout", self.default_timeout)
 
+        response = None
         try:
             response = await self._client.request(
                 method, url, headers=headers, timeout=timeout, **kwargs
@@ -259,7 +260,7 @@ class AsyncThreadSafeSession:
                     return None
             
         except json.JSONDecodeError:
-                self.logger.error(f"Failed to parse response as JSON: {response.text}")
+                self.logger.error(f"Failed to parse response as JSON: {response.text if response is not None else ''}")
                 return None
         except httpx.HTTPStatusError as e:
             # Logga l'errore e restituisce una risposta informativa

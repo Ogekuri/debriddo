@@ -66,14 +66,21 @@ class Premiumize(BaseDebrid):
         transfer_id = transfer_data['id']
         logger.debug(f"Transfer created with ID: {transfer_id}")
 
-        if not self.wait_for_ready_status_async_func(lambda: self.get_availability(info_hash)["transcoded"][0] is True):
+        async def is_ready():
+            availability = await self.get_availability(info_hash)
+            if not isinstance(availability, dict):
+                return False
+            transcoded = availability.get("transcoded", [])
+            return isinstance(transcoded, list) and len(transcoded) > 0 and bool(transcoded[0])
+
+        if not await self.wait_for_ready_status_async_func(is_ready):
             logger.debug("Torrent not ready, caching in progress")
             return NO_CACHE_VIDEO_URL
 
         logger.debug("Torrent is ready.")
 
         # Assuming the transfer is complete, we need to find whether it's a file or a folder
-        transfers = await self.list_transfers()
+        transfers = await self.list_transfers() or {}
         item_id, is_folder = None, False
         for item in transfers.get('transfers', []):
             if item['id'] == transfer_id:
@@ -88,14 +95,17 @@ class Premiumize(BaseDebrid):
             logger.error("Transfer completed but no item ID found.")
             raise ValueError("Error: Transfer completed but no item ID found.")
 
-        details = await self.get_folder_or_file_details(item_id, is_folder)
+        details = await self.get_folder_or_file_details(item_id, is_folder) or {}
         logger.debug(f"Got details")
 
         if stream_type == "movie":
             logger.debug("Getting link for movie")
             # For movies, we pick the largest file in the folder or the file itself
             if is_folder:
-                link = max(details.get("content", []), key=lambda x: x["size"])["link"]
+                content = details.get("content", [])
+                if not content:
+                    raise ValueError("Error: Empty Premiumize folder content.")
+                link = max(content, key=lambda x: x["size"])["link"]
             else:
                 link = details.get('link')
         elif stream_type == "series":
@@ -120,6 +130,9 @@ class Premiumize(BaseDebrid):
         else:
             logger.error("Unsupported stream type.")
             raise ValueError("Error: Unsupported stream type.")
+
+        if not link:
+            raise ValueError("Error: No Premiumize link found.")
 
         logger.debug(f"Link generated: {link}")
         return link
