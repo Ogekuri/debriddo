@@ -114,8 +114,8 @@
               - description: Strips tag prefix, decompresses URI component, and loads JSON payload.
               - input: data; tag
               - output: json_value
-        - `TMDB.get_metadata()`: Fetch metadata from TMDB per language. [src/debriddo/metdata/tmdb.py, 14-52]
-          - description: Issues TMDB API calls for each configured language and builds Movie/Series with multilingual titles.
+        - `TMDB.get_metadata()`: Fetch metadata from TMDB per language. [src/debriddo/metdata/tmdb.py, 14-53]
+          - description: Uses configured languages with fallback to English when empty, issues TMDB API calls, and builds Movie/Series with multilingual titles.
           - input: id; type
           - output: result
         - `Cinemeta.get_metadata()`: Fetch metadata from Cinemeta. [src/debriddo/metdata/cinemeta.py, 13-43]

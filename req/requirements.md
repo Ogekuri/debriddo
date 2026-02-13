@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.5"
+version: "0.6"
 date: "2026-02-13"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.5  
+**Versione**: 0.6  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-13
 
@@ -429,17 +429,17 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `config.js` costruisce un oggetto `data` includendo `debridKey`, `tmdbApi`, `cache`, `search`, `engines`, `languages`, `sort`, `maxResults`, `minCacheResults`, `daysCacheValid`.  
   Evidenza: `src/debriddo/web/config.js` / costruzione `data` in `getLink()`. Estratto: `let data = { addonHost, service, 'debridKey': debridApi, ... tmdbApi, cache, playtorrent, search, debrid, metadataProvider };`.
 
-- **REQ-508 (Limite noto)**: La UI di configurazione deve essere considerata difettosa nell'enumerazione engine perche' l'array `engines` contiene elementi sintatticamente invalidi (doppie virgole) che possono produrre elementi `undefined` e causare errori DOM durante l'iterazione.  
-  ID originale: `REQ-037 (Limite noto)`.
-  Comportamento atteso: in alcuni browser, iterare `engines` puo' invocare `document.getElementById(engine)` con `engine=undefined`, causando errori o comportamento errato.  
-  Criteri di accettazione: il literal `engines` contiene virgole consecutive e `getLink()` dereferenzia `.checked` senza null-guard.  
-  Evidenza: `src/debriddo/web/config.js` / dichiarazione `engines` e `getLink()`. Estratto: `const engines = ['thepiratebay', ... 'torrentz', ,'torrentgalaxy', ,'therarbg', ...];`.
+- **REQ-508**: La UI di configurazione deve definire un array `engines` senza elementi `undefined` e deve includere solo gli engine abilitati (escludendo `one337x` e `limetorrents` quando disabilitati).  
+  ID originale: `REQ-037`.
+  Comportamento atteso: l'iterazione sugli engine non genera elementi `undefined` e riflette le scelte di abilitazione UI.  
+  Criteri di accettazione: il literal `engines` non contiene virgole consecutive e `selectedEngines` contiene solo engine presenti nel DOM.  
+  Evidenza: `src/debriddo/web/config.js` / dichiarazione `engines` e `getLink()`. Estratto: `const engines = ['thepiratebay', 'torrentproject', 'torrentz', 'torrentgalaxy', 'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];`.
 
-- **REQ-509 (Limite noto)**: La UI di configurazione non deve essere considerata corretta nella validazione “almeno una lingua selezionata” perche' il check richiesto testa la lunghezza dell'array costante `languages` e non la lunghezza della lista lingue selezionate dall'utente.  
-  ID originale: `REQ-038 (Limite noto)`.
-  Comportamento atteso: la UI puo' consentire la generazione anche quando nessuna lingua e' selezionata.  
-  Criteri di accettazione: la condizione usa `languages.length === 0` e non `selectedLanguages.length === 0`.  
-  Evidenza: `src/debriddo/web/config.js` / check required-field in `getLink()`. Estratto: `... || languages.length === 0) { alert('Please fill all required fields'); ... }`.
+- **REQ-509**: La UI di configurazione deve validare la selezione di almeno una lingua verificando la lista effettiva `selectedLanguages` e bloccare la generazione dei link quando la lista e' vuota.  
+  ID originale: `REQ-038`.
+  Comportamento atteso: la UI impedisce la generazione quando nessuna lingua e' selezionata.  
+  Criteri di accettazione: la condizione usa `selectedLanguages.length === 0` all'interno di `getLink()` e mostra l'alert di campi obbligatori.  
+  Evidenza: `src/debriddo/web/config.js` / check required-field in `getLink()`. Estratto: `... || selectedLanguages.length === 0) { alert('Please fill all required fields'); ... }`.
 
 - **REQ-510 (Limite noto)**: La UI di configurazione deve consentire la selezione del valore `service=debridlink`, ma il backend deve rifiutare tale valore come configurazione servizio non valida.  
   ID originale: `REQ-039 (Limite noto)`.
@@ -507,11 +507,11 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `Cinemeta.get_metadata()` imposta `languages=[\"en\"]` sia per film sia per serie.  
   Evidenza: `src/debriddo/metdata/cinemeta.py` / `Cinemeta.get_metadata()`. Estratto: `languages=[\"en\"]`.
 
-- **REQ-520**: Il provider metadati TMDB deve eseguire una richiesta esterna per ogni lingua configurata e deve assemblare un media i cui `titles` includono un titolo per lingua richiesta, mentre `languages` e' impostato alla lista lingue configurata.  
+- **REQ-520**: Il provider metadati TMDB deve eseguire una richiesta esterna per ogni lingua configurata e deve assemblare un media i cui `titles` includono un titolo per lingua richiesta, mentre `languages` e' impostato alla lista lingue configurata (default `["en"]` quando la lista e' vuota o mancante).  
   ID originale: `REQ-014`.
   Comportamento atteso: i titoli sono varianti per lingua.  
-  Criteri di accettazione: `TMDB.get_metadata()` itera `for lang in self.config['languages']`, imposta `result.languages=self.config['languages']` e aggiunge titoli per le lingue successive.  
-  Evidenza: `src/debriddo/metdata/tmdb.py` / `TMDB.get_metadata()`. Estratto: `for lang in self.config['languages']:` e `result.titles.append(...)`.
+  Criteri di accettazione: `TMDB.get_metadata()` usa una lista lingue effettiva con fallback a `["en"]` quando `config['languages']` e' vuota o mancante, imposta `result.languages` alla lista effettiva e aggiunge titoli per le lingue successive.  
+  Evidenza: `src/debriddo/metdata/tmdb.py` / `TMDB.get_metadata()`. Estratto: `languages = self.config.get("languages") or ["en"]`; `result.languages = languages`.
 
 - **REQ-521**: L'handler endpoint stream deve istanziare un servizio Debrid in base a `config['service']` e deve rifiutare valori non supportati restituendo un errore HTTP 500.  
   ID originale: `REQ-015`.
@@ -901,3 +901,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-12 | 0.3      | Aggiunto requisito di autonomia per lo script API tester e relativo requisito di test. |
 | 2026-02-13 | 0.4      | Estesi i requisiti dello script API tester (target/endpoint/asset/stream/playback/smoke/errori) e rafforzato il vincolo di non dipendenza da librerie `src/debriddo/` per tutte le implementazioni API Tester. |
 | 2026-02-13 | 0.5      | Aggiunto comando `search` al tester API per stampare i payload stream completi. |
+| 2026-02-13 | 0.6      | Correzione validazione lingue UI, fallback lingue TMDB su lista vuota, e pulizia lista engine abilitati. |

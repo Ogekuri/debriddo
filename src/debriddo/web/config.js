@@ -3,8 +3,8 @@ const services = ['realdebrid', 'alldebrid', 'premiumize', 'torbox', 'debridlink
 const sorts = ['quality', 'sizedesc', 'sizeasc', 'qualitythensize'];
 const qualityExclusions = ['4k', '1080p', '720p', '480p', 'rips', 'cam', 'unknown'];
 const languages = ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'in', 'nl', 'hu', 'la', 'multi'];
-//const engines = ['thepiratebay', 'one337x', 'limetorrents', 'torrentproject', 'torrentz', ,'torrentgalaxy', ,'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
-const engines = ['thepiratebay', 'torrentproject', 'torrentz', ,'torrentgalaxy', ,'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
+//const engines = ['thepiratebay', 'one337x', 'limetorrents', 'torrentproject', 'torrentz', 'torrentgalaxy', 'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
+const engines = ['thepiratebay', 'torrentproject', 'torrentz', 'torrentgalaxy', 'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
 
 function setElementDisplay(elementId, displayStatus) {
     const element = document.getElementById(elementId);
@@ -188,7 +188,7 @@ function getLink(method) {
         metadataProvider
     };
 
-    if ((debrid && debridApi === '') || (metadataProvider === 'tmdb' && tmdbApi === '') || languages.length === 0) {
+    if ((debrid && debridApi === '') || (metadataProvider === 'tmdb' && tmdbApi === '') || selectedLanguages.length === 0) {
         alert('Please fill all required fields');
         return false;
     }
