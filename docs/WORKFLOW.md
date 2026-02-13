@@ -100,8 +100,8 @@
 
 - Feature: Stream endpoint orchestration (GET /{config_url}/stream/{stream_type}/{stream_id})
   - Component: src/debriddo/main.py
-    - `get_results()`: Orchestrate metadata lookup, search, filtering, and stream formatting. [src/debriddo/main.py, 399-489]
-      - description: Decodes config, fetches metadata, loads cached/search results, filters and converts torrents, updates availability, formats Stremio streams, and returns streams list when debrid is enabled.
+    - `get_results()`: Orchestrate metadata lookup, search, filtering, and stream formatting. [src/debriddo/main.py, 408-505]
+      - description: Decodes config, fetches metadata (returns 500 on missing metadata), loads cached/search results, filters and converts torrents, updates availability, formats Stremio streams, and returns streams list when debrid is enabled.
       - input: config_url; stream_type; stream_id; request
       - output: stream_list: list, Stremio stream entries; None: None, no response when debrid disabled
       - calls:
@@ -558,7 +558,7 @@
 
 - Feature: Playback redirect (GET /playback/{config_url}/{query_string})
   - Component: src/debriddo/main.py
-    - `get_playback()`: Resolve debrid stream link and redirect. [src/debriddo/main.py, 503-519]
+    - `get_playback()`: Resolve debrid stream link and redirect. [src/debriddo/main.py, 518-539]
       - description: Decodes config/query, resolves debrid stream link, and returns HTTP 301 redirect to resolved URL.
       - input: config_url; query_string; request
       - output: RedirectResponse: RedirectResponse, playback redirect

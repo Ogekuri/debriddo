@@ -416,6 +416,13 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
     else:
         metadata_provider = Cinemeta(config)
     media = await metadata_provider.get_metadata(stream_id, stream_type)
+    if media is None:
+        logger.error(f"Metadata not found for {stream_type} with id {stream_id}")
+        return Response(
+            content="An error occurred while processing the request.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            media_type="text/plain",
+        )
     
     if media.type == "movie":
         logger.info(f"Got media and properties for Film: {str(media.titles)} ({str(media.year)}) {str(media.languages)}")
