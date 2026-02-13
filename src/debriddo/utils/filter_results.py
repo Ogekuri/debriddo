@@ -31,27 +31,61 @@ season_labels = {
     "multi": "Season",
 }
 
+complete_labels = {
+    "en": "Complete",
+    "it": "Completa",
+    "fr": "Complete",
+    "es": "Completa",
+    "de": "Komplett",
+    "pt": "Completa",
+    "ru": "Polnyj",
+    "in": "Complete",
+    "nl": "Compleet",
+    "hu": "Teljes",
+    "la": "Complete",
+    "multi": "Complete",
+}
+
 
 def _match_complete_season(raw_title, numeric_season):
     title = str(raw_title or "")
-    season_prefix_match = re.compile(
-        r"\bS0?"
-        + str(numeric_season)
-        + r"(?:\s*-\s*|\s+)?E0?1\s*-\s*(?:E(?:\s*\d{1,3})?|\d{1,3})\b",
-        re.IGNORECASE,
-    )
-    if season_prefix_match.search(title):
-        return True
+    season_token = r"(?:S\s*0?" + str(numeric_season) + r"|0?" + str(numeric_season) + r")"
 
-    season_number = r"0?" + str(numeric_season)
-    for season_label in set(season_labels.values()):
+    # Localized complete season must use season/complete labels from the same language.
+    for language, season_label in season_labels.items():
+        complete_label = complete_labels.get(language)
+        if complete_label is None:
+            continue
         label_match = re.compile(
-            r"\b" + re.escape(season_label) + r"\s+" + season_number + r"\b",
+            r"\b"
+            + re.escape(season_label)
+            + r"\s+"
+            + season_token
+            + r"\b.*?\b"
+            + re.escape(complete_label)
+            + r"\b",
             re.IGNORECASE,
         )
         if label_match.search(title):
             return True
 
+    return False
+
+
+def _match_episode_range_pack(raw_title, numeric_season, numeric_episode):
+    title = str(raw_title or "")
+    pattern = re.compile(
+        r"\bS0?(?P<season>\d{1,2})(?:\s+|-)?E0?(?P<episode_start>\d{1,3})\s*-\s*(?:E0?)?(?P<episode_end>\d{1,3})\b",
+        re.IGNORECASE,
+    )
+    for match in pattern.finditer(title):
+        season = int(match.group("season"))
+        episode_start = int(match.group("episode_start"))
+        episode_end = int(match.group("episode_end"))
+        if season != numeric_season:
+            continue
+        if episode_start <= numeric_episode <= episode_end:
+            return True
     return False
 
 
@@ -172,14 +206,13 @@ def filter_out_non_matching(items, season, episode):
             if _match_season_episode_pair(item.raw_title, numeric_season, numeric_episode):
                 filtered_items.append(item)
                 continue
+            if _match_episode_range_pack(item.raw_title, numeric_season, numeric_episode):
+                filtered_items.append(item)
+                continue
             if _match_complete_season(item.raw_title, numeric_season):
                 filtered_items.append(item)
                 continue
             if len(item.parsed_data.seasons) == 0 and len(item.parsed_data.episodes) == 0:
-                continue
-            # torrent con stagione completa (manca l'E??)
-            if len(item.parsed_data.episodes) == 0 and numeric_season in item.parsed_data.seasons:
-                filtered_items.append(item)
                 continue
             if numeric_season in item.parsed_data.seasons and numeric_episode in item.parsed_data.episodes:
                 filtered_items.append(item)

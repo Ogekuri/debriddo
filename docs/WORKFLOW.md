@@ -134,18 +134,26 @@
           - description: Maps cached dict fields into SearchResult attributes and parses raw title.
           - input: cached_item
           - output: self
-        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 190-230]
-          - description: Filters by season/episode preserving complete season packs (`SnnE01-E` and localized `Season <n>` labels), then filters titles and applies configured filter instances in order.
+        - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 241-281]
+          - description: Filters series by episode pair, episode-range packs, and localized complete-season patterns first, then filters titles and applies configured filter instances in order.
           - input: items; media; config
           - output: items: list, filtered results
           - calls:
-            - `filter_out_non_matching()`: Keep only matching season/episode or complete season packs for series requests. [src/debriddo/utils/filter_results.py, 147-171]
-              - description: Applies complete-season heuristics before parsed season/episode checks to prevent false negatives on season packages.
+            - `filter_out_non_matching()`: Keep only matching season/episode, range-pack, or localized complete-season items for series requests. [src/debriddo/utils/filter_results.py, 196-222]
+              - description: Applies OR logic over exact pair, range pack, complete-season labels, and parsed season/episode matches; excludes season-only labels without completion markers.
               - input: items; season; episode
               - output: filtered_items: list, matched items
               - calls:
-                - `_match_complete_season()`: Match complete-season naming patterns in torrent raw title. [src/debriddo/utils/filter_results.py, 35-53]
-                  - description: Detects `SnnE01-E` prefixes and localized season labels (`Season`, `Stagione`, `Saison`, `Temporada`, `Staffel`, `Seizoen`, `Evad`, `Sezon`) for the requested season.
+                - `_match_season_episode_pair()`: Match explicit season/episode pair tokens in torrent raw title. [src/debriddo/utils/filter_results.py, 92-102]
+                  - description: Detects `SnnEmm`, `Snn Emm`, and `Snn-Emm` forms for the requested pair.
+                  - input: raw_title; numeric_season; numeric_episode
+                  - output: True: bool, pair matched; False: bool, pair not matched
+                - `_match_episode_range_pack()`: Match season range-pack tokens and verify episode containment. [src/debriddo/utils/filter_results.py, 75-89]
+                  - description: Detects `SnnExx-Eyy`/`SnnExx-yy` variants (including space/dash forms) and returns true only when requested episode is inside the pack range.
+                  - input: raw_title; numeric_season; numeric_episode
+                  - output: True: bool, range matched; False: bool, range not matched
+                - `_match_complete_season()`: Match localized complete-season naming patterns in torrent raw title. [src/debriddo/utils/filter_results.py, 50-72]
+                  - description: Detects localized `<SeasonLabel> <season>` followed by localized `<CompleteLabel>` in the same language for the requested season.
                   - input: raw_title; numeric_season
                   - output: True: bool, complete season matched; False: bool, no complete season pattern
         - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 70-123]
@@ -328,21 +336,29 @@
 
 - Feature: Filtering and sorting
   - Component: src/debriddo/utils/filter_results.py
-    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 190-230]
-      - description: Filters by season/episode and complete-season patterns first, then filters by title similarity and applies configured filters sequentially.
+    - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 241-281]
+      - description: Filters by season/episode pair, episode-range packs, and localized complete-season patterns first, then filters by title similarity and applies configured filters sequentially.
       - input: items; media; config
       - output: items: list, filtered SearchResult list
       - calls:
-        - `filter_out_non_matching()`: Remove non-matching series items while preserving complete-season packs. [src/debriddo/utils/filter_results.py, 147-171]
-          - description: Preserves complete season entries detected by `_match_complete_season()` and retains parsed season/episode matches for the requested episode.
+        - `filter_out_non_matching()`: Remove non-matching series items while preserving valid pair/range/complete-season matches. [src/debriddo/utils/filter_results.py, 196-222]
+          - description: Applies OR matching over exact episode pair, pack ranges including the requested episode, localized complete-season markers, and parsed season/episode match.
           - input: items; season; episode
           - output: filtered_items: list, matched items
           - calls:
-            - `_match_complete_season()`: Match complete-season naming patterns in torrent raw title. [src/debriddo/utils/filter_results.py, 35-53]
-              - description: Matches `SnnE01-E` season packs and localized `Season <n>` labels for configured/supported languages.
+            - `_match_season_episode_pair()`: Match explicit season/episode pair tokens in torrent raw title. [src/debriddo/utils/filter_results.py, 92-102]
+              - description: Matches the requested pair in `SnnEmm`, `Snn Emm`, and `Snn-Emm` forms.
+              - input: raw_title; numeric_season; numeric_episode
+              - output: True: bool, pair matched; False: bool, no pair match
+            - `_match_episode_range_pack()`: Match range-pack tokens and validate requested-episode inclusion. [src/debriddo/utils/filter_results.py, 75-89]
+              - description: Matches `SnnExx-Eyy` and `SnnExx-yy` forms (including space/dash variants) and validates `xx <= episode <= yy`.
+              - input: raw_title; numeric_season; numeric_episode
+              - output: True: bool, range matched; False: bool, no range match
+            - `_match_complete_season()`: Match localized complete-season naming patterns in torrent raw title. [src/debriddo/utils/filter_results.py, 50-72]
+              - description: Matches `<SeasonLabel> <season> ... <CompleteLabel>` only when both labels belong to the same localized language pair.
               - input: raw_title; numeric_season
               - output: True: bool, complete season matched; False: bool, no complete season pattern
-        - `remove_non_matching_title()`: Filter by title similarity. [src/debriddo/utils/filter_results.py, 174-187]
+        - `remove_non_matching_title()`: Filter by title similarity. [src/debriddo/utils/filter_results.py, 225-238]
           - description: Uses RTN title_match with threshold 0.5 to retain matching titles.
           - input: items; titles
           - output: filtered_items: list, matched items
@@ -366,7 +382,7 @@
           - description: Retains up to resultsPerQuality items per resolution value.
           - input: data
           - output: filtered_items: list, filtered items
-    - `sort_items()`: Sort items based on config setting. [src/debriddo/utils/filter_results.py, 233-237]
+    - `sort_items()`: Sort items based on config setting. [src/debriddo/utils/filter_results.py, 284-288]
       - description: Delegates to items_sort when config['sort'] is set, otherwise returns items unchanged.
       - input: items; config
       - output: items: list, sorted items
