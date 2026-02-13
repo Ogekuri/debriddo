@@ -3,7 +3,8 @@ const services = ['realdebrid', 'alldebrid', 'premiumize', 'torbox', 'debridlink
 const sorts = ['quality', 'sizedesc', 'sizeasc', 'qualitythensize'];
 const qualityExclusions = ['4k', '1080p', '720p', '480p', 'rips', 'cam', 'unknown'];
 const languages = ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'in', 'nl', 'hu', 'la', 'multi'];
-const engines = ['thepiratebay', 'one337x', 'limetorrents', 'torrentproject', 'torrentz', ,'torrentgalaxy', ,'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
+//const engines = ['thepiratebay', 'one337x', 'limetorrents', 'torrentproject', 'torrentz', ,'torrentgalaxy', ,'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
+const engines = ['thepiratebay', 'torrentproject', 'torrentz', ,'torrentgalaxy', ,'therarbg', 'ilcorsaronero', 'ilcorsaroblu'];
 
 function setElementDisplay(elementId, displayStatus) {
     const element = document.getElementById(elementId);
@@ -48,11 +49,17 @@ function loadData() {
             if (data.service === serv) {
                 document.getElementById(serv).checked = true;
             }
+            else {
+                document.getElementById(serv).checked = false;
+            }
         });
 
         sorts.forEach(sort => {
             if (data.sort === sort) {
                 document.getElementById(sort).checked = true;
+            }
+            else {
+                document.getElementById(sort).checked = false;
             }
         });
 
@@ -60,11 +67,17 @@ function loadData() {
             if (data.exclusion.includes(quality)) {
                 document.getElementById(quality).checked = true;
             }
+            else {
+                document.getElementById(quality).checked = false;
+            }
         })
 
         languages.forEach(language => {
             if (data.languages.includes(language)) {
                 document.getElementById(language).checked = true;
+            }
+            else {
+                document.getElementById(language).checked = false;
             }
         })
         

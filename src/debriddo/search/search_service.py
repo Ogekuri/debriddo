@@ -1,6 +1,7 @@
 # VERSION: 0.0.34
 # AUTHORS: Ogekuri
 
+import re
 import time
 import xml.etree.ElementTree as ET
 
@@ -37,7 +38,7 @@ from itertools import chain
 from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 # Se non trova risultati prova una ricerca più estesa
-SEARCHE_FALL_BACK = False
+SEARCHE_FALL_BACK = True
 
 class SearchService:
     def __init__(self, config):
@@ -172,8 +173,8 @@ class SearchService:
                     if torrents is not None and type(torrents) is list and len(torrents) >0:
                         results.extend(torrents)
                 elif SEARCHE_FALL_BACK:
-                    # se non ci sono risultati prova una ricerca più grossolana o in inglese
-                    search_string = str(title + ' ' + movie.year  + ' ' +  self.__default_lang_tag)
+                    # se non ci sono risultati prova una ricerca più grossolana o in inglese (omette la lingua)
+                    search_string = str(title + ' ' + movie.year)
                     if indexer.language == languages[index]:
                         search_string = str(title)   # no language tag for native language indexer
                     search_string = normalize(search_string)
@@ -234,12 +235,12 @@ class SearchService:
                 title = titles[index]
                 lang_tag = self.__language_tags[languages[index]]
 
-                # search_string = str(title_normalized + ' ' + series.season + series.episode + ' ' + lang_tag)
-                # if indexer.language == languages[index]:
-                #     search_string = str(title_normalized + ' ' + series.season + series.episode)   # no language tag for native language indexer
-                search_string = str(title + ' ' + series.season + ' ' + lang_tag)
+                search_string = str(title + ' ' + series.season + series.episode + ' ' + lang_tag)
                 if indexer.language == languages[index]:
-                    search_string = str(title + ' ' + series.season)   # no language tag for native language indexer
+                     search_string = str(title + ' ' + series.season + series.episode)   # no language tag for native language indexer
+                #search_string = str(title + ' ' + series.season + ' ' + lang_tag)
+                #if indexer.language == languages[index]:
+                #    search_string = str(title + ' ' + series.season)   # no language tag for native language indexer
                 search_string = normalize(search_string)
                 category = str(indexer.tv_search_capatabilities)
                 list_of_dicts = await indexer.engine.search(search_string, category)
@@ -249,9 +250,17 @@ class SearchService:
                         results.extend(torrents)
                 elif SEARCHE_FALL_BACK:
                     # se non ci sono risultati prova una ricerca più grossolana o in inglese
-                    search_string = str(title + ' ' + series.season  + ' ' + self.__default_lang_tag)
+
+                    full_season = f"Season {int(series.season[1:])}"
+                    if indexer.language == 'it' or indexer.language == 'it':
+                        full_season = f"Stagione {int(series.season[1:])}"
+                    search_string = str(title + ' ' + full_season + ' ' + lang_tag)
                     if indexer.language == languages[index]:
-                        search_string = str(title)   # no language tag for native language indexer
+                        search_string = str(title + ' ' + full_season)   # no language tag for native language indexer
+
+                    #search_string = str(title + ' ' + series.season  + ' ' + self.__default_lang_tag)
+                    #if indexer.language == languages[index]:
+                    #    search_string = str(title)   # no language tag for native language indexer
                     search_string = normalize(search_string)
                     category = str(indexer.tv_search_capatabilities)
                     list_of_dicts = await indexer.engine.search(search_string, category)
