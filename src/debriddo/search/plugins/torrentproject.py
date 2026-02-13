@@ -54,11 +54,11 @@ class torrentproject(BasePlugin):
 
         def handle_starttag(self, tag, attrs):
             attributes = dict(attrs)
-            if tag == 'div' and 'nav' in attributes.get('id', ''):
+            if tag == 'div' and 'nav' in (attributes.get('id') or ''):
                 self.pageComplete = True
             if tag == 'div' and attributes.get('id', '') == 'similarfiles':
                 self.insideResults = True
-            if tag == 'div' and self.insideResults and 'gac_bb' not in attributes.get('class', ''):
+            if tag == 'div' and self.insideResults and 'gac_bb' not in (attributes.get('class') or ''):
                 self.insideDataDiv = True
             elif tag == 'span' and self.insideDataDiv and 'verified' != attributes.get('title', ''):
                 self.spanCount += 1

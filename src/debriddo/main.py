@@ -258,21 +258,21 @@ async def get_favicon():
 # /config.js
 @app.get("/config.js")
 @app.get("/{config}/config.js")
-async def get_favicon():
+async def get_config_js():
     response = FileResponse(str(WEB_DIR / "config.js"))
     return response
 
 # /lz-string.min.js
 @app.get("/lz-string.min.js")
 @app.get("/{config}/lz-string.min.js")
-async def get_favicon():
+async def get_lz_string_js():
     response = FileResponse(str(WEB_DIR / "lz-string.min.js"))
     return response
 
 # /styles.css
 @app.get("/styles.css")
 @app.get("/{config}/styles.css")
-async def get_favicon():
+async def get_styles_css():
     response = FileResponse(str(WEB_DIR / "styles.css"))
     return response
 
@@ -292,7 +292,7 @@ async def function(file_path: str):
 
 # /site.webmanifest
 @app.get("/site.webmanifest", response_class=HTMLResponse)
-async def configure():
+async def get_webmanifest():
     menifest_dict = {
                     "id": "com.stremio." + app_name_lc + "." + app_id,
                     "version": str(APPLICATION_VERSION),
@@ -425,9 +425,9 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
         )
     
     if media.type == "movie":
-        logger.info(f"Got media and properties for Film: {str(media.titles)} ({str(media.year)}) {str(media.languages)}")
+        logger.info(f"Got media and properties for Film: {str(media.titles)} ({str(getattr(media, 'year', ''))}) {str(media.languages)}")
     elif media.type == "series":
-        logger.info(f"Got media and properties for TV Episode: {str(media.titles)} ({str(media.season)} {str(media.episode)}) {str(media.languages)}")
+        logger.info(f"Got media and properties for TV Episode: {str(media.titles)} ({str(getattr(media, 'season', ''))} {str(getattr(media, 'episode', ''))}) {str(media.languages)}")
 
     debrid_service = get_debrid_service(config)
 
@@ -468,20 +468,21 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
 
             search_results.extend(filtered_engine_search_results)
 
+    torrent_smart_container = None
     if search_results is not None:
         logger.debug("Converting result to TorrentItems (results: " + str(len(search_results)) + ")")
         torrent_service = TorrentService()
         torrent_results = await torrent_service.convert_and_process(search_results)
         logger.debug("Converted result to TorrentItems (results: " + str(len(torrent_results)) + ")")
 
-        torrent_smart_container = TorrentSmartContainer(torrent_results, media)
+        torrent_smart_container = TorrentSmartContainer([r for r in torrent_results if r is not None], media)
 
-    if config['debrid']:
+    if config['debrid'] and torrent_smart_container is not None:
         if config['service'] == "torbox":
             logger.debug("Checking availability")
             hashes = torrent_smart_container.get_hashes()
-            ip = request.client.host
-            result = debrid_service.get_availability_bulk(hashes, ip)
+            ip = request.client.host if request.client else ""
+            result = await debrid_service.get_availability_bulk(hashes, ip)
             if result is not None:
                 torrent_smart_container.update_availability(result, type(debrid_service), media)
                 logger.debug("Checked availability (results: " + str(len(result.items())) + ")")
@@ -527,11 +528,13 @@ async def get_playback(config_url: str, query_string: str, request: Request):
 
         # logger.debug(f"Decoded <QUERY>: {query}")
         logger.debug(f"Decoded <QUERY>: type: {str(query['type'])}, file_index: {str(query['file_index'])}, season: {str(query['season'])}, episode: {str(query['episode'])}, torrent_download: {str(query['torrent_download'])}")
-        ip = request.client.host
+        ip = request.client.host if request.client else ""
         debrid_service = get_debrid_service(config)
         link = await debrid_service.get_stream_link(query, ip)
 
-        logger.info("Got link: " + link)
+        logger.info("Got link: " + str(link or ""))
+        if link is None:
+            raise HTTPException(status_code=500, detail="Unable to get stream link.")
         return RedirectResponse(url=link, status_code=status.HTTP_301_MOVED_PERMANENTLY)
 
     except Exception as e:
@@ -556,14 +559,18 @@ async def update_app():
     try:
         session = AsyncThreadSafeSession()  # Usa il client asincrono    
         url = "https://api.github.com/repos/Ogekuri/debriddo/releases/latest"
-        response = session.request_get(url)
-        data = response.json()
+        response = await session.request_get(url)
+        data = response.json() if response else None
+        if data is None:
+            return
         latest_version = data['tag_name']
         if latest_version != app_version:
             logger.warning(f"{APPLICATION_NAME} upgrade is started")
             logger.info(f"Updating from {app_version} to {latest_version}...")
             logger.info("Getting update zip...")
             update_zip = await session.request_get(data['zipball_url'])
+            if update_zip is None:
+                return
             with open("update.zip", "wb") as file:
                 file.write(update_zip.content)
             logger.info("Update zip downloaded")

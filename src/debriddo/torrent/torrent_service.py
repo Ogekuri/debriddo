@@ -67,10 +67,10 @@ class TorrentService:
         if MULTI_THREAD:
             loop = asyncio.get_event_loop()
             tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__process_web_url_or_process_magnet(result)) for result in results]
-            torrent_items_result = await asyncio.gather(*tasks)
+            torrent_items_result = await asyncio.gather(*tasks, return_exceptions=False)
         else:
             tasks = [self.__process_web_url_or_process_magnet(result) for result in results] 
-            torrent_items_result = await asyncio.gather(*tasks)
+            torrent_items_result = await asyncio.gather(*tasks, return_exceptions=False)
         
         return torrent_items_result
 

@@ -8,11 +8,11 @@ class BasePlugin:
         self.config = config
         self.logger = setup_logger(__name__)
 
-    async def login(self):
+    async def login(self, session=None):
         pass
 
     async def search(self, what, cat='all'):
         raise NotImplementedError
 
-    async def download_torrent(self,info_url):
+    async def download_torrent(self, info):
         raise NotImplementedError

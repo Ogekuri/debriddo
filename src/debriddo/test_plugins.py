@@ -81,7 +81,7 @@ async def main():
             print("-----------------------------------------------------------")
     
     for engine in engines:
-        await engine.close()  # Buona pratica: chiudere manualmente
+        pass  # Plugin instances don't need explicit close
 
 if __name__ == "__main__":
     asyncio.run(main())

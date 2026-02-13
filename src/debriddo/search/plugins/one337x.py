@@ -69,7 +69,7 @@ class one337x(BasePlugin):
 
         def handle_starttag(self, tag, attrs):
             params = dict(attrs)
-            if 'search-page' in params.get('class', ''):
+            if 'search-page' in (params.get('class') or ''):
                 self.foundResults = True
                 return
             if self.foundResults and tag == self.TBODY:
@@ -79,7 +79,7 @@ class one337x(BasePlugin):
                 self.insideRow = True
                 return
             if self.insideRow and tag == self.TD:
-                classList = params.get('class', None)
+                classList = params.get('class') or ''
                 for columnName, classValue in self.parser_class.items():
                     if classValue in classList:
                         self.column = columnName
@@ -90,7 +90,7 @@ class one337x(BasePlugin):
                 if self.column != 'name' or self.HREF not in params:
                     return
                 link = params[self.HREF]
-                if link.startswith('/torrent/'):
+                if link and link.startswith('/torrent/'):
                     link = f'{self.url}{link}'
                 # fix non scarico subito il file
                 #     torrent_page = retrieve_url(link)

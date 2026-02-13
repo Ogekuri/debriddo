@@ -31,14 +31,25 @@ class torrentz(BasePlugin):
         for dl in soup.find_all('dl'):
             # Estrai il titolo e il link
             dt = dl.find('dt')
+            if dt is None:
+                continue
             title = dt.get_text(strip=True)
-            link = dt.find('a')['href']
+            dt_a = dt.find('a')
+            if dt_a is None:
+                continue
+            link = str(dt_a['href'])
             
             # Estrai il magnet link
-            magnet_link = dl.find('dd').find('a')['href']
+            dd = dl.find('dd')
+            if dd is None:
+                continue
+            dd_a = dd.find('a')
+            if dd_a is None:
+                continue
+            magnet_link = str(dd_a['href'])
             
             # Estrai gli altri campi
-            spans = dl.find('dd').find_all('span')
+            spans = dd.find_all('span')
 
             time_uploaded = spans[1].get_text(strip=True)
             size = spans[2].get_text(strip=True)
@@ -58,7 +69,7 @@ class torrentz(BasePlugin):
 				'seeds':		int(seeders),
 				'leech':		int(leechers),
 				'engine_url':	self.url,
-				'desc_link':	urllib.parse.quote(link)
+				'desc_link':	urllib.parse.quote(str(link))
 			}
             prettyPrinter(data)
 

@@ -64,27 +64,27 @@ class torrentgalaxy(BasePlugin):
             if tag == self.DIV:
                 my_attrs = dict(attrs)
                 # if (my_attrs.get('class') == 'tgxtablerow txlight'):
-                if  my_attrs.get('class') and 'tgxtablerow' in my_attrs.get('class'):
+                if  my_attrs.get('class') and 'tgxtablerow' in (my_attrs.get('class') or ''):
                     self.count_div = 0
                     self.this_record = {}
                     self.this_record['engine_url'] = self.url
-                if  my_attrs.get('class') and ('tgxtablecell' in my_attrs.get('class')) and self.count_div >= 0:
+                if  my_attrs.get('class') and ('tgxtablecell' in (my_attrs.get('class') or '')) and self.count_div >= 0:
                     self.count_div += 1
-                if my_attrs.get('style') and ('text-align:right' in my_attrs.get('style')) and self.count_div >= 0:
+                if my_attrs.get('style') and ('text-align:right' in (my_attrs.get('style') or '')) and self.count_div >= 0:
                     self.get_pub_date0 = True
 
             if tag == self.A and self.count_div < 13:
                 my_attrs = dict(attrs)
-                if 'title' in my_attrs and ('class' in my_attrs) and 'txlight' in my_attrs.get('class') and not my_attrs.get('id'):
+                if 'title' in my_attrs and ('class' in my_attrs) and 'txlight' in (my_attrs.get('class') or '') and not my_attrs.get('id'):
                     self.this_record['name'] = my_attrs['title']
                     self.this_record['desc_link'] = \
-                        self.url + my_attrs['href']
+                        self.url + str(my_attrs['href'])
                 if 'role' in my_attrs and my_attrs.get('role') == 'button':
                     self.this_record['link'] = my_attrs['href']
 
             if tag == self.SPAN:
                 my_attrs = dict(attrs)
-                if 'class' in my_attrs and 'badge badge-secondary' in my_attrs.get('class'):
+                if 'class' in my_attrs and 'badge badge-secondary' in (my_attrs.get('class') or ''):
                     self.get_size = True
 
             if tag == self.FONT:
@@ -152,5 +152,5 @@ class torrentgalaxy(BasePlugin):
         return prettyPrinter.get()
 
 if __name__ == '__main__':
-    a = torrentgalaxy()
-    a.search('ncis new', 'all')
+    a = torrentgalaxy({})
+    asyncio.run(a.search('ncis new', 'all'))

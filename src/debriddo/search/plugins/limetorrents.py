@@ -84,7 +84,7 @@ class limetorrents(BasePlugin):
 
             if self.column_name == "name" and tag == self.A and self.HREF in params:
                 link = params["href"]
-                if link.endswith(".html"):
+                if link and link.endswith(".html"):
                     try:
                         safe_link = quote(self.url + link, safe='/:')
                     except KeyError:
@@ -135,11 +135,11 @@ class limetorrents(BasePlugin):
         await session.close()
         return None
 
-    async def search(self, query, cat='all'):
+    async def search(self, what, cat='all'):
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         # """ Performs search """
         prettyPrinter.clear()
-        query = quote(query)
+        query = quote(what)
         query = query.replace("%20", "-")
         category = self.supported_categories[cat]
         

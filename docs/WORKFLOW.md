@@ -66,19 +66,19 @@
           - description: Reads index.html from WEB_DIR and replaces $APP_NAME, $APP_VERSION, $APP_ENVIRONMENT.
           - input: app_name; app_version; app_environment
           - output: index: str, rendered HTML
-    - `get_favicon()`: Serve favicon.ico asset. [src/debriddo/main.py, 244-247]
+    - `get_favicon()`: Serve favicon.ico asset. [src/debriddo/main.py, 253-256]
       - description: Returns FileResponse for WEB_DIR/images/favicon.ico.
       - input: None
       - output: response: FileResponse, favicon asset
-    - `get_favicon()`: Serve config.js asset. [src/debriddo/main.py, 252-254]
+    - `get_config_js()`: Serve config.js asset. [src/debriddo/main.py, 259-263]
       - description: Returns FileResponse for WEB_DIR/config.js.
       - input: None
       - output: response: FileResponse, config.js asset
-    - `get_favicon()`: Serve lz-string.min.js asset. [src/debriddo/main.py, 259-261]
+    - `get_lz_string_js()`: Serve lz-string.min.js asset. [src/debriddo/main.py, 266-270]
       - description: Returns FileResponse for WEB_DIR/lz-string.min.js.
       - input: None
       - output: response: FileResponse, lz-string asset
-    - `get_favicon()`: Serve styles.css asset. [src/debriddo/main.py, 266-268]
+    - `get_styles_css()`: Serve styles.css asset. [src/debriddo/main.py, 273-277]
       - description: Returns FileResponse for WEB_DIR/styles.css.
       - input: None
       - output: response: FileResponse, styles asset
@@ -89,7 +89,7 @@
 
 - Feature: Manifest endpoints
   - Component: src/debriddo/main.py
-    - `configure()`: Build site.webmanifest JSON response. [src/debriddo/main.py, 286-315]
+    - `get_webmanifest()`: Build site.webmanifest JSON response. [src/debriddo/main.py, 294-315]
       - description: Constructs PWA manifest dict using app metadata and app_website URLs.
       - input: None
       - output: menifest_dict: dict, web manifest payload

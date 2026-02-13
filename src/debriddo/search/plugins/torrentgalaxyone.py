@@ -40,14 +40,14 @@ class torrentgalaxy(BasePlugin):
 		try:
 			# Esegui la ricerca
 			search_response = await session.request_get(info_url)
-			if search_response.text is not None and len(search_response.text) > 0:
+			if search_response is not None and search_response.text is not None and len(search_response.text) > 0:
 				html_content = search_response.text
 				if html_content is not None:
 					# Parsing della risposta HTML
 					soup = BeautifulSoup(html_content, 'html.parser')
 
 					covercells = soup.find_all('div', class_='tpcell', id="covercell")  # Trova la prima tabella
-					links = [a['href'] for a in covercells[1].find_all("a", href=True)]
+					links = [str(a['href']) for a in covercells[1].find_all("a", href=True)]
 					magnet_link = links[1]
 					await session.close()
 					return magnet_link
@@ -72,7 +72,7 @@ class torrentgalaxy(BasePlugin):
 
 				# Esegui la ricerca
 				search_response = await session.request_get(search_url)
-				if search_response.text is not None and len(search_response.text) > 0:
+				if search_response is not None and search_response.text is not None and len(search_response.text) > 0:
 					html_content = search_response.text
 					if html_content is not None:
 						# Parsing della risposta HTML
@@ -86,7 +86,7 @@ class torrentgalaxy(BasePlugin):
 							# 1/3: Wolfs 2024 Eng Fre Ger Ita Por Spa 2160p WEBMux DV HDR HEVC Atmos SGF
 							# - /post-detail/74d894/wolfs-2024-eng-fre-ger-ita-por-spa-2160p-webmux-dv-hdr-hevc-atmos-sgf/
 							# - /get-posts/keywords:tt14257582
-							links = [a['href'] for a in cells[3].find_all("a", href=True)]
+							links = [str(a['href']) for a in cells[3].find_all("a", href=True)]
 							link = links[0]
 							size = " ".join(cells[7].get_text(strip=True).split())
 							numbers = list(map(int, (" ".join(cells[10].get_text(strip=True).split())).strip(" []").split("/")))  # Divide per "/" e converte in interi

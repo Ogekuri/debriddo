@@ -128,6 +128,7 @@ class ilcorsaroblu(BasePlugin):
 		soup = BeautifulSoup(html_content, 'html.parser')
 
 		# Trova name
+		name = None
 		title_tag = soup.find('title')
 		if title_tag:
 			title = title_tag.text.strip()
@@ -136,11 +137,12 @@ class ilcorsaroblu(BasePlugin):
 				name = title[:-len(suffix_to_remove)]
 
 		# Trova il primo input con name="info_hash"
+		info_hash = None
 		input_tag = soup.find('input', {'name': 'info_hash'})
 		if input_tag:
 			info_hash = input_tag.get('value')
-		
-		
+
+
 		if info_hash is not None and name is not None:
 			return info_hash, name
 
@@ -193,7 +195,7 @@ class ilcorsaroblu(BasePlugin):
 		return False
 
 
-	async def download_torrent(self,info_url):
+	async def download_torrent(self,info):
 
 		session = AsyncThreadSafeSession()  # Usa il client asincrono
 
@@ -205,12 +207,13 @@ class ilcorsaroblu(BasePlugin):
 		try:
 			if self.logged is not None:
 				# Esegui la ricerca
-				search_response = await session.request_get(info_url)
-				if search_response.text is not None and len(search_response.text) > 0:
+				search_response = await session.request_get(info)
+				if search_response is not None and search_response.text is not None and len(search_response.text) > 0:
 					html_content = search_response.text
 					if html_content is not None:
-						info_hash, name = await self.__extract_info_hash(html_content)
-						if info_hash is not None and name is not None:
+						result = await self.__extract_info_hash(html_content)
+						if result is not None:
+							info_hash, name = result
 							magnet_link = await self.__generate_magnet_link(info_hash, name, self.tracker_urls)
 							if magnet_link is not None:
 								await session.close()
@@ -245,7 +248,7 @@ class ilcorsaroblu(BasePlugin):
 
 					# Esegui la ricerca
 					search_response = await session.request_get(search_url)
-					if search_response.text is not None and len(search_response.text) > 0:
+					if search_response is not None and search_response.text is not None and len(search_response.text) > 0:
 						html_content = search_response.text
 						if html_content is not None:
 							# Parsing della risposta HTML
@@ -262,7 +265,8 @@ class ilcorsaroblu(BasePlugin):
 									columns = row.find_all('td')
 									if len(columns) >= 8:  # Assicura che ci siano abbastanza colonne
 										name = columns[1].get_text(strip=True)
-										download_link = columns[1].find('a')['href'] if columns[1].find('a') else ""
+										a_tag = columns[1].find('a')
+										download_link = str(a_tag['href']) if a_tag else ""
 										date = columns[4].get_text(strip=True)
 										seeders = columns[5].get_text(strip=True)
 										leechers = columns[6].get_text(strip=True)
