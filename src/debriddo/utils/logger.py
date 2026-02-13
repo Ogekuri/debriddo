@@ -52,12 +52,31 @@ class CustomFormatter(logging.Formatter):
     }
 
     def format(self, record):
+        """
+        Formatta il record di log applicando colori e stili.
+
+        Args:
+            record (logging.LogRecord): Il record di log da formattare.
+
+        Returns:
+            str: Il messaggio di log formattato.
+        """
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt, "%m-%d %H:%M:%S")
         return formatter.format(record)
 
 
 def setup_logger(name, debug=None):
+    """
+    Configura e restituisce un logger con formatter personalizzato.
+
+    Args:
+        name (str): Il nome del logger.
+        debug (bool, optional): Se True, imposta il livello a DEBUG. Defaults to None.
+
+    Returns:
+        logging.Logger: L'istanza del logger configurata.
+    """
     logger = logging.getLogger(name)
 
     # get environment

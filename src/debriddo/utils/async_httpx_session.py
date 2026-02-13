@@ -16,6 +16,9 @@ from debriddo.utils.logger import setup_logger
 DEFAULT_TIMEOUT = 20.0  # 20 secondi
 
 class AsyncThreadSafeSession:
+    """
+    Gestisce sessioni HTTP asincrone thread-safe con supporto per HTTP/2, proxy e cookie.
+    """
 
     logger = setup_logger(__name__)
     
@@ -25,6 +28,12 @@ class AsyncThreadSafeSession:
 	}
          
     def __init__(self, proxy=None):
+        """
+        Inizializza la sessione HTTP.
+
+        Args:
+            proxy (str, optional): Proxy in formato user:pass@host:port. Defaults to None.
+        """
         self.cookies = httpx.Cookies()  # Gestione esplicita dei cookie
         self._client = httpx.AsyncClient(http2=True, cookies=self.cookies, follow_redirects=True)   # Associa i cookie al client, abilita i reindirizzamenti
         # self._lock = asyncio.Lock()  # Usa un lock asincrono
@@ -39,20 +48,39 @@ class AsyncThreadSafeSession:
 
 
     async def close(self):
-        """Close the HTTPX client to release resources."""
+        """
+        Chiude il client HTTPX e rilascia le risorse.
+
+        Returns:
+            None
+        """
         await self._client.aclose()
         self.closed = True
 
     async def __aenter__(self):
-        """Inizia il contesto asincrono."""
+        """
+        Inizia il contesto asincrono.
+
+        Returns:
+            AsyncThreadSafeSession: L'istanza della sessione.
+        """
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Chiude la sessione quando il contesto termina."""
+        """
+        Chiude la sessione quando il contesto termina.
+
+        Args:
+            exc_type: Tipo dell'eccezione.
+            exc_val: Valore dell'eccezione.
+            exc_tb: Traceback dell'eccezione.
+        """
         await self.close()
 
     def __del__(self):
-        """Verifica se la sessione è stata chiusa."""
+        """
+        Verifica se la sessione è stata chiusa correttamente.
+        """
         if not self.closed:
             # Logga un avviso, senza tentare di chiudere la sessione
             self.logger.warning("Session not closed. Please call close() explicitly.")
@@ -61,6 +89,15 @@ class AsyncThreadSafeSession:
 
     @staticmethod
     def _html_entity_decode(s):
+        """
+        Decodifica le entità HTML in una stringa.
+
+        Args:
+            s (str): La stringa da decodificare.
+
+        Returns:
+            str: La stringa decodificata.
+        """
         # First convert alpha entities (such as &eacute;)
         # (Inspired from http://mail.python.org/pipermail/python-list/2007-June/443813.html)
         def entity2char(m):
@@ -78,6 +115,15 @@ class AsyncThreadSafeSession:
 
 
     def _setup_proxy(self, proxy):
+        """
+        Configura il proxy SOCKS5.
+
+        Args:
+            proxy (str): Stringa proxy formattata.
+
+        Raises:
+            ValueError: Se il formato del proxy non è valido.
+        """
         match = re.match(r"^(?:(?P<username>[^:]+):(?P<password>[^@]+)@)?(?P<host>[^:]+):(?P<port>\w+)$", proxy)
         if match:
             socks.setdefaultproxy(
@@ -96,7 +142,17 @@ class AsyncThreadSafeSession:
     # per i Plug-Ins
 
     async def request(self, method, url, **kwargs):
-        """Wrapper for HTTP requests with thread-safe access."""
+        """
+        Esegue una richiesta HTTP.
+
+        Args:
+            method (str): Metodo HTTP (GET, POST, etc.).
+            url (str): URL di destinazione.
+            **kwargs: Argomenti aggiuntivi per httpx.request.
+
+        Returns:
+            httpx.Response: La risposta HTTP o None in caso di errore.
+        """
         # async with self._lock:
         if True:
             # Combina gli header specificati con quelli di default
@@ -122,10 +178,30 @@ class AsyncThreadSafeSession:
 
 
     async def request_get(self, url, **kwargs):
+        """
+        Esegue una richiesta GET.
+
+        Args:
+            url (str): URL di destinazione.
+            **kwargs: Argomenti aggiuntivi.
+
+        Returns:
+            httpx.Response: La risposta HTTP o None.
+        """
         return await self.request("GET", url, headers=self.headers, **kwargs)
 
 
     async def request_post(self, url, **kwargs):
+        """
+        Esegue una richiesta POST.
+
+        Args:
+            url (str): URL di destinazione.
+            **kwargs: Argomenti aggiuntivi.
+
+        Returns:
+            httpx.Response: La risposta HTTP o None.
+        """
         return await self.request("POST", url, headers=self.headers, **kwargs)
 
     #
@@ -159,7 +235,15 @@ class AsyncThreadSafeSession:
     #     return dat
 
     async def retrieve_url(self, url):
-        """Retrieve the content of the URL as a decoded string."""
+        """
+        Recupera il contenuto dell'URL come stringa decodificata.
+
+        Args:
+            url (str): L'URL da recuperare.
+
+        Returns:
+            str: Il contenuto decodificato o None.
+        """
         try:
             response = await self.request_get(url)
             if response is not None:
@@ -206,7 +290,16 @@ class AsyncThreadSafeSession:
     #     return (path + " " + url)
 
     async def download_file(self, url, referer=None):
-        """Download a file from a URL and save it to a temporary file."""
+        """
+        Scarica un file da un URL e lo salva in un file temporaneo.
+
+        Args:
+            url (str): URL del file.
+            referer (str, optional): Header referer. Defaults to None.
+
+        Returns:
+            str: Il percorso del file temporaneo salvato o None.
+        """
         headers = {}
         if referer:
             headers['Referer'] = referer
@@ -235,6 +328,16 @@ class AsyncThreadSafeSession:
     # per la classe base di Debrid
 
     async def get_json_response(self, url, **kwargs):
+        """
+        Esegue una richiesta e restituisce il corpo JSON.
+
+        Args:
+            url (str): URL della richiesta.
+            **kwargs: Argomenti aggiuntivi (headers, timeout, method).
+
+        Returns:
+            dict: Il JSON decodificato o None.
+        """
 
         # Prende method
         method = kwargs.pop("method", 'get') # per default usa GET
@@ -274,6 +377,15 @@ class AsyncThreadSafeSession:
         return None
 
     async def download_torrent_file(self, download_url):
+        """
+        Scarica un file torrent in streaming.
+
+        Args:
+            download_url (str): L'URL del file torrent.
+
+        Returns:
+            bytes: Il contenuto binario del file torrent.
+        """
         async with self._client.stream("GET", download_url) as response:
             response.raise_for_status()
             return await response.aread()

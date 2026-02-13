@@ -101,7 +101,10 @@ is_reload_enabled = any("--reload" in arg for arg in sys.argv)
 def calculate_optimal_thread_count():
     """
     Calcola il numero ottimale di thread basato sui core della CPU.
-    Formula: (N CPU Cores * 2) + 1
+    Formula: (N CPU Cores * 2) + 1.
+
+    Returns:
+        int: Il numero ottimale di thread.
     """
     # Ottieni il numero di core della CPU
     cpu_cores = os.cpu_count()
@@ -114,6 +117,12 @@ def calculate_optimal_thread_count():
 
 
 def resolve_thread_count():
+    """
+    Risolve il numero di thread da utilizzare basandosi sulle variabili d'ambiente.
+
+    Returns:
+        int: Il numero di thread risolto.
+    """
     n_threads_env = os.getenv("N_THREADS")
     if n_threads_env is None:
         return resolve_auto_thread_count()
@@ -136,6 +145,12 @@ def resolve_thread_count():
 
 
 def resolve_auto_thread_count():
+    """
+    Risolve automaticamente il numero di thread calcolandolo.
+
+    Returns:
+        int: Il numero di thread calcolato o 1 in caso di errore.
+    """
     try:
         return calculate_optimal_thread_count()
     except Exception as exc:
@@ -144,6 +159,12 @@ def resolve_auto_thread_count():
 
 
 def get_or_create_event_loop():
+    """
+    Ottiene il loop di eventi corrente o ne crea uno nuovo se non esiste.
+
+    Returns:
+        asyncio.AbstractEventLoop: Il loop di eventi.
+    """
     try:
         return asyncio.get_event_loop()
     except RuntimeError:
@@ -155,6 +176,15 @@ def get_or_create_event_loop():
 # Lifespan: gestisce startup e shutdown
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Gestisce il ciclo di vita dell'applicazione (avvio e arresto).
+
+    Args:
+        app (FastAPI): L'istanza dell'applicazione FastAPI.
+
+    Yields:
+        None: Controllo restituito all'applicazione.
+    """
     scheduler = AsyncIOScheduler()
     scheduler.add_job(update_app, 'interval', seconds=60)  # Il check dell'update ogni 60 secondi
     scheduler.start()
@@ -186,10 +216,30 @@ loop.set_default_executor(executor)
 
 # Aggiunge il loggin del middleware fastapi
 class LogFilterMiddleware:
+    """
+    Middleware per il filtraggio e il logging delle richieste.
+    """
     def __init__(self, app):
+        """
+        Inizializza il middleware.
+
+        Args:
+            app (ASGIApp): L'applicazione ASGI successiva.
+        """
         self.app = app
 
     async def __call__(self, scope, receive, send):
+        """
+        Gestisce la richiesta in ingresso.
+
+        Args:
+            scope (dict): Lo scope della connessione.
+            receive (callable): Funzione per ricevere messaggi.
+            send (callable): Funzione per inviare messaggi.
+
+        Returns:
+            None: Il risultato dell'invocazione dell'app successiva.
+        """
         # Gestisci solo richieste HTTP, 
         # la classe Request di Starlette è progettata solo per gestire richieste HTTP, 
         # quindi non può essere utilizzata con eventi "lifespan" (es. avvio e arresto).
@@ -247,11 +297,23 @@ app.add_middleware(
 # root: /
 @app.get("/")
 async def root():
+    """
+    Gestisce la root path reindirizzando alla pagina di configurazione.
+
+    Returns:
+        RedirectResponse: Redirect alla configurazione.
+    """
     return RedirectResponse(url="/configure")
 
 # /favicon.ico
 @app.get("/favicon.ico")
 async def get_favicon():
+    """
+    Restituisce l'icona favicon.
+
+    Returns:
+        FileResponse: Il file favicon.ico.
+    """
     response = FileResponse(str(WEB_DIR / "images" / "favicon.ico"))
     return response
 
@@ -259,6 +321,12 @@ async def get_favicon():
 @app.get("/config.js")
 @app.get("/{config}/config.js")
 async def get_config_js():
+    """
+    Restituisce il file javascript di configurazione.
+
+    Returns:
+        FileResponse: Il file config.js.
+    """
     response = FileResponse(str(WEB_DIR / "config.js"))
     return response
 
@@ -266,6 +334,12 @@ async def get_config_js():
 @app.get("/lz-string.min.js")
 @app.get("/{config}/lz-string.min.js")
 async def get_lz_string_js():
+    """
+    Restituisce la libreria lz-string minimizzata.
+
+    Returns:
+        FileResponse: Il file lz-string.min.js.
+    """
     response = FileResponse(str(WEB_DIR / "lz-string.min.js"))
     return response
 
@@ -273,6 +347,12 @@ async def get_lz_string_js():
 @app.get("/styles.css")
 @app.get("/{config}/styles.css")
 async def get_styles_css():
+    """
+    Restituisce il foglio di stile CSS.
+
+    Returns:
+        FileResponse: Il file styles.css.
+    """
     response = FileResponse(str(WEB_DIR / "styles.css"))
     return response
 
@@ -281,18 +361,39 @@ async def get_styles_css():
 @app.get("/configure", response_class=HTMLResponse)
 @app.get("/{config}/configure", response_class=HTMLResponse)
 async def configure():
+    """
+    Restituisce la pagina HTML di configurazione.
+
+    Returns:
+        HTMLResponse: La pagina HTML generata.
+    """
     return get_index(app_name, app_version, app_environment)
 
 # /imges/?
 @app.get("/images/{file_path:path}")
 @app.get("/{config}/images/{file_path:path}")
 async def function(file_path: str):
+    """
+    Serve le immagini statiche dalla directory images.
+
+    Args:
+        file_path (str): Il percorso relativo del file immagine.
+
+    Returns:
+        FileResponse: Il file immagine richiesto.
+    """
     response = FileResponse(str(WEB_DIR / "images" / file_path))
     return response
 
 # /site.webmanifest
 @app.get("/site.webmanifest", response_class=HTMLResponse)
 async def get_webmanifest():
+    """
+    Genera e restituisce il web manifest per l'applicazione.
+
+    Returns:
+        JSONResponse: Il contenuto del manifest in formato JSON.
+    """
     menifest_dict = {
                     "id": "com.stremio." + app_name_lc + "." + app_id,
                     "version": str(APPLICATION_VERSION),
@@ -328,6 +429,12 @@ async def get_webmanifest():
 @app.get("/manifest.json")
 @app.get("/{params}/manifest.json")
 async def get_manifest():
+    """
+    Restituisce il manifest di Stremio.
+
+    Returns:
+        JSONResponse: Il manifest in formato JSON.
+    """
     manifest_dict = {
         "id": "com.stremio." + app_name_lc + "." + app_id,
         "version": str(APPLICATION_VERSION),
@@ -406,6 +513,18 @@ async def get_manifest():
 # /?/stream/?/?
 @app.get("/{config_url}/stream/{stream_type}/{stream_id}")
 async def get_results(config_url: str, stream_type: str, stream_id: str, request: Request):
+    """
+    Gestisce la richiesta di stream per un determinato media.
+
+    Args:
+        config_url (str): La configurazione codificata.
+        stream_type (str): Il tipo di stream (movie o series).
+        stream_id (str): L'ID del media (es. IMDB ID).
+        request (Request): La richiesta HTTP originale.
+
+    Returns:
+        JSONResponse: La lista degli stream disponibili.
+    """
     start = time.time()
     stream_id = stream_id.replace(".json", "")
     config = parse_config(config_url)
@@ -509,6 +628,17 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
 # /playback/?/?
 @app.head("/playback/{config_url}/{query}")
 async def head_playback(config: str, query: str, request: Request):
+    """
+    Gestisce la richiesta HEAD per il playback (check di validità).
+
+    Args:
+        config (str): La configurazione codificata.
+        query (str): La query string codificata.
+        request (Request): La richiesta HTTP originale.
+
+    Returns:
+        Response: Risposta con status code.
+    """
     if not query:
         raise HTTPException(status_code=400, detail="Query required.")
     # Qui potrei limitarmi a controllare la validità di config e query
@@ -518,6 +648,17 @@ async def head_playback(config: str, query: str, request: Request):
 # /playback/?/?
 @app.get("/playback/{config_url}/{query_string}")
 async def get_playback(config_url: str, query_string: str, request: Request):
+    """
+    Gestisce il playback e restituisce il link di streaming (redirect).
+
+    Args:
+        config_url (str): La configurazione codificata.
+        query_string (str): La query string codificata.
+        request (Request): La richiesta HTTP originale.
+
+    Returns:
+        RedirectResponse: Redirect al link di streaming finale.
+    """
     try:
         if not query_string:
             raise HTTPException(status_code=400, detail="Query required.")
@@ -547,6 +688,15 @@ async def get_playback(config_url: str, query_string: str, request: Request):
 ###################
 
 async def update_app():
+    """
+    Verifica e applica aggiornamenti automatici dell'applicazione.
+
+    Se l'applicazione è avviata con --reload e non in modalità sviluppo,
+    controlla GitHub Releases e aggiorna il codice.
+
+    Returns:
+        None
+    """
 
     # senza --reload non gestisce l'upgrade, --reload implica --workers 1
     if is_reload_enabled is False:

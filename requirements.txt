@@ -16,3 +16,6 @@ bencode.py			# Implementazione in Python del formato Bencode, utilizzato dai fil
 rank-torrent-name		# Libreria per analizzare e "rankare" i nomi dei torrent, utile per matching e parsing
 httpx[http2]			# Libreria per le chiamate HTTP/2 parallele (per la perfomance)
 lzstring			# Libreria per la codifica/decodifica dei parametri nell'url
+
+# Pdoc
+pdoc

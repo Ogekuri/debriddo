@@ -298,6 +298,11 @@ Queste regole devono essere sempre rispettate:
   │  └─ debriddo/
   │     ├─ constants.py
   │     ├─ main.py
+
+- **DES-525**: Tutte le funzioni nel codebase devono includere docstring in formato Google Style in lingua italiana, compatibili con pdoc per la generazione della documentazione.
+  Comportamento atteso: Ogni definizione di funzione (`def`) nel codice sorgente sotto `src/` deve essere immediatamente seguita da una stringa di documentazione tripla (`"""`) che descrive scopo, argomenti (`Args:`) e valori di ritorno (`Returns:`), scritta in italiano.
+  Criteri di accettazione: L'analisi statica o l'ispezione visiva conferma la presenza di docstring su tutte le funzioni pubbliche e private.
+  Evidenza: Controllo a campione su `src/debriddo/main.py` e altri file principali.
   │     ├─ models/
   │     │  ├─ media.py
   │     │  ├─ movie.py

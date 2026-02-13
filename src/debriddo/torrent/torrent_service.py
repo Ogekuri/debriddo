@@ -21,8 +21,13 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 class TorrentService:
-
+    """
+    Servizio per la gestione e il processing dei file torrent.
+    """
     def __init__(self):
+        """
+        Inizializza il servizio TorrentService.
+        """
         self.logger = setup_logger(__name__)
 
     # # versione originale multi-thread
@@ -50,6 +55,15 @@ class TorrentService:
 
     
     async def __process_web_url_or_process_magnet(self, result: SearchResult):
+        """
+        Processa un risultato determinando se è un link web o magnet.
+
+        Args:
+            result (SearchResult): Il risultato della ricerca.
+
+        Returns:
+            TorrentItem: L'item processato o None.
+        """
         
         torrent_item = result.convert_to_torrent_item()
 
@@ -63,6 +77,15 @@ class TorrentService:
 
 
     async def convert_and_process(self, results: List[SearchResult]):
+        """
+        Converte e processa una lista di risultati di ricerca.
+
+        Args:
+            results (List[SearchResult]): Lista dei risultati.
+
+        Returns:
+            list: Lista di TorrentItem processati.
+        """
 
         if MULTI_THREAD:
             loop = asyncio.get_event_loop()
@@ -76,6 +99,15 @@ class TorrentService:
 
 
     async def __process_web_url(self, result: TorrentItem):
+        """
+        Scarica e processa un file torrent da un URL web.
+
+        Args:
+            result (TorrentItem): L'item del torrent.
+
+        Returns:
+            TorrentItem: L'item aggiornato o None.
+        """
         try:
             if not isinstance(result.link, str):
                 return None
@@ -102,6 +134,16 @@ class TorrentService:
 
 
     def __process_torrent(self, result: TorrentItem, torrent_file):
+        """
+        Estrae i metadati dal contenuto binario di un file torrent.
+
+        Args:
+            result (TorrentItem): L'item del torrent.
+            torrent_file (bytes): Il contenuto del file.
+
+        Returns:
+            TorrentItem: L'item aggiornato con i metadati.
+        """
         metadata = bencode.bdecode(torrent_file)
 
         result.torrent_download = result.link
@@ -133,6 +175,15 @@ class TorrentService:
         return result
 
     def __process_magnet(self, result: TorrentItem):
+        """
+        Processa un magnet link estraendo info hash e tracker.
+
+        Args:
+            result (TorrentItem): L'item del torrent.
+
+        Returns:
+            TorrentItem: L'item aggiornato.
+        """
         if result.magnet is None:
             result.magnet = result.link
 
@@ -144,11 +195,31 @@ class TorrentService:
         return result
 
     def __convert_torrent_to_hash(self, torrent_contents):
+        """
+        Calcola l'info hash SHA1 del contenuto del torrent.
+
+        Args:
+            torrent_contents (dict): Contenuto del dizionario 'info'.
+
+        Returns:
+            str: L'hash esadecimale.
+        """
         hashcontents = bencode.bencode(torrent_contents)
         hexHash = hashlib.sha1(hashcontents).hexdigest()
         return hexHash.lower()
 
     def __build_magnet(self, hash, display_name, trackers):
+        """
+        Costruisce una stringa magnet link.
+
+        Args:
+            hash (str): Info hash.
+            display_name (str): Nome visualizzato.
+            trackers (list): Lista dei tracker.
+
+        Returns:
+            str: Il magnet link.
+        """
         magnet_base = "magnet:?xt=urn:btih:"
         magnet = f"{magnet_base}{hash}&dn={display_name}"
 
@@ -158,6 +229,15 @@ class TorrentService:
         return magnet
 
     def __get_trackers_from_torrent(self, torrent_metadata):
+        """
+        Estrae la lista dei tracker dai metadati del torrent.
+
+        Args:
+            torrent_metadata (dict): I metadati del torrent.
+
+        Returns:
+            list: Lista dei tracker.
+        """
         # Sometimes list, sometimes string
         announce = torrent_metadata["announce"] if "announce" in torrent_metadata else []
         # Sometimes 2D array, sometimes 1D array
@@ -180,6 +260,15 @@ class TorrentService:
         return list(trackers)
 
     def __get_trackers_from_magnet(self, magnet: str):
+        """
+        Estrae la lista dei tracker da un magnet link.
+
+        Args:
+            magnet (str): Il magnet link.
+
+        Returns:
+            list: Lista dei tracker.
+        """
         url_parts = urllib.parse.urlparse(magnet)
         query_parts = urllib.parse.parse_qs(url_parts.query)
 
@@ -190,6 +279,17 @@ class TorrentService:
         return trackers
 
     def __find_episode_file(self, file_structure, season, episode):
+        """
+        Trova il file corrispondente a un episodio specifico nella struttura dei file.
+
+        Args:
+            file_structure (list): Lista dei file nel torrent.
+            season (list): Stagione cercata.
+            episode (list): Episodio cercato.
+
+        Returns:
+            dict: Dettagli del file trovato o None.
+        """
         season = season or []
         episode = episode or []
 
@@ -220,6 +320,15 @@ class TorrentService:
         return max(episode_files, key=lambda file: file["size"])
 
     def __find_movie_file(self, file_structure):
+        """
+        Trova il file principale (film) basandosi sulla dimensione.
+
+        Args:
+            file_structure (list): Lista dei file nel torrent.
+
+        Returns:
+            int: Indice del file più grande.
+        """
         max_size = 0
         max_file_index = 1
         current_file_index = 1
