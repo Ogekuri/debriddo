@@ -103,7 +103,7 @@ if [ -n "$WORKERS" ]; then
 else
     PYTHONPATH="$(pwd -P)/src${PYTHONPATH:+:$PYTHONPATH}" \
     NODE_URL=$CFG_NODE_URL NODE_ENV=$CFG_NODE_ENV \
-    ${VENVDIR}/bin/python3 -m uvicorn debriddo.main:app --log-level warning --host $CFG_NODE_HOST --port $CFG_NODE_PORT
+    ${VENVDIR}/bin/python3 -m uvicorn debriddo.main:app --reload --log-level warning --host $CFG_NODE_HOST --port $CFG_NODE_PORT
 fi
 
 # termina il venv
