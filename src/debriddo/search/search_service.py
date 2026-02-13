@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 from typing import Any
 
 import asyncio
+from unidecode import unidecode
 
 from debriddo.search.search_indexer import SearchIndexer
 from debriddo.search.search_result import SearchResult
@@ -165,9 +166,9 @@ class SearchService:
         if lang is None:
             return titles[0]
 
-        media_languages = media.languages or []
-        if isinstance(media_languages, list) and lang in media_languages:
-            lang_index = media_languages.index(lang)
+        config_languages = self.__config.get('languages')
+        if isinstance(config_languages, list) and lang in config_languages:
+            lang_index = config_languages.index(lang)
             if lang_index < len(titles):
                 return titles[lang_index]
 
@@ -187,6 +188,15 @@ class SearchService:
     def __build_query(self, *parts):
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         return normalize(query)
+
+
+    def __build_query_keep_dash(self, *parts):
+        query = " ".join(str(part) for part in parts if str(part).strip() != "")
+        query = unidecode(query)
+        query = re.sub("'s ", ' ', query)
+        query = re.sub(r'[^0-9a-zA-Z-]', ' ', query)
+        query = re.sub(r' +', ' ', query)
+        return query.lower().strip()
 
 
     async def __search_torrents(self, media, indexer, search_string, category):
@@ -277,14 +287,17 @@ class SearchService:
 
                 title = self.__get_title_for_language(series, lang)
                 lang_tag = self.__get_lang_tag(indexer.language, lang)
-                season_label = self.__season_labels.get(lang, "Season") if isinstance(lang, str) else "Season"
-                season_number = int(series.season[1:])
-
                 episode_search = self.__build_query(title, series.season + series.episode, lang_tag)
-                pack_search = self.__build_query(title, series.season + 'E01-E', lang_tag)
-                season_search = self.__build_query(title, season_label, season_number, lang_tag)
+                pack_search = self.__build_query_keep_dash(title, series.season + 'E01-', lang_tag)
+                primary_candidates = [episode_search, pack_search]
 
-                for candidate in [episode_search, pack_search, season_search]:
+                if lang is not None:
+                    season_label = self.__season_labels.get(lang, "Season")
+                    season_number = int(series.season[1:])
+                    season_search = self.__build_query(title, season_label, season_number, lang_tag)
+                    primary_candidates.append(season_search)
+
+                for candidate in primary_candidates:
                     search_string = candidate
                     torrents = await self.__search_torrents(series, indexer, search_string, category)
                     if len(torrents) > 0:
