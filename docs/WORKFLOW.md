@@ -138,7 +138,7 @@
           - description: Filters by season/episode and title, then applies configured filter instances in order.
           - input: items; media; config
           - output: items: list, filtered results
-        - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 66-119]
+        - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 67-120]
           - description: Runs engine searches (multi-threaded if enabled), post-processes results, and returns SearchResult list.
           - input: media
           - output: results: list, post-processed SearchResult; None: None, when no results
@@ -261,7 +261,7 @@
 
 - Feature: Torrent search pipeline
   - Component: src/debriddo/search/search_service.py
-    - `search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 66-119]
+    - `search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 67-120]
       - description: Runs engine searches (multi-threaded if enabled), post-processes results, and returns SearchResult list.
       - input: media
       - output: results: list, post-processed SearchResult; None: None, when no results
@@ -280,8 +280,8 @@
                   - description: Returns plugin class instance based on engine_name.
                   - input: engine_name
                   - output: engine
-        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 145-199]
-          - description: Builds search strings per language/title and gathers torrent dicts from plugin search.
+        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 146-206]
+          - description: Builds search strings per language/title, falls back to base title when no language matches, and gathers torrent dicts from plugin search.
           - input: movie; indexer
           - output: results: list, SearchResult list
           - calls:
@@ -289,8 +289,8 @@
               - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
               - input: media; indexer; list_of_dicts
               - output: result_list: list, SearchResult list
-        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 202-275]
-          - description: Builds search strings per language/season and gathers torrent dicts from plugin search.
+        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 209-296]
+          - description: Builds search strings per language/season, falls back to base title when no language matches, and gathers torrent dicts from plugin search.
           - input: series; indexer
           - output: results: list, SearchResult list
           - calls:
@@ -499,13 +499,13 @@
 
 - Feature: Stream formatting
   - Component: src/debriddo/utils/stremio_parser.py
-    - `parse_to_stremio_streams()`: Convert TorrentItems to Stremio stream list. [src/debriddo/utils/stremio_parser.py, 158-183]
+    - `parse_to_stremio_streams()`: Convert TorrentItems to Stremio stream list. [src/debriddo/utils/stremio_parser.py, 160-185]
       - description: Spawns threads to create stream items, collects results, and sorts by availability/type.
       - input: torrent_items: List[TorrentItem]; config; config_url; node_url; media
       - output: stream_list: list, Stremio stream dicts
       - calls:
-        - `parse_to_debrid_stream()`: Build stream entries for Debrid and direct torrent. [src/debriddo/utils/stremio_parser.py, 54-155]
-          - description: Formats stream name/description, builds playback URL or infoHash entry, and enqueues results.
+        - `parse_to_debrid_stream()`: Build stream entries for Debrid and direct torrent. [src/debriddo/utils/stremio_parser.py, 54-157]
+          - description: Formats stream name/description using RTN ParsedData (legacy `.data` wrapper supported), builds playback URL or infoHash entry, and enqueues results.
           - input: torrent_item: TorrentItem; config_url; node_url; playtorrent; results: queue.Queue; media: Media
           - output: item: dict, stream entry
           - calls:

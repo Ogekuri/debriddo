@@ -57,7 +57,9 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     else:
         name = f"{DOWNLOAD_REQUIRED}"
 
-    parsed_data = torrent_item.parsed_data.data
+    parsed_data = torrent_item.parsed_data
+    if hasattr(parsed_data, "data"):
+        parsed_data = parsed_data.data
 
     # TODO: Always take the first resolution, is that the best one?
     # resolution = parsed_data.resolution[0] if len(parsed_data.resolution) > 0 else "Unknown"

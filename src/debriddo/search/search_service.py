@@ -155,6 +155,9 @@ class SearchService:
 
         results = []
         start_time = time.time()
+        base_title = movie.titles[0] if movie.titles else ""
+        search_string = None
+        category = str(indexer.movie_search_capatabilities)
 
         index = 0
         for lang in languages:
@@ -192,6 +195,9 @@ class SearchService:
             
             index = index + 1
                 
+        if search_string is None:
+            search_string = base_title
+
         if len(results) > 0:
             self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
         else:
@@ -212,6 +218,9 @@ class SearchService:
 
         results = []
         start_time = time.time()
+        base_title = series.titles[0] if series.titles else ""
+        search_string = None
+        category = str(indexer.tv_search_capatabilities)
 
         index = 0
         for lang in languages:
@@ -276,6 +285,9 @@ class SearchService:
             
             index = index +1
         
+        if search_string is None:
+            search_string = base_title
+
         if len(results) > 0:
             self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
         else:
