@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.6"
+version: "0.7"
 date: "2026-02-13"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.6  
+**Versione**: 0.7  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-13
 
@@ -595,11 +595,11 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `filter_items()` costruisce il dict `filters` in tale ordine e applica ogni filtro in ordine di iterazione; quando `config['languages']` e' vuoto o mancante, il filtro `LanguageFilter` non viene applicato.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `filters = {\"languages\": LanguageFilter(config), \"maxSize\": MaxSizeFilter(config, media.type), ...}`.
 
-- **REQ-532**: Per media di tipo serie, la pipeline di filtraggio deve rimuovere torrent che non matchano stagione/episodio richiesti, includendo un caso speciale che accetta pattern testuali “stagione <n>” e “season <n>”.  
+- **REQ-532**: Per media di tipo serie, la pipeline di filtraggio deve rimuovere torrent che non matchano stagione/episodio richiesti, ma non deve rimuovere package stagione completa quando il titolo contiene un match `SnnE01-E` con `nn` uguale alla stagione richiesta oppure un match testuale localizzato `Season <n>` (es. `Season`, `Stagione`, ecc.) con `n` uguale alla stagione richiesta.  
   ID originale: `REQ-023`.
-  Comportamento atteso: candidati che non contengono l'episodio sono ridotti.  
-  Criteri di accettazione: `filter_out_non_matching()` verifica pattern `stagione\\s0?<n>` e `season\\s0?<n>` e usa stagioni/episodi parsati via RTN per il match.  
-  Evidenza: `src/debriddo/utils/filter_results.py` / `filter_out_non_matching()`. Estratto: `pattern = re.compile(r'season\\s0?' + str(numeric_season), re.IGNORECASE)`.
+  Comportamento atteso: i candidati episodio-specifici restano filtrati su stagione/episodio richiesti; i season-pack completi matching `SnnE01-E` della stagione richiesta o `Season <n>` localizzato della stagione richiesta sono preservati.  
+  Criteri di accettazione: `filter_out_non_matching()` mantiene il match classico `SnnEmm` via parsing RTN e, in alternativa, preserva item che matchano `SnnE01-E` per la stagione richiesta o `Season <n>` localizzato per la stagione richiesta (e.g. `Season`, `Stagione`).  
+  Evidenza: `src/debriddo/utils/filter_results.py` / `filter_out_non_matching()`, `_match_complete_season()`. Estratto: `if _match_complete_season(item.raw_title, numeric_season):`.
 
 - **REQ-533**: La pipeline di filtraggio deve rimuovere torrent il cui titolo parsato non matcha alcun titolo media sopra una soglia di similarita 0.5.  
   ID originale: `REQ-024`.
@@ -914,3 +914,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 0.4      | Estesi i requisiti dello script API tester (target/endpoint/asset/stream/playback/smoke/errori) e rafforzato il vincolo di non dipendenza da librerie `src/debriddo/` per tutte le implementazioni API Tester. |
 | 2026-02-13 | 0.5      | Aggiunto comando `search` al tester API per stampare i payload stream completi. |
 | 2026-02-13 | 0.6      | Correzione validazione lingue UI, fallback lingue TMDB su lista vuota, e pulizia lista engine abilitati. |
+| 2026-02-13 | 0.7      | Aggiornata la fase di filtering serie per preservare season-pack completi (`SnnE01-E` e `Season <n>` localizzato) della stagione richiesta. |

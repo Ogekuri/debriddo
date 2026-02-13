@@ -16,6 +16,41 @@ from debriddo.utils.logger import setup_logger
 logger = setup_logger(__name__)
 
 quality_order = {"4k": 0, "2160p": 0, "1080p": 1, "720p": 2, "480p": 3}
+season_labels = {
+    "en": "Season",
+    "it": "Stagione",
+    "fr": "Saison",
+    "es": "Temporada",
+    "de": "Staffel",
+    "pt": "Temporada",
+    "ru": "Sezon",
+    "in": "Season",
+    "nl": "Seizoen",
+    "hu": "Evad",
+    "la": "Season",
+    "multi": "Season",
+}
+
+
+def _match_complete_season(raw_title, numeric_season):
+    title = str(raw_title or "")
+    season_prefix_match = re.compile(
+        r"\bS0?" + str(numeric_season) + r"E0?1\s*-\s*E(?:\d{0,2})?\b",
+        re.IGNORECASE,
+    )
+    if season_prefix_match.search(title):
+        return True
+
+    season_number = r"0?" + str(numeric_season)
+    for season_label in set(season_labels.values()):
+        label_match = re.compile(
+            r"\b" + re.escape(season_label) + r"\s+" + season_number + r"\b",
+            re.IGNORECASE,
+        )
+        if label_match.search(title):
+            return True
+
+    return False
 
 
 def sort_quality(item):
@@ -119,13 +154,7 @@ def filter_out_non_matching(items, season, episode):
         numeric_season = int(clean_season)
         numeric_episode = int(clean_episode)
         try:
-            # fix brutto per i deficienti (Stagione 1 / Stagione 01 / Season 1 / Season 01)
-            pattern = re.compile(r'stagione\s0?' + str(numeric_season), re.IGNORECASE)
-            if pattern.search(item.raw_title):
-                filtered_items.append(item)
-                continue
-            pattern = re.compile(r'season\s0?' + str(numeric_season), re.IGNORECASE)
-            if pattern.search(item.raw_title):
+            if _match_complete_season(item.raw_title, numeric_season):
                 filtered_items.append(item)
                 continue
             if len(item.parsed_data.seasons) == 0 and len(item.parsed_data.episodes) == 0:
