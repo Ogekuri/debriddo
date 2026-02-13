@@ -251,17 +251,17 @@ class SearchService:
                     episode_search = str(episode_search + ' ' + lang_tag)
                 search_strings.append(episode_search)
 
+                pack_search = str(title + ' ' + series.season + 'E01-E')
+                if include_lang_tag:
+                    pack_search = str(pack_search + ' ' + lang_tag)
+                search_strings.append(pack_search)
+
                 season_label = self.__season_labels.get(lang, "Season")
                 season_number = int(series.season[1:])
                 season_search = str(title + ' ' + season_label + ' ' + str(season_number))
                 if include_lang_tag:
                     season_search = str(season_search + ' ' + lang_tag)
                 search_strings.append(season_search)
-
-                pack_search = str(title + ' ' + 'E01-E')
-                if include_lang_tag:
-                    pack_search = str(pack_search + ' ' + lang_tag)
-                search_strings.append(pack_search)
 
                 primary_results_found = False
                 for candidate in search_strings:

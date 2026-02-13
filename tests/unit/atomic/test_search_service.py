@@ -95,7 +95,7 @@ def test_search_series_indexer_runs_primary_queries_and_skips_fallback():
     service = SearchService({})
     primary_episode = normalize("Person of Interest S03E01 ENG")
     primary_season = normalize("Person of Interest Season 3 ENG")
-    primary_pack = normalize("Person of Interest E01-E ENG")
+    primary_pack = normalize("Person of Interest S03E01-E ENG")
     indexer = SearchIndexer()
     indexer.engine = DummyEngine(
         results_by_query={primary_season: build_result("Season pack")},
@@ -118,8 +118,8 @@ def test_search_series_indexer_runs_primary_queries_and_skips_fallback():
 
     assert [call[0] for call in indexer.engine.calls] == [
         primary_episode,
-        primary_season,
         primary_pack,
+        primary_season,
     ]
     assert len(results) == 1
 
@@ -128,7 +128,7 @@ def test_search_series_indexer_runs_fallback_when_primary_empty():
     service = SearchService({})
     primary_episode = normalize("Person of Interest S03E01 ENG")
     primary_season = normalize("Person of Interest Season 3 ENG")
-    primary_pack = normalize("Person of Interest E01-E ENG")
+    primary_pack = normalize("Person of Interest S03E01-E ENG")
     fallback_query = normalize("Person of Interest ENG")
     indexer = SearchIndexer()
     indexer.engine = DummyEngine(
@@ -152,8 +152,8 @@ def test_search_series_indexer_runs_fallback_when_primary_empty():
 
     assert [call[0] for call in indexer.engine.calls] == [
         primary_episode,
-        primary_season,
         primary_pack,
+        primary_season,
         fallback_query,
     ]
     assert len(results) == 1

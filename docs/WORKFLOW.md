@@ -290,7 +290,7 @@
               - input: media; indexer; list_of_dicts
               - output: result_list: list, SearchResult list
         - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 211-304]
-          - description: Executes episode, season (localized label), and pack searches per language, runs fallback title search only when primaries are empty, and gathers torrent dicts from plugin search.
+          - description: Executes episode, season-prefixed pack, and season (localized label) searches per language, runs fallback title search only when primaries are empty, and gathers torrent dicts from plugin search.
           - input: series; indexer
           - output: results: list, SearchResult list
           - calls:
