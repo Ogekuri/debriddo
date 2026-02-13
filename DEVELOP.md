@@ -7,8 +7,6 @@
 
 Attività ancora da portare a termine prima del primo rilascio.
 
-Migrare il progetto a G.
-
 ### Implementazioni
 
 * Risolvere il problema che la engine_results = await search_service.search(media) ritorna None se c'è un errore 500 a livello basso
