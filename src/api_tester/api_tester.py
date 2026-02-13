@@ -315,6 +315,37 @@ def cmd_stream(args: argparse.Namespace) -> int:
         return 0 if response.ok else 1
 
 
+def cmd_search(args: argparse.Namespace) -> int:
+    target = get_target_from_args(args)
+    with requests.Session() as session:
+        response = request_stream(
+            session=session,
+            args=args,
+            target=target,
+            stream_type=args.stream_type,
+            stream_id=args.stream_id,
+            append_json_suffix=args.append_json,
+        )
+        stream_path = build_stream_path(target, args.stream_type, args.stream_id, args.append_json)
+        stream_url = make_url(target.base_url, stream_path)
+        print(f"GET {stream_url}")
+        print_response_summary(response, print_body=args.print_body)
+
+        parsed = parse_json_body(response)
+        if parsed is not None and isinstance(parsed, dict):
+            streams = parsed.get("streams")
+            if isinstance(streams, list):
+                print(f"streams: {len(streams)}")
+                for index, item in enumerate(streams):
+                    print(f"  - #{index}")
+                    if isinstance(item, (dict, list)):
+                        item_text = json.dumps(item, indent=2, ensure_ascii=False)
+                    else:
+                        item_text = json.dumps(item, ensure_ascii=False)
+                    print(item_text)
+        return 0 if response.ok else 1
+
+
 def extract_playback_path_from_streams(streams_payload: Dict[str, Any]) -> Optional[str]:
     streams = streams_payload.get("streams")
     if not isinstance(streams, list):
@@ -733,6 +764,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="Numero massimo stream da riassumere in output (default: 3).",
     )
     parser_stream.set_defaults(func=cmd_stream)
+
+    parser_search = subparsers.add_parser(
+        "search",
+        help="Elenca tutti gli stream disponibili con payload completo.",
+    )
+    parser_search.add_argument("--stream-type", choices=["movie", "series"], required=True, help="Tipo stream.")
+    parser_search.add_argument("--stream-id", required=True, help="ID media (es: tt0133093 o tt0944947:1:1).")
+    parser_search.add_argument(
+        "--append-json",
+        action="store_true",
+        help="Aggiunge suffisso .json allo stream_id nella chiamata.",
+    )
+    parser_search.set_defaults(func=cmd_search)
 
     parser_playback = subparsers.add_parser("playback", help="Test endpoint playback.")
     parser_playback.add_argument(

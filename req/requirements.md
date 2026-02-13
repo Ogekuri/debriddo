@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.4"
+version: "0.5"
 date: "2026-02-13"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.4  
+**Versione**: 0.5  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-13
 
@@ -823,6 +823,12 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: import failure di `requests` termina con `sys.exit(2)`; `main()` intercetta `requests.RequestException` e `CliError` restituendo `2`.  
   Evidenza: `src/api_tester/api_tester.py` / blocco import `requests`, `main()`. Estratto: `sys.exit(2)`; `except requests.RequestException ... return 2`; `except CliError ... return 2`.
 
+- **REQ-570**: Il comando `search` deve eseguire la chiamata stream come `stream` e stampare l'elenco completo degli stream trovati con tutti i campi utili per una successiva richiesta di playback (es. `url`, `infoHash`, `fileIdx`, `behaviorHints`, magnet/torrent se presenti).  
+  ID originale: `REQ-921`.
+  Comportamento atteso: l'utente ottiene l'intero payload di ciascun item stream, non solo un riepilogo.  
+  Criteri di accettazione: `cmd_search()` usa `request_stream()` e `build_stream_path()` come `cmd_stream()`; il comando richiede `--stream-type` e `--stream-id`, supporta `--append-json`, e stampa ogni item `streams` serializzato per intero con indice.  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_search()`, `build_parser()`. Estratto: `parser_search = subparsers.add_parser("search", ...)`; `for index, item in enumerate(streams): print(json.dumps(item, ...))`.
+
 ## 4. Requisiti di test
 <!-- Requisiti di test legati a requisiti funzionali/non-funzionali o contesti di verifica -->
 
@@ -874,6 +880,12 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: PASS se input invalido (es. config URL assente/non valida) produce output errore su `stderr` e codice `2`, e se eccezioni `requests.RequestException` sono intercettate con ritorno `2`; FAIL altrimenti.  
   Evidenza: `src/api_tester/api_tester.py` / `get_target_from_args()`, `main()`. Estratto: `raise CliError(...)`; `except requests.RequestException ... return 2`; `except CliError ... return 2`.
 
+- **TST-508**: Il sistema deve essere verificabile per `REQ-570` eseguendo `search` con un media valido e verificando che l'output includa la lista completa degli stream con i campi payload completi per item.  
+  ID originale: `TST-008`.
+  Comportamento atteso: il comando `search` espone ogni campo stream necessario al playback senza truncare il payload.  
+  Criteri di accettazione: PASS se l'output include il conteggio `streams: <n>` e almeno un item stampato come JSON completo con chiavi `url` o `infoHash` quando presenti; FAIL altrimenti.  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_search()`. Estratto: `print(f\"streams: {len(streams)}\")`; `print(json.dumps(item, ...))`.
+
 ## 5. Storico revisioni
 <!-- A ogni modifica, aggiornare versione e aggiungere una riga -->
 
@@ -888,3 +900,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-12 | 0.2      | Riorganizzazione, traduzione in Italiano, integrazione di requisiti mancanti dal codice, e rinumerazione (vedi mapping nella risposta dell'agente). |
 | 2026-02-12 | 0.3      | Aggiunto requisito di autonomia per lo script API tester e relativo requisito di test. |
 | 2026-02-13 | 0.4      | Estesi i requisiti dello script API tester (target/endpoint/asset/stream/playback/smoke/errori) e rafforzato il vincolo di non dipendenza da librerie `src/debriddo/` per tutte le implementazioni API Tester. |
+| 2026-02-13 | 0.5      | Aggiunto comando `search` al tester API per stampare i payload stream completi. |
