@@ -866,3 +866,249 @@
           - description: Prints "Release created!" to workflow logs.
           - input: None
           - output: log_line
+
+- Feature: API Tester startup, isolation guard, and command dispatch
+  - Component: src/api_tester/api_tester.py
+    - `main()`: Bootstrap CLI execution with isolation checks and controlled error codes. [src/api_tester/api_tester.py, 787-803]
+      - description: Enforces anti-debriddo guard, builds parser, resolves subcommand dispatch through `args.func(args)`, and maps transport/input failures to exit code `2`.
+      - input: None
+      - output: int, process exit code
+      - calls:
+        - `ensure_no_debriddo_modules_loaded()`: Block execution when `debriddo` modules are loaded. [src/api_tester/api_tester.py, 38-63]
+          - description: Scans `sys.modules` for `debriddo` namespace prefixes and raises `CliError` if any module is already loaded.
+          - input: None
+          - output: None
+        - `build_parser()`: Build CLI arguments and bind subcommands to handlers. [src/api_tester/api_tester.py, 644-786]
+          - description: Configures shared options (`--config-url`, `--timeout`, TLS/body flags) and binds `target/root/configure/manifest/site-webmanifest/asset/stream/playback/smoke` handlers.
+          - input: None
+          - output: parser: argparse.ArgumentParser, configured CLI parser
+
+- Feature: Target normalization and URL construction common logic
+  - Component: src/api_tester/api_tester.py
+    - `get_target_from_args()`: Resolve config URL from CLI/env and normalize it. [src/api_tester/api_tester.py, 101-109]
+      - description: Prioritizes `--config-url` over environment (`--config-url-env`), validates presence, and delegates parsing to normalized target derivation.
+      - input: args: argparse.Namespace
+      - output: TargetUrls, normalized `base_url/config_segment/config_url`
+      - calls:
+        - `normalize_config_url()`: Parse and validate Debriddo config URL format. [src/api_tester/api_tester.py, 64-100]
+          - description: Validates scheme+host, strips trailing `manifest.json/configure`, finds first `C_` segment, and derives base/config URLs used by all commands.
+          - input: raw_value: str
+          - output: TargetUrls, normalized target tuple
+    - `make_url()`: Compose absolute URL from base URL and relative path. [src/api_tester/api_tester.py, 128-131]
+      - description: Normalizes slashes and returns final URL for HTTP requests.
+      - input: base_url: str; path: str
+      - output: str, absolute URL
+    - `request_url()`: Execute HTTP request to target API endpoints. [src/api_tester/api_tester.py, 110-127]
+      - description: Uses `requests.Session.request` with timeout/TLS/redirect controls; this is the primary external API boundary for API Tester.
+      - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+      - output: requests.Response
+
+- Feature: Endpoint probe commands and shared HTTP response formatting
+  - Component: src/api_tester/api_tester.py
+    - `cmd_root()`: Probe `GET /` endpoint without following redirects. [src/api_tester/api_tester.py, 208-220]
+      - description: Resolves target and delegates request execution to common endpoint helper.
+      - input: args: argparse.Namespace
+      - output: int, command exit code
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `call_simple_endpoint()`: Execute request and print compact response summary. [src/api_tester/api_tester.py, 166-187]
+          - description: Builds URL, performs request, prints `HTTP/Location/Content-Type` and optional body, and maps response status to `0/1`.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; path: str; method: str; allow_redirects: bool
+          - output: int, `0` if response.ok else `1`
+          - calls:
+            - `make_url()`: Build endpoint URL from base/path. [src/api_tester/api_tester.py, 128-131]
+              - description: Concatenates normalized path segments into final URL.
+              - input: base_url: str; path: str
+              - output: str, absolute URL
+            - `request_url()`: Perform HTTP request. [src/api_tester/api_tester.py, 110-127]
+              - description: Performs network call to Debriddo endpoint.
+              - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+              - output: requests.Response
+            - `print_response_summary()`: Print status/header/body summary. [src/api_tester/api_tester.py, 139-165]
+              - description: Prints status and selected headers; when enabled, renders JSON/text body with max-length truncation.
+              - input: response: requests.Response; print_body: bool; max_body_chars: int
+              - output: None
+              - calls:
+                - `parse_json_body()`: Parse JSON body safely. [src/api_tester/api_tester.py, 132-138]
+                  - description: Returns deserialized JSON payload or `None` on parse failure.
+                  - input: response: requests.Response
+                  - output: Optional[Any], parsed body
+    - `cmd_configure()`: Probe configure endpoint with optional config prefix. [src/api_tester/api_tester.py, 221-227]
+      - description: Chooses `/configure` or `/{config}/configure` then reuses common endpoint helper.
+      - input: args: argparse.Namespace
+      - output: int, command exit code
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `call_simple_endpoint()`: Execute request and summarize response. [src/api_tester/api_tester.py, 166-187]
+          - description: Runs request and maps result to exit code.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; path: str; method: str; allow_redirects: bool
+          - output: int
+    - `cmd_manifest()`: Probe manifest endpoint with optional config prefix. [src/api_tester/api_tester.py, 228-234]
+      - description: Chooses `/manifest.json` or `/{config}/manifest.json` and executes common probe flow.
+      - input: args: argparse.Namespace
+      - output: int, command exit code
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `call_simple_endpoint()`: Execute request and summarize response. [src/api_tester/api_tester.py, 166-187]
+          - description: Runs request and maps result to exit code.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; path: str; method: str; allow_redirects: bool
+          - output: int
+    - `cmd_site_webmanifest()`: Probe `GET /site.webmanifest`. [src/api_tester/api_tester.py, 235-240]
+      - description: Invokes fixed endpoint check using the common probe helper.
+      - input: args: argparse.Namespace
+      - output: int, command exit code
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `call_simple_endpoint()`: Execute request and summarize response. [src/api_tester/api_tester.py, 166-187]
+          - description: Runs request and maps result to exit code.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; path: str; method: str; allow_redirects: bool
+          - output: int
+    - `cmd_asset()`: Probe static asset endpoints by asset type map. [src/api_tester/api_tester.py, 241-264]
+      - description: Maps `asset-type` values to static paths, optionally prefixes `/{config}/` (except favicon), and executes request using common helper.
+      - input: args: argparse.Namespace
+      - output: int, command exit code
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `call_simple_endpoint()`: Execute request and summarize response. [src/api_tester/api_tester.py, 166-187]
+          - description: Runs request and maps result to exit code.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; path: str; method: str; allow_redirects: bool
+          - output: int
+
+- Feature: Stream and playback command flow
+  - Component: src/api_tester/api_tester.py
+    - `cmd_stream()`: Probe stream endpoint and summarize returned stream items. [src/api_tester/api_tester.py, 290-317]
+      - description: Calls stream endpoint for selected media type/id, prints response metadata, and outputs stream count plus key preview for first N entries.
+      - input: args: argparse.Namespace
+      - output: int, `0` on HTTP success else `1`
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `request_stream()`: Execute `GET /{config}/stream/{type}/{id}`. [src/api_tester/api_tester.py, 265-289]
+          - description: Builds stream path with optional `.json` suffix and executes HTTP request.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; stream_type: str; stream_id: str; append_json_suffix: bool
+          - output: requests.Response
+          - calls:
+            - `build_stream_path()`: Build encoded stream path from media identifiers. [src/api_tester/api_tester.py, 188-199]
+              - description: URL-encodes stream ID, appends `.json` when requested, and returns path with config token.
+              - input: target: TargetUrls; stream_type: str; stream_id: str; append_json_suffix: bool
+              - output: str, stream endpoint path
+            - `make_url()`: Build endpoint URL from base/path. [src/api_tester/api_tester.py, 128-131]
+              - description: Concatenates normalized path segments into final URL.
+              - input: base_url: str; path: str
+              - output: str, absolute URL
+            - `request_url()`: Perform HTTP request. [src/api_tester/api_tester.py, 110-127]
+              - description: Performs network call to Debriddo endpoint.
+              - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+              - output: requests.Response
+        - `print_response_summary()`: Print status/header/body summary. [src/api_tester/api_tester.py, 139-165]
+          - description: Prints status/header metadata and optional parsed response body.
+          - input: response: requests.Response; print_body: bool; max_body_chars: int
+          - output: None
+        - `parse_json_body()`: Parse JSON body safely. [src/api_tester/api_tester.py, 132-138]
+          - description: Returns parsed dict/list payload when response contains JSON.
+          - input: response: requests.Response
+          - output: Optional[Any], parsed body
+    - `cmd_playback()`: Probe playback endpoint by direct query or stream-derived playback path. [src/api_tester/api_tester.py, 353-393]
+      - description: Uses explicit `--query` or discovers playback URL from stream payload, chooses `GET`/`HEAD`, and reports HTTP summary.
+      - input: args: argparse.Namespace
+      - output: int, `0` when status `<400` else `1`
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `request_stream()`: Execute stream request for playback URL discovery. [src/api_tester/api_tester.py, 265-289]
+          - description: Fetches stream payload when query argument is omitted.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; stream_type: str; stream_id: str; append_json_suffix: bool
+          - output: requests.Response
+        - `parse_json_body()`: Parse JSON body safely. [src/api_tester/api_tester.py, 132-138]
+          - description: Deserializes stream payload to inspect `streams`.
+          - input: response: requests.Response
+          - output: Optional[Any], parsed body
+        - `extract_playback_path_from_streams()`: Select first playback URL path from stream list. [src/api_tester/api_tester.py, 318-334]
+          - description: Iterates stream items and returns first path containing `/playback/`; returns `None` when absent.
+          - input: streams_payload: Dict[str, Any]
+          - output: Optional[str], playback path
+        - `request_playback()`: Execute playback request with selected HTTP method. [src/api_tester/api_tester.py, 335-352]
+          - description: Builds playback URL and performs request without following redirects.
+          - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; method: str; playback_path: str
+          - output: requests.Response
+          - calls:
+            - `make_url()`: Build endpoint URL from base/path. [src/api_tester/api_tester.py, 128-131]
+              - description: Concatenates normalized path segments into final URL.
+              - input: base_url: str; path: str
+              - output: str, absolute URL
+            - `request_url()`: Perform HTTP request. [src/api_tester/api_tester.py, 110-127]
+              - description: Performs network call to Debriddo endpoint.
+              - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+              - output: requests.Response
+        - `print_response_summary()`: Print status/header/body summary. [src/api_tester/api_tester.py, 139-165]
+          - description: Prints status/header metadata and optional parsed response body.
+          - input: response: requests.Response; print_body: bool; max_body_chars: int
+          - output: None
+
+- Feature: Smoke suite orchestration and structured PASS/FAIL output
+  - Component: src/api_tester/api_tester.py
+    - `cmd_smoke()`: Execute integrated smoke checks and return aggregated status. [src/api_tester/api_tester.py, 629-643]
+      - description: Resolves target, executes smoke pipeline, prints one line per check with `[PASS|FAIL]`, and returns non-zero when failures exist.
+      - input: args: argparse.Namespace
+      - output: int, `0` when no failures else `1`
+      - calls:
+        - `get_target_from_args()`: Resolve normalized target. [src/api_tester/api_tester.py, 101-109]
+          - description: Resolves and validates target URL from CLI/env.
+          - input: args: argparse.Namespace
+          - output: TargetUrls
+        - `run_smoke()`: Execute multi-endpoint smoke checks. [src/api_tester/api_tester.py, 413-628]
+          - description: Probes root/configure/assets/site webmanifest/manifest/stream/playback endpoints and records each check as `CheckResult`.
+          - input: args: argparse.Namespace; target: TargetUrls
+          - output: List[CheckResult], ordered smoke results
+          - calls:
+            - `request_url()`: Perform HTTP request for each checked endpoint. [src/api_tester/api_tester.py, 110-127]
+              - description: Calls external Debriddo HTTP API boundary with command-level timeout/TLS options.
+              - input: session: requests.Session; method: str; url: str; timeout: float; verify_ssl: bool; allow_redirects: bool
+              - output: requests.Response
+            - `make_url()`: Compose endpoint URLs for smoke checks. [src/api_tester/api_tester.py, 128-131]
+              - description: Converts base URL plus per-check paths into executable request URLs.
+              - input: base_url: str; path: str
+              - output: str, absolute URL
+            - `add_check()`: Append check outcome record. [src/api_tester/api_tester.py, 409-412]
+              - description: Appends immutable status tuple to shared result list.
+              - input: results: List[CheckResult]; name: str; ok: bool; detail: str
+              - output: None
+            - `parse_json_body()`: Parse manifest/stream payloads for semantic checks. [src/api_tester/api_tester.py, 132-138]
+              - description: Converts JSON bodies for structural validations (`resources`, `streams`).
+              - input: response: requests.Response
+              - output: Optional[Any], parsed body
+            - `validate_manifest_payload()`: Validate Stremio manifest stream resource fields. [src/api_tester/api_tester.py, 394-408]
+              - description: Asserts manifest contains `resources` list and a `stream` resource supporting `movie` and `series`.
+              - input: payload: Dict[str, Any]
+              - output: Tuple[bool, str], validation flag and detail
+            - `request_stream()`: Probe movie/series stream endpoints inside smoke flow. [src/api_tester/api_tester.py, 265-289]
+              - description: Fetches stream payloads used for stream checks and playback discovery.
+              - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; stream_type: str; stream_id: str; append_json_suffix: bool
+              - output: requests.Response
+            - `extract_playback_path_from_streams()`: Extract playback URL path from movie stream payload. [src/api_tester/api_tester.py, 318-334]
+              - description: Searches stream entries for first path containing `/playback/`.
+              - input: streams_payload: Dict[str, Any]
+              - output: Optional[str], playback path
+            - `request_playback()`: Probe playback endpoints with `GET` and `HEAD`. [src/api_tester/api_tester.py, 335-352]
+              - description: Executes playback URL checks for redirect and known HEAD behavior.
+              - input: session: requests.Session; args: argparse.Namespace; target: TargetUrls; method: str; playback_path: str
+              - output: requests.Response

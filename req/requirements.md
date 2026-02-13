@@ -1,8 +1,8 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.3"
-date: "2026-02-12"
+version: "0.4"
+date: "2026-02-13"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
   paths:
@@ -17,9 +17,9 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.3  
+**Versione**: 0.4  
 **Autore**: Auto-generato da analisi del codice sorgente  
-**Data**: 2026-02-12
+**Data**: 2026-02-13
 
 ## Indice
 <!-- TOC -->
@@ -769,11 +769,59 @@ Queste regole devono essere sempre rispettate:
 
 ### 3.13 Script API tester
 
-- **REQ-561**: Lo script `src/api_tester/api_tester.py` deve restare autonomo e non deve importare o utilizzare moduli/librerie dell'applicazione Debriddo presenti in `src/debriddo/`.  
+- **REQ-561**: Tutte le implementazioni API Tester in `src/api_tester/` devono restare autonome e non devono importare o utilizzare moduli/librerie dell'applicazione Debriddo presenti in `src/debriddo/`.  
   ID originale: `REQ-912`.
-  Comportamento atteso: il tester API usa solo librerie standard e dipendenze esterne generiche senza accedere al namespace `debriddo`.  
-  Criteri di accettazione: il codice del tester include un controllo che rifiuta l'esecuzione se rileva moduli `debriddo` caricati e non contiene import diretti di `debriddo`.  
-  Evidenza: `src/api_tester/api_tester.py` / `ensure_no_debriddo_modules_loaded()`. Estratto: `loaded = sorted(name for name in sys.modules if name == \"debriddo\" or name.startswith(\"debriddo.\"))`.
+  Comportamento atteso: i tester API usano solo librerie standard e dipendenze esterne generiche senza accedere al namespace `debriddo`.  
+  Criteri di accettazione: ogni entrypoint API tester include un controllo runtime che rifiuta l'esecuzione se rileva moduli `debriddo` caricati e il codice non contiene import diretti di `debriddo`.  
+  Evidenza: `src/api_tester/api_tester.py` / `ensure_no_debriddo_modules_loaded()` e `main()`. Estratto: `if name == DEBRIDDO_MODULE_PREFIX or name.startswith(f\"{DEBRIDDO_MODULE_PREFIX}.\")`; `ensure_no_debriddo_modules_loaded()`.
+
+- **REQ-562**: Il tester API deve risolvere il target da `--config-url` oppure da variabile ambiente configurabile con priorita' al parametro CLI, e deve validare che l'URL contenga un segmento `C_`.  
+  ID originale: `REQ-913`.
+  Comportamento atteso: in assenza di `--config-url`, il tester legge `--config-url-env` (default `DEBRIDDO_CONFIG_URL`) e fallisce con errore descrittivo se il valore e' assente o invalido.  
+  Criteri di accettazione: `get_target_from_args()` usa `args.config_url` prima di `os.getenv(args.config_url_env, \"\")`; `normalize_config_url()` richiede schema+host e un segmento path che inizia con `C_`.  
+  Evidenza: `src/api_tester/api_tester.py` / `get_target_from_args()`, `normalize_config_url()`, `DEFAULT_CONFIG_ENV`. Estratto: `config_url = args.config_url or os.getenv(args.config_url_env, \"\")`; `if segment.startswith(\"C_\")`.
+
+- **REQ-563**: Il comando `target` deve stampare i tre identificatori normalizzati `base_url`, `config_url`, `config_token` derivati dal target risolto.  
+  ID originale: `REQ-914`.
+  Comportamento atteso: l'utente ottiene una vista deterministica dei valori usati dai comandi HTTP.  
+  Criteri di accettazione: `cmd_target()` stampa le righe con prefissi letterali `base_url`, `config_url`, `config_token`.  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_target()`. Estratto: `print(f\"base_url     : {target.base_url}\")`.
+
+- **REQ-564**: I comandi `root`, `configure`, `manifest`, `site-webmanifest` devono invocare gli endpoint HTTP corrispondenti con timeout/TLS configurabili e restituire codice uscita `0` su risposta `2xx/3xx` e `1` su errore HTTP.  
+  ID originale: `REQ-915`.
+  Comportamento atteso: il tester fornisce check endpoint basilari riutilizzando un flusso di richiesta/summary comune.  
+  Criteri di accettazione: i comandi usano `call_simple_endpoint()`; `configure` e `manifest` supportano `--with-config` per prefisso `/{config}/`; `call_simple_endpoint()` ritorna `0 if response.ok else 1`.  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_root()`, `cmd_configure()`, `cmd_manifest()`, `cmd_site_webmanifest()`, `call_simple_endpoint()`. Estratto: `path = f\"/{target.config_segment}/configure\" if args.with_config else \"/configure\"`; `return 0 if response.ok else 1`.
+
+- **REQ-565**: Il comando `asset` deve supportare i tipi `favicon`, `configjs`, `lzstring`, `styles`, `image` e deve mappare ciascun tipo al path statico previsto, con prefisso `/{config}/` opzionale per i tipi applicabili.  
+  ID originale: `REQ-916`.
+  Comportamento atteso: il tester copre asset statici principali e fallisce su tipo asset non riconosciuto.  
+  Criteri di accettazione: `cmd_asset()` implementa mapping deterministico per `--asset-type`; `--with-config` non viene applicato a `favicon`; i tipi non supportati generano `CliError`.  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_asset()`. Estratto: `choices=[\"favicon\", \"configjs\", \"lzstring\", \"styles\", \"image\"]`; `if args.with_config and args.asset_type != \"favicon\":`.
+
+- **REQ-566**: Il comando `stream` deve costruire il path `/{config}/stream/{type}/{id}` codificando `stream_id`, supportare suffisso opzionale `.json`, e riassumere il numero stream con anteprima chiavi per un massimo configurabile di elementi.  
+  ID originale: `REQ-917`.
+  Comportamento atteso: l'utente puo' verificare endpoint stream movie/series e ottenere un sommario del payload.  
+  Criteri di accettazione: `build_stream_path()` usa `quote(stream_id, safe=\":.\")` e aggiunge `.json` quando richiesto; `cmd_stream()` stampa `streams: <n>` e fino a `args.preview_streams` righe `keys=...` quando il payload e' valido.  
+  Evidenza: `src/api_tester/api_tester.py` / `build_stream_path()`, `cmd_stream()`. Estratto: `encoded_stream_id = quote(stream_id, safe=\":.\")`; `print(f\"streams: {len(streams)}\")`.
+
+- **REQ-567**: Il comando `playback` deve chiamare `/playback/{config}/{query}` usando query esplicita o ricavata automaticamente dal primo stream che contiene URL playback, con supporto metodo `GET` o `HEAD`.  
+  ID originale: `REQ-918`.
+  Comportamento atteso: il tester verifica playback sia con query fornita sia con discovery da endpoint stream.  
+  Criteri di accettazione: `cmd_playback()` usa `--query` se presente; in assenza esegue `request_stream()` e `extract_playback_path_from_streams()`; `--head` imposta metodo `HEAD`, altrimenti `GET`; in assenza playback URL viene sollevato `CliError`.  
+  Evidenza: `src/api_tester/api_tester.py` / `cmd_playback()`, `extract_playback_path_from_streams()`. Estratto: `if args.query: playback_path = f\"/playback/{target.config_segment}/{args.query}\"`; `if \"/playback/\" in parsed.path: return parsed.path`.
+
+- **REQ-568**: Il comando `smoke` deve eseguire una suite integrata multi-endpoint (root, configure, asset, manifest, stream, playback), registrare esito per check con formato `[PASS|FAIL]`, e restituire `0` solo quando non sono presenti fallimenti.  
+  ID originale: `REQ-919`.
+  Comportamento atteso: una singola esecuzione produce verifica end-to-end ripetibile delle API principali.  
+  Criteri di accettazione: `run_smoke()` aggiunge `CheckResult` per ciascun endpoint previsto incluse le varianti prefissate `/{config}/...`; `cmd_smoke()` stampa il riepilogo `Totale: <n> test, <f> falliti.` e ritorna `0 if failed == 0 else 1`.  
+  Evidenza: `src/api_tester/api_tester.py` / `run_smoke()`, `cmd_smoke()`. Estratto: `add_check(results, \"GET /{config}/stream/movie/{id}.json\", ...)`; `print(f\"\\nTotale: {len(results)} test, {failed} falliti.\")`.
+
+- **REQ-569**: Il tester API deve usare codici di uscita dedicati per errori non-funzionali: `2` per errori di dipendenza/modulo HTTP, eccezioni `requests` o validazione CLI.  
+  ID originale: `REQ-920`.
+  Comportamento atteso: gli errori infrastrutturali/di input sono distinguibili dai fallimenti di check endpoint.  
+  Criteri di accettazione: import failure di `requests` termina con `sys.exit(2)`; `main()` intercetta `requests.RequestException` e `CliError` restituendo `2`.  
+  Evidenza: `src/api_tester/api_tester.py` / blocco import `requests`, `main()`. Estratto: `sys.exit(2)`; `except requests.RequestException ... return 2`; `except CliError ... return 2`.
 
 ## 4. Requisiti di test
 <!-- Requisiti di test legati a requisiti funzionali/non-funzionali o contesti di verifica -->
@@ -802,11 +850,29 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: PASS se status e' 301 e `Location` e' presente; FAIL altrimenti.  
   Evidenza: `src/debriddo/main.py` / `get_playback()` imposta `status_code=status.HTTP_301_MOVED_PERMANENTLY`. Estratto: `status_code=status.HTTP_301_MOVED_PERMANENTLY`.
 
-- **TST-504**: Il sistema deve essere verificabile per `REQ-561` eseguendo un'analisi statica del file `src/api_tester/api_tester.py` per assicurarsi che non contenga import di `debriddo` e che sia presente un controllo runtime di blocco moduli `debriddo`.  
+- **TST-504**: Il sistema deve essere verificabile per `REQ-561` eseguendo un'analisi statica delle implementazioni sotto `src/api_tester/` per assicurarsi che non contengano import di `debriddo` e che gli entrypoint includano un controllo runtime di blocco moduli `debriddo`.  
   ID originale: `TST-004`.
-  Comportamento atteso: il tester API non dipende dal codice applicativo Debriddo.  
-  Criteri di accettazione: PASS se non compaiono statement `import debriddo` e se `ensure_no_debriddo_modules_loaded()` e' definita ed invocata nel flusso principale; FAIL altrimenti.  
+  Comportamento atteso: il tester API non dipende dal codice applicativo Debriddo in tutte le varianti implementate.  
+  Criteri di accettazione: PASS se non compaiono statement `import debriddo` e se in ciascun entrypoint e' presente una chiamata a `ensure_no_debriddo_modules_loaded()` prima dell'esecuzione operativa; FAIL altrimenti.  
   Evidenza: `src/api_tester/api_tester.py` / `ensure_no_debriddo_modules_loaded()` e `main()`. Estratto: `ensure_no_debriddo_modules_loaded()`; `loaded = sorted(...)`.
+
+- **TST-505**: Il sistema deve essere verificabile per `REQ-562` e `REQ-563` eseguendo `target` con `--config-url` e con fallback env var, e asserendo l'output normalizzato dei campi `base_url`, `config_url`, `config_token`.  
+  ID originale: `TST-005`.
+  Comportamento atteso: la risoluzione target e' deterministica e valida per URL con o senza suffisso `/manifest.json` o `/configure`.  
+  Criteri di accettazione: PASS se il comando `target` stampa i tre campi previsti con valori coerenti al segmento `C_`; FAIL se manca un campo o la normalizzazione non produce token `C_...`.  
+  Evidenza: `src/api_tester/api_tester.py` / `normalize_config_url()`, `get_target_from_args()`, `cmd_target()`. Estratto: `if path_segments[-1] in {\"manifest.json\", \"configure\"}:`; `print(f\"config_token : {target.config_segment}\")`.
+
+- **TST-506**: Il sistema deve essere verificabile per `REQ-564`, `REQ-565`, `REQ-566`, `REQ-567`, `REQ-568` eseguendo il comando `smoke` su un'istanza Debriddo raggiungibile e validando l'output dei check endpoint.  
+  ID originale: `TST-006`.
+  Comportamento atteso: la suite smoke verifica endpoint principali, asset statici, stream movie/series e playback con report unificato PASS/FAIL.  
+  Criteri di accettazione: PASS se `cmd_smoke()` riporta solo check `[PASS]` e termina con codice `0`; FAIL se almeno un check e' `[FAIL]` o il codice uscita e' non-zero.  
+  Evidenza: `src/api_tester/api_tester.py` / `run_smoke()`, `cmd_smoke()`. Estratto: `results = run_smoke(args, target)`; `status_text = \"PASS\" if result.ok else \"FAIL\"`.
+
+- **TST-507**: Il sistema deve essere verificabile per `REQ-569` inducendo errori controllati e asserendo il codice di uscita `2` per errori di validazione CLI o eccezioni HTTP `requests`.  
+  ID originale: `TST-007`.
+  Comportamento atteso: gli errori non-funzionali sono distinguibili dai fallimenti endpoint.  
+  Criteri di accettazione: PASS se input invalido (es. config URL assente/non valida) produce output errore su `stderr` e codice `2`, e se eccezioni `requests.RequestException` sono intercettate con ritorno `2`; FAIL altrimenti.  
+  Evidenza: `src/api_tester/api_tester.py` / `get_target_from_args()`, `main()`. Estratto: `raise CliError(...)`; `except requests.RequestException ... return 2`; `except CliError ... return 2`.
 
 ## 5. Storico revisioni
 <!-- A ogni modifica, aggiornare versione e aggiungere una riga -->
@@ -821,3 +887,4 @@ Queste regole devono essere sempre rispettate:
 |------------|----------|------------------------------------|
 | 2026-02-12 | 0.2      | Riorganizzazione, traduzione in Italiano, integrazione di requisiti mancanti dal codice, e rinumerazione (vedi mapping nella risposta dell'agente). |
 | 2026-02-12 | 0.3      | Aggiunto requisito di autonomia per lo script API tester e relativo requisito di test. |
+| 2026-02-13 | 0.4      | Estesi i requisiti dello script API tester (target/endpoint/asset/stream/playback/smoke/errori) e rafforzato il vincolo di non dipendenza da librerie `src/debriddo/` per tutte le implementazioni API Tester. |
