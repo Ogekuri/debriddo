@@ -61,6 +61,9 @@ class SearchService:
             'multi':'MULTI',
             }
         self.__default_lang_tag = self.__language_tags['en']
+        self.__season_labels = {
+            'it': 'Stagione',
+        }
 
   
 
@@ -145,13 +148,11 @@ class SearchService:
 
     async def __search_movie_indexer(self, movie, indexer):
         # get titles and languages
-        if indexer.language == "any":
-            languages = movie.languages
-            titles = movie.titles
-        else:
-            index_of_language = [index for index, lang in enumerate(movie.languages) if lang == indexer.language]
-            languages = [movie.languages[index] for index in index_of_language]
-            titles = [movie.titles[index] for index in index_of_language]
+        languages = movie.languages or []
+        titles = movie.titles or []
+        if not languages:
+            languages = [None]
+            titles = [movie.titles[0] if movie.titles else ""]
 
         results = []
         start_time = time.time()
@@ -162,12 +163,13 @@ class SearchService:
         index = 0
         for lang in languages:
             try:
-                title = titles[index]
-                lang_tag = self.__language_tags[languages[index]]
+                title = titles[index] if index < len(titles) else base_title
+                include_lang_tag = lang is not None and indexer.language != lang
+                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag)
 
-                search_string = str(title + ' ' + movie.year  + ' ' +  lang_tag)
-                if indexer.language == languages[index]:
-                    search_string = str(title + ' ' + movie.year)   # no language tag for native language indexer
+                search_string = str(title + ' ' + movie.year)
+                if include_lang_tag:
+                    search_string = str(search_string + ' ' + lang_tag)
                 search_string = normalize(search_string)
                 category = str(indexer.movie_search_capatabilities)
                 list_of_dicts = await indexer.engine.search(search_string, category)
@@ -177,9 +179,9 @@ class SearchService:
                         results.extend(torrents)
                 elif SEARCHE_FALL_BACK:
                     # se non ci sono risultati prova una ricerca più grossolana o in inglese (omette la lingua)
-                    search_string = str(title + ' ' + movie.year)
-                    if indexer.language == languages[index]:
-                        search_string = str(title)   # no language tag for native language indexer
+                    search_string = str(title)
+                    if include_lang_tag:
+                        search_string = str(search_string + ' ' + lang_tag)
                     search_string = normalize(search_string)
                     category = str(indexer.movie_search_capatabilities)
                     list_of_dicts = await indexer.engine.search(search_string, category)
@@ -208,13 +210,11 @@ class SearchService:
 
     async def __search_series_indexer(self, series, indexer):
         # get titles and languages
-        if indexer.language == "any":
-            languages = series.languages
-            titles = series.titles
-        else:
-            index_of_language = [index for index, lang in enumerate(series.languages) if lang == indexer.language]
-            languages = [series.languages[index] for index in index_of_language]
-            titles = [series.titles[index] for index in index_of_language]
+        languages = series.languages or []
+        titles = series.titles or []
+        if not languages:
+            languages = [None]
+            titles = [series.titles[0] if series.titles else ""]
 
         results = []
         start_time = time.time()
@@ -241,35 +241,43 @@ class SearchService:
                 # perché ci sono i torrent con l'intera serie inclusa
                 # bisogna poi cercare il file corretto
 
-                title = titles[index]
-                lang_tag = self.__language_tags[languages[index]]
+                title = titles[index] if index < len(titles) else base_title
+                include_lang_tag = lang is not None and indexer.language != lang
+                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag)
 
-                search_string = str(title + ' ' + series.season + series.episode + ' ' + lang_tag)
-                if indexer.language == languages[index]:
-                     search_string = str(title + ' ' + series.season + series.episode)   # no language tag for native language indexer
-                #search_string = str(title + ' ' + series.season + ' ' + lang_tag)
-                #if indexer.language == languages[index]:
-                #    search_string = str(title + ' ' + series.season)   # no language tag for native language indexer
-                search_string = normalize(search_string)
-                category = str(indexer.tv_search_capatabilities)
-                list_of_dicts = await indexer.engine.search(search_string, category)
-                if list_of_dicts is not None and len(list_of_dicts) > 0:
-                    torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                    if torrents is not None and type(torrents) is list and len(torrents) >0:
-                        results.extend(torrents)
-                elif SEARCHE_FALL_BACK:
+                search_strings = []
+                episode_search = str(title + ' ' + series.season + series.episode)
+                if include_lang_tag:
+                    episode_search = str(episode_search + ' ' + lang_tag)
+                search_strings.append(episode_search)
+
+                season_label = self.__season_labels.get(lang, "Season")
+                season_number = int(series.season[1:])
+                season_search = str(title + ' ' + season_label + ' ' + str(season_number))
+                if include_lang_tag:
+                    season_search = str(season_search + ' ' + lang_tag)
+                search_strings.append(season_search)
+
+                pack_search = str(title + ' ' + 'E01-E')
+                if include_lang_tag:
+                    pack_search = str(pack_search + ' ' + lang_tag)
+                search_strings.append(pack_search)
+
+                primary_results_found = False
+                for candidate in search_strings:
+                    search_string = normalize(candidate)
+                    category = str(indexer.tv_search_capatabilities)
+                    list_of_dicts = await indexer.engine.search(search_string, category)
+                    if list_of_dicts is not None and len(list_of_dicts) > 0:
+                        torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
+                        if torrents is not None and type(torrents) is list and len(torrents) >0:
+                            results.extend(torrents)
+                            primary_results_found = True
+                if SEARCHE_FALL_BACK and not primary_results_found:
                     # se non ci sono risultati prova una ricerca più grossolana o in inglese
-
-                    full_season = f"Season {int(series.season[1:])}"
-                    if indexer.language == 'it' or indexer.language == 'it':
-                        full_season = f"Stagione {int(series.season[1:])}"
-                    search_string = str(title + ' ' + full_season + ' ' + lang_tag)
-                    if indexer.language == languages[index]:
-                        search_string = str(title + ' ' + full_season)   # no language tag for native language indexer
-
-                    #search_string = str(title + ' ' + series.season  + ' ' + self.__default_lang_tag)
-                    #if indexer.language == languages[index]:
-                    #    search_string = str(title)   # no language tag for native language indexer
+                    search_string = str(title)
+                    if include_lang_tag:
+                        search_string = str(search_string + ' ' + lang_tag)
                     search_string = normalize(search_string)
                     category = str(indexer.tv_search_capatabilities)
                     list_of_dicts = await indexer.engine.search(search_string, category)

@@ -575,6 +575,18 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `MULTI_THREAD` e' impostato da `RUN_IN_MULTI_THREAD`; `SearchService.search()` costruisce una lista `tasks = [loop.run_in_executor(None, run_coroutine_in_thread, ...)]` e attende con `asyncio.gather`.  
   Evidenza: `src/debriddo/constants.py` / `RUN_IN_MULTI_THREAD = True`; `src/debriddo/utils/multi_thread.py` / `run_coroutine_in_thread`; `src/debriddo/search/search_service.py` / `search()` ramo `if MULTI_THREAD:`. Estratto: `tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__search_movie_indexer(...)) ...]`.
 
+- **REQ-571**: La pipeline di ricerca deve costruire le stringhe di ricerca per film usando titolo, anno e tag lingua con fallback controllato da `SEARCHE_FALL_BACK`.  
+  ID originale: `N/A`.
+  Comportamento atteso: per ogni lingua richiesta, la ricerca primaria usa `<title> <year> <lang_tag>` quando la lingua dell'indexer e' diversa dalla lingua richiesta o quando la lingua richiesta non esiste; usa `<title> <year>` quando la lingua dell'indexer coincide con la lingua richiesta. Se `SEARCHE_FALL_BACK` e' true e la ricerca primaria non produce risultati, esegue una seconda ricerca con `<title> <lang_tag>` o `<title>` applicando le stesse regole di lingua.  
+  Criteri di accettazione: `__search_movie_indexer()` costruisce le query usando `movie.titles`, `movie.year`, `__language_tags` e la lingua richiesta corrente, esegue la ricerca primaria e solo quando i risultati sono vuoti esegue la ricerca fallback con query senza anno; i risultati di entrambe le ricerche sono concatenati.  
+  Evidenza: `src/debriddo/search/search_service.py` / `__search_movie_indexer()`.
+
+- **REQ-572**: La pipeline di ricerca deve eseguire una ricerca primaria multipla per serie TV concatenando i risultati di episodio specifico, stagione specifica e pack multi-episodi, con fallback controllato da `SEARCHE_FALL_BACK`.  
+  ID originale: `N/A`.
+  Comportamento atteso: per ogni lingua richiesta, la ricerca primaria include: a) episodio specifico `<title> <season><episode> <lang_tag>` o senza tag se la lingua dell'indexer coincide con la lingua richiesta; b) stagione specifica `<title> "Season" <season_number> <lang_tag>` con localizzazione di "Season" se disponibile (es. "Stagione" per `it`) e senza tag se la lingua dell'indexer coincide con la lingua richiesta; c) pack multi-episodi `<title> E01-E <lang_tag>` o senza tag se la lingua dell'indexer coincide con la lingua richiesta. Se `SEARCHE_FALL_BACK` e' true e nessuna ricerca primaria produce risultati, esegue la ricerca fallback con `<title> <lang_tag>` o `<title>` seguendo le stesse regole di lingua.  
+  Criteri di accettazione: `__search_series_indexer()` genera le tre query primarie, concatena i risultati e verifica che `SEARCHE_FALL_BACK` si attivi solo quando tutte le ricerche primarie sono vuote, quindi esegue la query di fallback con solo titolo; la stringa "Season" e' localizzata in base alla lingua richiesta quando presente.  
+  Evidenza: `src/debriddo/search/search_service.py` / `__search_series_indexer()`.
+
 ### 3.7 Filtraggio e ordinamento
 
 - **REQ-531**: La pipeline di filtraggio deve applicare i seguenti filtri nell'ordine dichiarato quando abilitati da configurazione: filtro lingua (solo se `config['languages']` e' valorizzato), filtro dimensione massima (solo film), esclusione parole chiave titolo, esclusione qualita, risultati-per-qualita.  
