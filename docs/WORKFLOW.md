@@ -172,7 +172,7 @@
           - description: Keeps all magnet-only items and torrent-download items with file_index for matching.
           - input: None
           - output: best_matching: list, TorrentItem list
-        - `sort_items()`: Sort torrent items according to config. [src/debriddo/utils/filter_results.py, 201-205]
+        - `sort_items()`: Sort torrent items according to config. [src/debriddo/utils/filter_results.py, 233-237]
           - description: Applies RTN-based sorting when config['sort'] is set.
           - input: items; config
           - output: items: list, sorted items
