@@ -485,7 +485,7 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
             result = await debrid_service.get_availability_bulk(hashes, ip)
             if result is not None:
                 torrent_smart_container.update_availability(result, type(debrid_service), media)
-                logger.debug("Checked availability (results: " + str(len(result.items())) + ")")
+                logger.debug("Checked availability (results: " + str(len(result)) + ")")
             else:
                 logger.error("Unable to checked availability")
 

@@ -35,11 +35,11 @@ class torrentgalaxy(BasePlugin):
 	query_url='{self.api}/get-posts/category:{category}:keywords:{what}'
 
 	
-	async def download_torrent(self,info_url):
+	async def download_torrent(self,info):
 		session = AsyncThreadSafeSession()  # Usa il client asincrono
 		try:
 			# Esegui la ricerca
-			search_response = await session.request_get(info_url)
+			search_response = await session.request_get(info)
 			if search_response is not None and search_response.text is not None and len(search_response.text) > 0:
 				html_content = search_response.text
 				if html_content is not None:

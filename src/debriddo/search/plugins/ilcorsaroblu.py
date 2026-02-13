@@ -176,7 +176,7 @@ class ilcorsaroblu(BasePlugin):
 		return base_magnet
 
 
-	async def login(self, session):
+	async def login(self, session=None):
 		# Esegui il login
 		try:
 			self.logged = None

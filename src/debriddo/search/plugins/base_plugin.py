@@ -8,7 +8,7 @@ class BasePlugin:
         self.config = config
         self.logger = setup_logger(__name__)
 
-    async def login(self, session=None):
+    async def login(self, session=None) -> bool | None:
         pass
 
     async def search(self, what, cat='all'):
