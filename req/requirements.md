@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.8"
+version: "0.9"
 date: "2026-02-13"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.8  
+**Versione**: 0.9  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-13
 
@@ -601,6 +601,12 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `filter_out_non_matching()` esegue il parsing RTN per il match episodio classico, verifica pattern regex per i due formati di range episodi e verifica pattern localizzati "Season ... COMPLETE" con controllo coerenza lingua e stagione; l'item viene mantenuto se almeno un controllo ritorna vero.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_out_non_matching()`, `_match_complete_season()`, helper regex stagione/range episodio.
 
+- **REQ-552**: Dopo la fase di filtraggio "non matching series torrents", la pipeline deve loggare il nuovo conteggio item rimasti con il messaggio `Item count changed to <n>`.  
+  ID originale: `N/A`.
+  Comportamento atteso: subito dopo `filter_out_non_matching(...)` il log DEBUG riporta il numero di item rimasti.  
+  Criteri di accettazione: nel ramo `media.type == "series"` di `filter_items()`, il codice chiama `filter_out_non_matching(...)` e poi `logger.debug(f"Item count changed to {len(items)}")`.  
+  Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `items = filter_out_non_matching(...); logger.debug(f"Item count changed to {len(items)}")`.
+
 - **REQ-533**: La pipeline di filtraggio deve rimuovere torrent il cui titolo parsato non matcha alcun titolo media sopra una soglia di similarita 0.5.  
   ID originale: `REQ-024`.
   Comportamento atteso: candidati con mismatch titolo sono scartati.  
@@ -916,3 +922,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 0.6      | Correzione validazione lingue UI, fallback lingue TMDB su lista vuota, e pulizia lista engine abilitati. |
 | 2026-02-13 | 0.7      | Aggiornata la fase di filtering serie per preservare season-pack completi (`SnnE01-E` e `Season <n>` localizzato) della stagione richiesta. |
 | 2026-02-13 | 0.8      | Refactory filtro serie TV: matching OR tra episodio (`SnnEmm`/varianti), range pack (`SnnExx-Eyy` e `SnnExx-yy`/varianti) e stagione completa localizzata (`Season ... COMPLETE` nella stessa lingua). |
+| 2026-02-13 | 0.9      | Aggiunto requisito di log conteggio item dopo il filtro serie non matching. |

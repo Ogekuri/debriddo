@@ -135,7 +135,7 @@
           - input: cached_item
           - output: self
         - `filter_items()`: Apply filtering pipeline to SearchResult items. [src/debriddo/utils/filter_results.py, 241-281]
-          - description: Filters series by episode pair, episode-range packs, and localized complete-season patterns first, then filters titles and applies configured filter instances in order.
+          - description: Logs item count before filtering and after series non-matching filtering ("Item count changed to <n>"), then filters by series patterns, title similarity, and configured filter instances in order.
           - input: items; media; config
           - output: items: list, filtered results
           - calls:
@@ -337,7 +337,7 @@
 - Feature: Filtering and sorting
   - Component: src/debriddo/utils/filter_results.py
     - `filter_items()`: Apply configured filters in order. [src/debriddo/utils/filter_results.py, 241-281]
-      - description: Filters by season/episode pair, episode-range packs, and localized complete-season patterns first, then filters by title similarity and applies configured filters sequentially.
+      - description: Logs item count before filtering and after series non-matching filtering ("Item count changed to <n>"), then filters by series patterns, title similarity, and applies configured filters sequentially.
       - input: items; media; config
       - output: items: list, filtered SearchResult list
       - calls:
