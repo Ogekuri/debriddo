@@ -49,24 +49,42 @@ complete_labels = {
 
 def _match_complete_season(raw_title, numeric_season):
     title = str(raw_title or "")
-    season_token = r"(?:S\s*0?" + str(numeric_season) + r"|0?" + str(numeric_season) + r")"
 
     # Localized complete season must use season/complete labels from the same language.
+    # Support both "Season Snn ... COMPLETE" and "Season d ... COMPLETE" (numeric) formats
     for language, season_label in season_labels.items():
         complete_label = complete_labels.get(language)
         if complete_label is None:
             continue
-        label_match = re.compile(
+
+        # Pattern 1: Season Snn ... COMPLETE (e.g., "Season S03 ... COMPLETE")
+        season_token_snn = r"(?:S\s*0?" + str(numeric_season) + r")"
+        label_match_snn = re.compile(
             r"\b"
             + re.escape(season_label)
             + r"\s+"
-            + season_token
+            + season_token_snn
             + r"\b.*?\b"
             + re.escape(complete_label)
             + r"\b",
             re.IGNORECASE,
         )
-        if label_match.search(title):
+        if label_match_snn.search(title):
+            return True
+
+        # Pattern 2: Season d ... COMPLETE (e.g., "Stagione 3 ... COMPLETA")
+        season_token_numeric = r"(?:0?" + str(numeric_season) + r")"
+        label_match_numeric = re.compile(
+            r"\b"
+            + re.escape(season_label)
+            + r"\s+"
+            + season_token_numeric
+            + r"\b.*?\b"
+            + re.escape(complete_label)
+            + r"\b",
+            re.IGNORECASE,
+        )
+        if label_match_numeric.search(title):
             return True
 
     return False
@@ -100,6 +118,59 @@ def _match_season_episode_pair(raw_title, numeric_season, numeric_episode):
         re.IGNORECASE,
     )
     return season_episode_match.search(title) is not None
+
+
+def _match_title_with_season(raw_title, media_title, numeric_season):
+    """
+    Match title followed by season in three forms for series:
+    1. <title>.+Snn (basic season format)
+    2. <title>.+Season Snn (localized season label with Snn)
+    3. <title>.+Season d (localized season label with numeric season)
+    """
+    title = str(raw_title or "")
+    # Normalize title to handle dots, spaces, underscores as separators
+    # Replace each word separator in media_title with flexible separator pattern
+    normalized_title = re.escape(str(media_title or "")).replace(r"\ ", r"[\s\._-]+")
+
+    # Pattern 1: <title>.+Snn (e.g., "Person of Interest ... S03" or "Person.Of.Interest.S03")
+    pattern1 = re.compile(
+        r"\b" + normalized_title + r".+\bS0?" + str(numeric_season) + r"\b",
+        re.IGNORECASE,
+    )
+    if pattern1.search(title):
+        return True
+
+    # Pattern 2 and 3: <title>.+Season Snn or <title>.+Season d (localized)
+    for language, season_label in season_labels.items():
+        # Pattern 2: <title>.+Season Snn (e.g., "Person of Interest ... Season S03")
+        pattern2 = re.compile(
+            r"\b"
+            + normalized_title
+            + r".+"
+            + re.escape(season_label)
+            + r"\s+S0?"
+            + str(numeric_season)
+            + r"\b",
+            re.IGNORECASE,
+        )
+        if pattern2.search(title):
+            return True
+
+        # Pattern 3: <title>.+Season d (e.g., "Person of Interest ... Stagione 3")
+        pattern3 = re.compile(
+            r"\b"
+            + normalized_title
+            + r".+"
+            + re.escape(season_label)
+            + r"\s+0?"
+            + str(numeric_season)
+            + r"\b",
+            re.IGNORECASE,
+        )
+        if pattern3.search(title):
+            return True
+
+    return False
 
 
 def sort_quality(item):
@@ -221,18 +292,47 @@ def filter_out_non_matching(items, season, episode):
     return filtered_items
 
 
-def remove_non_matching_title(items, titles):
+def remove_non_matching_title(items, titles, media):
     logger.debug(f"Filtering by title: {titles}")
     # default: threshold: float = 0.85
     threshold = float(0.5)
     filtered_items = []
-    for item in items:
-        for title in titles:
-            if not title_match(title, item.parsed_data.parsed_title, threshold):
-                continue
 
+    for item in items:
+        item_matched = False
+        for title in titles:
+            # For series, use season-aware matching
+            if media.type == "series":
+                clean_season = media.season.replace("S", "")
+                numeric_season = int(clean_season)
+
+                # Check if title has season-aware match (validates season is correct)
+                if _match_title_with_season(item.raw_title, title, numeric_season):
+                    item_matched = True
+                    break
+
+                # Generic title match only if no season info in raw_title
+                # (fallback for items without explicit season in title)
+                if title_match(title, item.parsed_data.parsed_title, threshold):
+                    # Check if raw_title contains any season pattern
+                    has_season_pattern = bool(re.search(r'\bS\d{1,2}\b', item.raw_title, re.IGNORECASE))
+                    for season_label in season_labels.values():
+                        if re.search(r'\b' + re.escape(season_label) + r'\s+\d{1,2}\b', item.raw_title, re.IGNORECASE):
+                            has_season_pattern = True
+                            break
+
+                    # Only accept generic match if no season pattern found in title
+                    if not has_season_pattern:
+                        item_matched = True
+                        break
+            else:
+                # For movies, use generic title match
+                if title_match(title, item.parsed_data.parsed_title, threshold):
+                    item_matched = True
+                    break
+
+        if item_matched:
             filtered_items.append(item)
-            break
 
     return filtered_items
 
@@ -256,7 +356,7 @@ def filter_items(items, media, config):
         logger.debug("Filter results for season: " + media.season + ", spisode: " + media.episode)
 
     # TODO: is titles[0] always the correct title? Maybe loop through all titles and get the highest match?
-    items = remove_non_matching_title(items, media.titles)
+    items = remove_non_matching_title(items, media.titles, media)
     logger.debug(f"Item count changed to {len(items)}")
 
     for filter_name, filter_instance in filters.items():

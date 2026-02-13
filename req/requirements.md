@@ -595,10 +595,10 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `filter_items()` costruisce il dict `filters` in tale ordine e applica ogni filtro in ordine di iterazione; quando `config['languages']` e' vuoto o mancante, il filtro `LanguageFilter` non viene applicato.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `filters = {\"languages\": LanguageFilter(config), \"maxSize\": MaxSizeFilter(config, media.type), ...}`.
 
-- **REQ-532**: Per media di tipo serie, la pipeline di filtraggio deve mantenere un item quando almeno una delle seguenti logiche e' vera (OR logico): a) match episodio con accoppiata stagione/episodio nelle forme `SnnEmm`, `Snn Emm`, `Snn-Emm`; b) match pack range `SnnExx-Eyy`, `Snn Exx-Eyy`, `Snn-Exx-Eyy` con `nn` uguale alla stagione richiesta e `xx <= episodio_richiesto <= yy`; c) match pack range `SnnExx-yy`, `Snn Exx-yy`, `Snn-Exx-yy` con `nn` uguale alla stagione richiesta e `xx <= episodio_richiesto <= yy`; d) match stagione completa testuale localizzato con token "Season" e "COMPLETE" nella stessa lingua (es. `Season ... COMPLETE`, `Stagione ... COMPLETA`) e stagione uguale a quella richiesta. Tutti gli item che non soddisfano alcuna logica devono essere rimossi.  
+- **REQ-532**: Per media di tipo serie, la pipeline di filtraggio deve mantenere un item quando almeno una delle seguenti logiche e' vera (OR logico): a) match episodio con accoppiata stagione/episodio nelle forme `SnnEmm`, `Snn Emm`, `Snn-Emm`; b) match pack range `SnnExx-Eyy`, `Snn Exx-Eyy`, `Snn-Exx-Eyy` con `nn` uguale alla stagione richiesta e `xx <= episodio_richiesto <= yy`; c) match pack range `SnnExx-yy`, `Snn Exx-yy`, `Snn-Exx-yy` con `nn` uguale alla stagione richiesta e `xx <= episodio_richiesto <= yy`; d) match stagione completa testuale localizzato con formato `Season Snn ... COMPLETE` dove "Season" e "COMPLETE" sono localizzati nella stessa lingua (es. `Season S03 ... COMPLETE`, `Stagione 3 ... COMPLETA`) e stagione uguale a quella richiesta; e) match stagione completa testuale localizzato con formato numerico `Season d ... COMPLETE` dove "Season" e "COMPLETE" sono localizzati nella stessa lingua, con `d` il numero di stagione come intero (es. `Season 3 ... COMPLETE`, `Stagione 3 ... COMPLETA`). Tutti gli item che non soddisfano alcuna logica devono essere rimossi.
   ID originale: `REQ-023`.
-  Comportamento atteso: un episodio singolo (`S03E01`) mantiene sia match episodio singolo sia season-pack compatibili con il range episodio (`S03E01-23`, `S03E01-13`, `S03E01-23`) e match testuali stagione completa localizzati coerenti nella stessa lingua; deve escludere stagioni diverse, range che non includono l'episodio richiesto e stringhe stagione senza indicazione di completezza.  
-  Criteri di accettazione: `filter_out_non_matching()` esegue il parsing RTN per il match episodio classico, verifica pattern regex per i due formati di range episodi e verifica pattern localizzati "Season ... COMPLETE" con controllo coerenza lingua e stagione; l'item viene mantenuto se almeno un controllo ritorna vero.  
+  Comportamento atteso: un episodio singolo (`S03E01`) mantiene sia match episodio singolo sia season-pack compatibili con il range episodio (`S03E01-23`, `S03E01-13`, `S03E01-23`) e match testuali stagione completa localizzati coerenti nella stessa lingua; deve escludere stagioni diverse, range che non includono l'episodio richiesto e stringhe stagione senza indicazione di completezza.
+  Criteri di accettazione: `filter_out_non_matching()` esegue il parsing RTN per il match episodio classico, verifica pattern regex per i due formati di range episodi e verifica pattern localizzati "Season ... COMPLETE" con controllo coerenza lingua e stagione, supportando sia formato `Season Snn` che formato numerico `Season d`; l'item viene mantenuto se almeno un controllo ritorna vero.
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_out_non_matching()`, `_match_complete_season()`, helper regex stagione/range episodio.
 
 - **REQ-552**: Dopo la fase di filtraggio "non matching series torrents", la pipeline deve loggare il nuovo conteggio item rimasti con il messaggio `Item count changed to <n>`.  
@@ -607,11 +607,11 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: nel ramo `media.type == "series"` di `filter_items()`, il codice chiama `filter_out_non_matching(...)`, poi `logger.debug(f"Item count changed to {len(items)}")` e successivamente `logger.debug("Filter results for season: " + media.season + ", spisode: " + media.episode)`.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `items = filter_out_non_matching(...); logger.debug(f"Item count changed to {len(items)}")`.
 
-- **REQ-533**: La pipeline di filtraggio deve rimuovere torrent il cui titolo parsato non matcha alcun titolo media sopra una soglia di similarita 0.5.  
+- **REQ-533**: La pipeline di filtraggio deve rimuovere torrent il cui titolo parsato non matcha alcun titolo media sopra una soglia di similarita 0.5 per i film, mentre per le serie deve verificare almeno una delle seguenti condizioni (OR logico): a) match generico titolo sopra soglia 0.5; b) titolo seguito da stagione con pattern `<titolo>.+Snn` dove `nn` e' la stagione richiesta; c) titolo seguito da stagione localizzata con pattern `<titolo>.+Season Snn` dove "Season" e' localizzato in tutte le lingue supportate e `nn` e' la stagione richiesta; d) titolo seguito da stagione localizzata numerica con pattern `<titolo>.+Season d` dove "Season" e' localizzato in tutte le lingue supportate e `d` e' il numero di stagione come intero.
   ID originale: `REQ-024`.
-  Comportamento atteso: candidati con mismatch titolo sono scartati.  
-  Criteri di accettazione: `remove_non_matching_title()` usa `threshold = float(0.5)` e `title_match(title, item.parsed_data.parsed_title, threshold)`.  
-  Evidenza: `src/debriddo/utils/filter_results.py` / `remove_non_matching_title()`. Estratto: `threshold = float(0.5)`.
+  Comportamento atteso: candidati con mismatch titolo sono scartati; per le serie, il match considera anche la presenza della stagione richiesta nel titolo torrent.
+  Criteri di accettazione: `remove_non_matching_title()` usa `threshold = float(0.5)` e `title_match(title, item.parsed_data.parsed_title, threshold)` per i film; per le serie, implementa logica OR tra match generico e pattern regex specifici per stagione nelle tre forme descritte, usando i dizionari `season_labels` per la localizzazione.
+  Evidenza: `src/debriddo/utils/filter_results.py` / `remove_non_matching_title()`, `_match_title_with_season()`. Estratto: `threshold = float(0.5)`.
 
 - **REQ-534**: Quando `config['sort']` e' impostato, la pipeline di sorting deve rank-are i torrent usando la libreria RTN e poi applicare uno dei seguenti ordinamenti: `quality`, `sizeasc`, `sizedesc`, `qualitythensize`.  
   ID originale: `REQ-025`.
@@ -898,11 +898,17 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: PASS se input invalido (es. config URL assente/non valida) produce output errore su `stderr` e codice `2`, e se eccezioni `requests.RequestException` sono intercettate con ritorno `2`; FAIL altrimenti.  
   Evidenza: `src/api_tester/api_tester.py` / `get_target_from_args()`, `main()`. Estratto: `raise CliError(...)`; `except requests.RequestException ... return 2`; `except CliError ... return 2`.
 
-- **TST-508**: Il sistema deve essere verificabile per `REQ-570` eseguendo `search` con un media valido e verificando che l'output includa la lista completa degli stream con i campi payload completi per item.  
+- **TST-508**: Il sistema deve essere verificabile per `REQ-570` eseguendo `search` con un media valido e verificando che l'output includa la lista completa degli stream con i campi payload completi per item.
   ID originale: `TST-008`.
-  Comportamento atteso: il comando `search` espone ogni campo stream necessario al playback senza truncare il payload.  
-  Criteri di accettazione: PASS se l'output include il conteggio `streams: <n>` e almeno un item stampato come JSON completo con chiavi `url` o `infoHash` quando presenti; FAIL altrimenti.  
+  Comportamento atteso: il comando `search` espone ogni campo stream necessario al playback senza truncare il payload.
+  Criteri di accettazione: PASS se l'output include il conteggio `streams: <n>` e almeno un item stampato come JSON completo con chiavi `url` o `infoHash` quando presenti; FAIL altrimenti.
   Evidenza: `src/api_tester/api_tester.py` / `cmd_search()`. Estratto: `print(f\"streams: {len(streams)}\")`; `print(json.dumps(item, ...))`.
+
+- **TST-533**: Il sistema deve essere verificabile per `REQ-532` e `REQ-533` con unit test che verifica il filtraggio episodi serie usando dataset di test con titoli validi e non validi per un episodio specifico (es. `S03E01`).
+  ID originale: `N/A`.
+  Comportamento atteso: i test verificano che la funzione `filter_out_non_matching()` mantenga solo i torrent che matchano le logiche specificate in `REQ-532` e scartino quelli non conformi; i test verificano che `remove_non_matching_title()` applichi correttamente la logica di match titolo/stagione per le serie.
+  Criteri di accettazione: suite di test parametrizzati con almeno 15 casi di test coprendo: episodi singoli nelle tre forme (`SnnEmm`, `Snn Emm`, `Snn-Emm`), pack range nelle varianti (`SnnExx-Eyy`, `SnnExx-yy`) con stagione corretta/errata e episodio dentro/fuori range, stagioni complete localizzate con/senza indicatore COMPLETE, stagioni diverse da quella richiesta; tutti i test devono passare.
+  Evidenza: `tests/unit/atomic/test_filter_results.py` / `test_filter_out_non_matching_matches_requested_series_logic()`, `test_remove_non_matching_title_for_series()`.
 
 ## 5. Storico revisioni
 <!-- A ogni modifica, aggiornare versione e aggiungere una riga -->
@@ -923,3 +929,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 0.7      | Aggiornata la fase di filtering serie per preservare season-pack completi (`SnnE01-E` e `Season <n>` localizzato) della stagione richiesta. |
 | 2026-02-13 | 0.8      | Refactory filtro serie TV: matching OR tra episodio (`SnnEmm`/varianti), range pack (`SnnExx-Eyy` e `SnnExx-yy`/varianti) e stagione completa localizzata (`Season ... COMPLETE` nella stessa lingua). |
 | 2026-02-13 | 0.9      | Aggiunto requisito di log conteggio item dopo il filtro serie non matching. |
+| 2026-02-13 | 1.0      | Migliorato REQ-532 per supportare match stagione completa con formato numerico (`Season d ... COMPLETE`); esteso REQ-533 per filtraggio titoli serie con pattern stagione (`<titolo>.+Snn`, `<titolo>.+Season Snn`, `<titolo>.+Season d`); aggiunto TST-533 per unit test filtro serie. |
