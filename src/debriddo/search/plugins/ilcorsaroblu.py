@@ -177,6 +177,8 @@ class ilcorsaroblu(BasePlugin):
 
 
 	async def login(self, session=None):
+		if session is None:
+			return False
 		# Esegui il login
 		try:
 			self.logged = None
