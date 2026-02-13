@@ -40,19 +40,15 @@ else
   source ${VENVDIR}/bin/activate
 fi
 
-REPO_ROOT="${SCRIPT_PATH}" \
+OUTPUT_DIR="${SCRIPT_PATH}/pdoc"
+
+mkdir -p "${OUTPUT_DIR}"
+
+PYTHONPYCACHEPREFIX="${OUTPUT_DIR}/__pycache__" \
   PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" \
-  ${VENVDIR}/bin/python3 - <<'PY'
-from os import environ
-from pathlib import Path
+  ${VENVDIR}/bin/python3 -m compileall -q "${SCRIPT_PATH}/src/debriddo"
 
-from usereq.pdoc_utils import generate_pdoc_docs
+PYTHONPATH="${SCRIPT_PATH}/src:${PYTHONPATH}" \
+  ${VENVDIR}/bin/python3 -m pdoc --html --output-dir "${OUTPUT_DIR}" debriddo
 
-repo_root = Path(environ["REPO_ROOT"])
-generate_pdoc_docs(
-    repo_root / "pdoc",
-    modules=("usereq", "usereq.cli", "usereq.pdoc_utils", "usereq.__main__"),
-    all_submodules=True,
-)
-print("pdoc documentation generated in", repo_root / "pdoc")
-PY
+echo "pdoc documentation generated in ${OUTPUT_DIR}"
