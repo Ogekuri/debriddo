@@ -25,7 +25,7 @@
       - input: app
       - output: None
       - calls:
-        - `update_app()`: Self-update check and in-place upgrade routine. [src/debriddo/main.py, 530-580]
+        - `update_app()`: Self-update check and in-place upgrade routine. [src/debriddo/main.py, 546-596]
           - description: Calls GitHub releases API, downloads zip when version differs, extracts and copies files, then deletes update artifacts.
           - input: None
           - output: None
@@ -101,7 +101,7 @@
 - Feature: Stream endpoint orchestration (GET /{config_url}/stream/{stream_type}/{stream_id})
   - Component: src/debriddo/main.py
     - `get_results()`: Orchestrate metadata lookup, search, filtering, and stream formatting. [src/debriddo/main.py, 408-505]
-      - description: Decodes config, fetches metadata (returns 500 on missing metadata), loads cached/search results, filters and converts torrents, updates availability, formats Stremio streams, and returns streams list when debrid is enabled.
+      - description: Decodes config, fetches metadata (returns 500 on missing metadata), loads cached/search results, logs the engine result list with ordinal/raw_title/info_hash after the "Filtering Torrent Search (Engines) results" debug line, filters and converts torrents, updates availability, formats Stremio streams, and returns streams list when debrid is enabled.
       - input: config_url; stream_type; stream_id; request
       - output: stream_list: list, Stremio stream entries; None: None, no response when debrid disabled
       - calls:

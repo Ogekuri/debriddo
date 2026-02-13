@@ -607,6 +607,12 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: nel ramo `media.type == "series"` di `filter_items()`, il codice chiama `filter_out_non_matching(...)`, poi `logger.debug(f"Item count changed to {len(items)}")` e successivamente `logger.debug("Filter results for season: " + media.season + ", spisode: " + media.episode)`.  
   Evidenza: `src/debriddo/utils/filter_results.py` / `filter_items()`. Estratto: `items = filter_out_non_matching(...); logger.debug(f"Item count changed to {len(items)}")`.
 
+- **REQ-573**: In modalita DEBUG, dopo il log `Filtering Torrent Search (Engines) results` e prima del log `Item count before filtering: <n>`, la pipeline deve stampare l'elenco dei risultati engine con indice ordinale, testo usato per il filtering e infohash.  
+  ID originale: `N/A`.  
+  Comportamento atteso: per ogni risultato engine in ordine di lista, il log emette `NN. "<filter_text>" [infohash <info_hash>]` con `NN` a due cifre, `filter_text` uguale a `SearchResult.raw_title` (fallback `SearchResult.title` se mancante) e `info_hash` uguale a `SearchResult.info_hash`.  
+  Criteri di accettazione: in `get_results()` subito dopo `logger.debug("Filtering Torrent Search (Engines) results")`, il codice itera `engine_results` con `enumerate(..., start=1)` e chiama `logger.debug(f"{index:02d}. \"{filter_text}\" [infohash {result.info_hash}]")` prima della chiamata a `filter_items(...)`.  
+  Evidenza: `src/debriddo/main.py` / `get_results()`.  
+
 - **REQ-533**: La pipeline di filtraggio deve rimuovere torrent il cui titolo parsato non matcha alcun titolo media sopra una soglia di similarita 0.5 per i film, mentre per le serie deve verificare almeno una delle seguenti condizioni (OR logico): a) match generico titolo sopra soglia 0.5; b) titolo seguito da stagione con pattern `<titolo>.+Snn` dove `nn` e' la stagione richiesta; c) titolo seguito da stagione localizzata con pattern `<titolo>.+Season Snn` dove "Season" e' localizzato in tutte le lingue supportate e `nn` e' la stagione richiesta; d) titolo seguito da stagione localizzata numerica con pattern `<titolo>.+Season d` dove "Season" e' localizzato in tutte le lingue supportate e `d` e' il numero di stagione come intero.
   ID originale: `REQ-024`.
   Comportamento atteso: candidati con mismatch titolo sono scartati; per le serie, il match considera anche la presenza della stagione richiesta nel titolo torrent.

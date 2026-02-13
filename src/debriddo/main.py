@@ -456,13 +456,13 @@ async def get_results(config_url: str, stream_type: str, stream_id: str, request
         engine_results = await search_service.search(media)
         if engine_results is not None:
             logger.debug("Got " + str(len(engine_results)) + " results from Torrent Search (Engines)")
-            for result in engine_results:
-                if result is not None and result.raw_title is not None:
-                    logger.debug("- " + str(result.raw_title))
-                else:
-                    logger.error(f"Error on result: {result}")        
-
             logger.debug("Filtering Torrent Search (Engines) results")
+            for index, result in enumerate(engine_results, start=1):
+                if result is None:
+                    logger.error(f"Error on result: {result}")
+                    continue
+                filter_text = result.raw_title or result.title
+                logger.debug(f"{index:02d}. \"{filter_text}\" [infohash {result.info_hash}]")
             filtered_engine_search_results = filter_items(engine_results, media, config=config)
             logger.debug("Filtered Torrent Search (Engines) results")
 
