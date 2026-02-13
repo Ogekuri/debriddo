@@ -156,7 +156,7 @@
                   - description: Detects localized `<SeasonLabel> <season>` followed by localized `<CompleteLabel>` in the same language for the requested season.
                   - input: raw_title; numeric_season
                   - output: True: bool, complete season matched; False: bool, no complete season pattern
-        - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 70-123]
+        - `SearchService.search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 71-127]
           - description: Runs engine searches (multi-threaded if enabled), post-processes results, and returns SearchResult list.
           - input: media
           - output: results: list, post-processed SearchResult; None: None, when no results
@@ -279,53 +279,95 @@
 
 - Feature: Torrent search pipeline
   - Component: src/debriddo/search/search_service.py
-    - `search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 70-123]
+    - `search()`: Execute engine searches and post-process results. [src/debriddo/search/search_service.py, 71-127]
       - description: Runs engine searches (multi-threaded if enabled), post-processes results, and returns SearchResult list.
       - input: media
       - output: results: list, post-processed SearchResult; None: None, when no results
       - calls:
-        - `__get_indexers()`: Build SearchIndexer list from config engines. [src/debriddo/search/search_service.py, 307-315]
+        - `__get_indexers()`: Build SearchIndexer list from config engines. [src/debriddo/search/search_service.py, 320-328]
           - description: Converts configured engine list into SearchIndexer instances for execution.
           - input: None
           - output: indexers: dict, engine_name to SearchIndexer
           - calls:
-            - `__get_indexer_from_engines()`: Construct SearchIndexer objects from engine names. [src/debriddo/search/search_service.py, 318-355]
+            - `__get_indexer_from_engines()`: Construct SearchIndexer objects from engine names. [src/debriddo/search/search_service.py, 331-369]
               - description: Instantiates each engine plugin and resolves supported categories for movies/TV.
               - input: engines
               - output: indexer_list: list, SearchIndexer list
               - calls:
-                - `__get_engine()`: Map engine name to plugin implementation. [src/debriddo/search/search_service.py, 126-146]
+                - `__get_engine()`: Map engine name to plugin implementation. [src/debriddo/search/search_service.py, 130-150]
                   - description: Returns plugin class instance based on engine_name.
                   - input: engine_name
                   - output: engine
-        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 149-208]
-          - description: Builds a primary title/year query with optional language tag, executes fallback title search when primary yields no results, and gathers torrent dicts from plugin search.
+        - `__search_movie_indexer()`: Query an indexer for movie torrents. [src/debriddo/search/search_service.py, 204-248]
+          - description: Iterates languages from config (or one null-language cycle), runs all primary `<title> <year> [lang_tag]` searches first, and runs fallback `<title> [lang_tag]` only when every primary query is empty.
           - input: movie; indexer
           - output: results: list, SearchResult list
           - calls:
-            - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 358-384]
-              - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
-              - input: media; indexer; list_of_dicts
-              - output: result_list: list, SearchResult list
-        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 211-304]
-          - description: Executes episode, season-prefixed pack, and season (localized label) searches per language, runs fallback title search only when primaries are empty, and gathers torrent dicts from plugin search.
+            - `__get_requested_languages()`: Resolve requested language loop from config. [src/debriddo/search/search_service.py, 153-157]
+              - description: Returns configured language list when non-empty, otherwise `[None]` to force a single search cycle without language tag.
+              - input: None
+              - output: requested_languages: list, configured language codes or [None]
+            - `__get_title_for_language()`: Select title associated to the current language. [src/debriddo/search/search_service.py, 160-174]
+              - description: Uses media.languages-to-media.titles index mapping when available and falls back to the first title.
+              - input: media; lang
+              - output: title: str, language-aware title
+            - `__get_lang_tag()`: Compute conditional language tag for query composition. [src/debriddo/search/search_service.py, 177-184]
+              - description: Omits tag when language is missing or when indexer language is non-English and equal to requested language; otherwise returns mapping from configured tags.
+              - input: indexer_language; lang
+              - output: lang_tag: str, empty or mapped language token
+            - `__build_query()`: Normalize composed tokens into search query. [src/debriddo/search/search_service.py, 187-189]
+              - description: Joins non-empty tokens and normalizes the resulting string for consistent engine lookup.
+              - input: parts
+              - output: query: str, normalized search query
+            - `__search_torrents()`: Execute engine query and map payload to SearchResult list. [src/debriddo/search/search_service.py, 192-201]
+              - description: Calls plugin search, short-circuits empty responses, and converts valid results with seed filtering.
+              - input: media; indexer; search_string; category
+              - output: torrents: list, SearchResult list; []: list, when query has no valid hits
+              - calls:
+                - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 372-398]
+                  - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
+                  - input: media; indexer; list_of_dicts
+                  - output: result_list: list, SearchResult list
+        - `__search_series_indexer()`: Query an indexer for series torrents. [src/debriddo/search/search_service.py, 251-317]
+          - description: For each config language (or one null cycle), concatenates three primary queries (episode, `SnnE01-E` pack, localized season), then runs fallback title query only if all primaries return no results.
           - input: series; indexer
           - output: results: list, SearchResult list
           - calls:
-            - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 358-384]
-              - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
-              - input: media; indexer; list_of_dicts
-              - output: result_list: list, SearchResult list
-        - `__post_process_result()`: Normalize and enrich SearchResult after search. [src/debriddo/search/search_service.py, 408-434]
+            - `__get_requested_languages()`: Resolve requested language loop from config. [src/debriddo/search/search_service.py, 153-157]
+              - description: Returns configured language list when non-empty, otherwise `[None]` to force a single search cycle without language tag.
+              - input: None
+              - output: requested_languages: list, configured language codes or [None]
+            - `__get_title_for_language()`: Select title associated to the current language. [src/debriddo/search/search_service.py, 160-174]
+              - description: Uses media.languages-to-media.titles index mapping when available and falls back to the first title.
+              - input: media; lang
+              - output: title: str, language-aware title
+            - `__get_lang_tag()`: Compute conditional language tag for query composition. [src/debriddo/search/search_service.py, 177-184]
+              - description: Omits tag when language is missing or when indexer language is non-English and equal to requested language; otherwise returns mapping from configured tags.
+              - input: indexer_language; lang
+              - output: lang_tag: str, empty or mapped language token
+            - `__build_query()`: Normalize composed tokens into search query. [src/debriddo/search/search_service.py, 187-189]
+              - description: Joins non-empty tokens and normalizes the resulting string for consistent engine lookup.
+              - input: parts
+              - output: query: str, normalized search query
+            - `__search_torrents()`: Execute engine query and map payload to SearchResult list. [src/debriddo/search/search_service.py, 192-201]
+              - description: Calls plugin search, short-circuits empty responses, and converts valid results with seed filtering.
+              - input: media; indexer; search_string; category
+              - output: torrents: list, SearchResult list; []: list, when query has no valid hits
+              - calls:
+                - `__get_torrents_from_list_of_dicts()`: Convert plugin dictionaries to SearchResult objects. [src/debriddo/search/search_service.py, 372-398]
+                  - description: Maps torrent dict fields into SearchResult instances while filtering seedless results.
+                  - input: media; indexer; list_of_dicts
+                  - output: result_list: list, SearchResult list
+        - `__post_process_result()`: Normalize and enrich SearchResult after search. [src/debriddo/search/search_service.py, 422-448]
           - description: Ensures magnet availability, parses RTN metadata, detects languages, and extracts info hash.
           - input: indexers; result; media
           - output: result; None: None, when magnet retrieval fails
           - calls:
-            - `__is_magnet_link()`: Detect magnet URLs. [src/debriddo/search/search_service.py, 387-389]
+            - `__is_magnet_link()`: Detect magnet URLs. [src/debriddo/search/search_service.py, 401-403]
               - description: Returns True when link starts with magnet:? prefix.
               - input: link
               - output: True: bool, magnet link; False: bool, non-magnet link
-            - `__extract_info_hash()`: Extract info hash from magnet link. [src/debriddo/search/search_service.py, 392-405]
+            - `__extract_info_hash()`: Extract info hash from magnet link. [src/debriddo/search/search_service.py, 406-419]
               - description: Parses magnet xt parameter and returns hash or raises on invalid link.
               - input: magnet_link
               - output: info_hash

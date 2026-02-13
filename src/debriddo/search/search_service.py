@@ -150,59 +150,95 @@ class SearchService:
             raise ValueError(f"Torrent Search '{engine_name}' not supported")
     
 
-    async def __search_movie_indexer(self, movie, indexer):
-        # get titles and languages
-        languages = movie.languages or []
-        titles = movie.titles or []
-        if not languages:
-            languages = [None]
-            titles = [movie.titles[0] if movie.titles else ""]
+    def __get_requested_languages(self):
+        config_languages = self.__config.get('languages')
+        if isinstance(config_languages, list) and len(config_languages) > 0:
+            return config_languages
+        return [None]
 
+
+    def __get_title_for_language(self, media, lang):
+        titles = media.titles or []
+        if len(titles) == 0:
+            return ""
+
+        if lang is None:
+            return titles[0]
+
+        media_languages = media.languages or []
+        if isinstance(media_languages, list) and lang in media_languages:
+            lang_index = media_languages.index(lang)
+            if lang_index < len(titles):
+                return titles[lang_index]
+
+        return titles[0]
+
+
+    def __get_lang_tag(self, indexer_language, lang):
+        if lang is None:
+            return ""
+
+        if indexer_language != 'en' and indexer_language == lang:
+            return ""
+
+        return self.__language_tags.get(lang, self.__default_lang_tag)
+
+
+    def __build_query(self, *parts):
+        query = " ".join(str(part) for part in parts if str(part).strip() != "")
+        return normalize(query)
+
+
+    async def __search_torrents(self, media, indexer, search_string, category):
+        list_of_dicts = await indexer.engine.search(search_string, category)
+        if list_of_dicts is None or len(list_of_dicts) == 0:
+            return []
+
+        torrents = self.__get_torrents_from_list_of_dicts(media, indexer, list_of_dicts)
+        if torrents is None or type(torrents) is not list or len(torrents) == 0:
+            return []
+
+        return torrents
+
+
+    async def __search_movie_indexer(self, movie, indexer):
         results = []
         start_time = time.time()
         base_title = movie.titles[0] if movie.titles else ""
-        search_string = None
+        search_string = base_title
         category = str(indexer.movie_search_capatabilities)
+        requested_languages = self.__get_requested_languages()
+        primary_results_found = False
 
-        index = 0
-        for lang in languages:
+        for lang in requested_languages:
             try:
-                title = titles[index] if index < len(titles) else base_title
-                include_lang_tag = lang is not None and indexer.language != lang
-                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag) if isinstance(lang, str) else self.__default_lang_tag
+                title = self.__get_title_for_language(movie, lang)
+                lang_tag = self.__get_lang_tag(indexer.language, lang)
+                search_string = self.__build_query(title, movie.year, lang_tag)
 
-                search_string = str(title + ' ' + movie.year)
-                if include_lang_tag:
-                    search_string = str(search_string + ' ' + lang_tag)
-                search_string = normalize(search_string)
-                category = str(indexer.movie_search_capatabilities)
-                list_of_dicts = await indexer.engine.search(search_string, category)
-                if list_of_dicts is not None and len(list_of_dicts) > 0:
-                    torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
-                    if torrents is not None and type(torrents) is list and len(torrents) >0:
-                        results.extend(torrents)
-                elif SEARCHE_FALL_BACK:
-                    # se non ci sono risultati prova una ricerca più grossolana o in inglese (omette la lingua)
-                    search_string = str(title)
-                    if include_lang_tag:
-                        search_string = str(search_string + ' ' + lang_tag)
-                    search_string = normalize(search_string)
-                    category = str(indexer.movie_search_capatabilities)
-                    list_of_dicts = await indexer.engine.search(search_string, category)
-                    if list_of_dicts is not None and len(list_of_dicts) > 0:
-                        torrents = self.__get_torrents_from_list_of_dicts(movie, indexer, list_of_dicts)
-                        if torrents is not None and type(torrents) is list and len(torrents) >0:
-                            results.extend(torrents)
-                
+                torrents = await self.__search_torrents(movie, indexer, search_string, category)
+                if len(torrents) > 0:
+                    results.extend(torrents)
+                    primary_results_found = True
             except Exception:
                 self.logger.exception(
                     f"An exception occured while searching for a movie on Search with indexer {indexer.title} and "
                     f"language {lang}.")
-            
-            index = index + 1
-                
-        if search_string is None:
-            search_string = base_title
+
+        if SEARCHE_FALL_BACK and not primary_results_found:
+            for lang in requested_languages:
+                try:
+                    title = self.__get_title_for_language(movie, lang)
+                    lang_tag = self.__get_lang_tag(indexer.language, lang)
+                    search_string = self.__build_query(title, lang_tag)
+
+                    torrents = await self.__search_torrents(movie, indexer, search_string, category)
+                    if len(torrents) > 0:
+                        results.extend(torrents)
+                except Exception:
+                    self.logger.exception(
+                        f"An exception occured while searching for a movie on Search with indexer {indexer.title} and "
+                        f"language {lang}.")
 
         if len(results) > 0:
             self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")
@@ -213,21 +249,15 @@ class SearchService:
     
 
     async def __search_series_indexer(self, series, indexer):
-        # get titles and languages
-        languages = series.languages or []
-        titles = series.titles or []
-        if not languages:
-            languages = [None]
-            titles = [series.titles[0] if series.titles else ""]
-
         results = []
         start_time = time.time()
         base_title = series.titles[0] if series.titles else ""
-        search_string = None
+        search_string = base_title
         category = str(indexer.tv_search_capatabilities)
+        requested_languages = self.__get_requested_languages()
+        primary_results_found = False
 
-        index = 0
-        for lang in languages:
+        for lang in requested_languages:
             try:
                 # Esempio balordo:
                 # Arcane.S02E01-03.WEBDL 1080p Ita Eng x264-NAHOM
@@ -245,60 +275,39 @@ class SearchService:
                 # perché ci sono i torrent con l'intera serie inclusa
                 # bisogna poi cercare il file corretto
 
-                title = titles[index] if index < len(titles) else base_title
-                include_lang_tag = lang is not None and indexer.language != lang
-                lang_tag = self.__language_tags.get(lang, self.__default_lang_tag) if isinstance(lang, str) else self.__default_lang_tag
-
-                search_strings = []
-                episode_search = str(title + ' ' + series.season + series.episode)
-                if include_lang_tag:
-                    episode_search = str(episode_search + ' ' + lang_tag)
-                search_strings.append(episode_search)
-
-                pack_search = str(title + ' ' + series.season + 'E01-E')
-                if include_lang_tag:
-                    pack_search = str(pack_search + ' ' + lang_tag)
-                search_strings.append(pack_search)
-
+                title = self.__get_title_for_language(series, lang)
+                lang_tag = self.__get_lang_tag(indexer.language, lang)
                 season_label = self.__season_labels.get(lang, "Season") if isinstance(lang, str) else "Season"
                 season_number = int(series.season[1:])
-                season_search = str(title + ' ' + season_label + ' ' + str(season_number))
-                if include_lang_tag:
-                    season_search = str(season_search + ' ' + lang_tag)
-                search_strings.append(season_search)
 
-                primary_results_found = False
-                for candidate in search_strings:
-                    search_string = normalize(candidate)
-                    category = str(indexer.tv_search_capatabilities)
-                    list_of_dicts = await indexer.engine.search(search_string, category)
-                    if list_of_dicts is not None and len(list_of_dicts) > 0:
-                        torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                        if torrents is not None and type(torrents) is list and len(torrents) >0:
-                            results.extend(torrents)
-                            primary_results_found = True
-                if SEARCHE_FALL_BACK and not primary_results_found:
-                    # se non ci sono risultati prova una ricerca più grossolana o in inglese
-                    search_string = str(title)
-                    if include_lang_tag:
-                        search_string = str(search_string + ' ' + lang_tag)
-                    search_string = normalize(search_string)
-                    category = str(indexer.tv_search_capatabilities)
-                    list_of_dicts = await indexer.engine.search(search_string, category)
-                    if list_of_dicts is not None and len(list_of_dicts) > 0:
-                        torrents = self.__get_torrents_from_list_of_dicts(series, indexer, list_of_dicts)
-                        if torrents is not None and type(torrents) is list and len(torrents) >0:
-                            results.extend(torrents)
+                episode_search = self.__build_query(title, series.season + series.episode, lang_tag)
+                pack_search = self.__build_query(title, series.season + 'E01-E', lang_tag)
+                season_search = self.__build_query(title, season_label, season_number, lang_tag)
 
+                for candidate in [episode_search, pack_search, season_search]:
+                    search_string = candidate
+                    torrents = await self.__search_torrents(series, indexer, search_string, category)
+                    if len(torrents) > 0:
+                        results.extend(torrents)
+                        primary_results_found = True
 
             except Exception:
                 self.logger.exception(
                     f"An exception occured while searching for a series on Search with indexer {indexer.title} and language {lang}.")
-            
-            index = index +1
-        
-        if search_string is None:
-            search_string = base_title
+
+        if SEARCHE_FALL_BACK and not primary_results_found:
+            for lang in requested_languages:
+                try:
+                    title = self.__get_title_for_language(series, lang)
+                    lang_tag = self.__get_lang_tag(indexer.language, lang)
+                    search_string = self.__build_query(title, lang_tag)
+
+                    torrents = await self.__search_torrents(series, indexer, search_string, category)
+                    if len(torrents) > 0:
+                        results.extend(torrents)
+                except Exception:
+                    self.logger.exception(
+                        f"An exception occured while searching for a series on Search with indexer {indexer.title} and language {lang}.")
 
         if len(results) > 0:
             self.logger.info(f"Found {len(results)} for '{search_string}' @ {indexer.engine_name}/{category} in {round(time.time() - start_time, 1)} [s]")

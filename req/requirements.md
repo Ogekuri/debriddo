@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "0.9"
+version: "1.1"
 date: "2026-02-13"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 0.9  
+**Versione**: 1.1  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-13
 
@@ -575,16 +575,16 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `MULTI_THREAD` e' impostato da `RUN_IN_MULTI_THREAD`; `SearchService.search()` costruisce una lista `tasks = [loop.run_in_executor(None, run_coroutine_in_thread, ...)]` e attende con `asyncio.gather`.  
   Evidenza: `src/debriddo/constants.py` / `RUN_IN_MULTI_THREAD = True`; `src/debriddo/utils/multi_thread.py` / `run_coroutine_in_thread`; `src/debriddo/search/search_service.py` / `search()` ramo `if MULTI_THREAD:`. Estratto: `tasks = [loop.run_in_executor(None, run_coroutine_in_thread, self.__search_movie_indexer(...)) ...]`.
 
-- **REQ-571**: La pipeline di ricerca deve costruire le stringhe di ricerca per film usando titolo, anno e tag lingua con fallback controllato da `SEARCHE_FALL_BACK`.  
+- **REQ-571**: La pipeline di ricerca deve costruire le stringhe di ricerca per film usando titolo, anno e tag lingua iterando le lingue richieste da `self.__config['languages']` (non da `movie.languages`), con fallback controllato da `SEARCHE_FALL_BACK`.  
   ID originale: `N/A`.
-  Comportamento atteso: per ogni lingua richiesta, la ricerca primaria usa `<title> <year> <lang_tag>` quando la lingua dell'indexer e' diversa dalla lingua richiesta o quando la lingua richiesta non esiste; usa `<title> <year>` quando la lingua dell'indexer coincide con la lingua richiesta. Se `SEARCHE_FALL_BACK` e' true e la ricerca primaria non produce risultati, esegue una seconda ricerca con `<title> <lang_tag>` o `<title>` applicando le stesse regole di lingua.  
-  Criteri di accettazione: `__search_movie_indexer()` costruisce le query usando `movie.titles`, `movie.year`, `__language_tags` e la lingua richiesta corrente, esegue la ricerca primaria e solo quando i risultati sono vuoti esegue la ricerca fallback con query senza anno; i risultati di entrambe le ricerche sono concatenati.  
+  Comportamento atteso: la ricerca primaria deve essere sempre eseguita anche quando `SEARCHE_FALL_BACK` e' false. Se `self.__config['languages']` e' vuoto o mancante, deve essere eseguita una sola ricerca primaria senza `lang_tag` (`<title> <year>`). Se `self.__config['languages']` contiene lingue, per ogni lingua richiesta la query primaria e' `<title> <year> <lang_tag>` salvo il caso in cui la lingua dell'indexer sia diversa da `en` e uguale alla lingua richiesta, dove la query deve essere `<title> <year>` (senza tag). In tutti gli altri casi il tag deve essere ottenuto da `self.__language_tags[lang]` (se presente). Se `SEARCHE_FALL_BACK` e' true e nessuna ricerca primaria produce risultati, deve essere eseguita una ricerca fallback con `<title> <lang_tag>` oppure `<title>` con le stesse regole di composizione del tag.  
+  Criteri di accettazione: `__search_movie_indexer()` legge le lingue da `self.__config['languages']`, non usa `movie.languages` per il ciclo lingue, costruisce `lang_tag` vuoto quando non ci sono lingue richieste o quando `indexer.language != 'en' and indexer.language == lang`, esegue sempre le query primarie `<title> <year>[ <lang_tag>]`, esegue le query fallback `<title>[ <lang_tag>]` solo se `SEARCHE_FALL_BACK` e' true e l'insieme risultati primari e' vuoto, e concatena i risultati in ordine di esecuzione.  
   Evidenza: `src/debriddo/search/search_service.py` / `__search_movie_indexer()`.
 
-- **REQ-572**: La pipeline di ricerca deve eseguire una ricerca primaria multipla per serie TV concatenando i risultati di episodio specifico, pack multi-episodi e stagione specifica, con fallback controllato da `SEARCHE_FALL_BACK`.  
+- **REQ-572**: La pipeline di ricerca deve eseguire una ricerca primaria multipla per serie TV concatenando i risultati di episodio specifico, pack multi-episodi e stagione specifica, iterando le lingue richieste da `self.__config['languages']` (non da `series.languages`), con fallback controllato da `SEARCHE_FALL_BACK`.  
   ID originale: `N/A`.
-  Comportamento atteso: per ogni lingua richiesta, la ricerca primaria include: a) episodio specifico `<title> <season><episode> <lang_tag>` o senza tag se la lingua dell'indexer coincide con la lingua richiesta; b) pack multi-episodi `<title> <season>E01-E <lang_tag>` o senza tag se la lingua dell'indexer coincide con la lingua richiesta; c) stagione specifica `<title> "Season" <season_number> <lang_tag>` con localizzazione di "Season" se disponibile (es. "Stagione" per `it`) e senza tag se la lingua dell'indexer coincide con la lingua richiesta. Se `SEARCHE_FALL_BACK` e' true e nessuna ricerca primaria produce risultati, esegue la ricerca fallback con `<title> <lang_tag>` o `<title>` seguendo le stesse regole di lingua.  
-  Criteri di accettazione: `__search_series_indexer()` genera le tre query primarie includendo il pack con `<season>E01-E`, concatena i risultati e verifica che `SEARCHE_FALL_BACK` si attivi solo quando tutte le ricerche primarie sono vuote, quindi esegue la query di fallback con solo titolo; la stringa "Season" e' localizzata in base alla lingua richiesta quando presente.  
+  Comportamento atteso: la ricerca primaria deve essere sempre eseguita anche quando `SEARCHE_FALL_BACK` e' false. Se `self.__config['languages']` e' vuoto o mancante, deve essere eseguito un solo ciclo primario senza `lang_tag` con tre query concatenate: a) `<title> <season><episode>`, b) `<title> <season>E01-E`, c) `<title> "<SeasonLocalized>" <season_number>` dove `<SeasonLocalized>` usa la localizzazione della lingua corrente quando presente (es. `Stagione` per `it`) altrimenti `Season`. Se `self.__config['languages']` contiene lingue, per ogni lingua richiesta le stesse tre query usano `<lang_tag>` salvo il caso in cui la lingua dell'indexer sia diversa da `en` e uguale alla lingua richiesta, dove il tag deve essere omesso. In tutti gli altri casi il tag deve essere ottenuto da `self.__language_tags[lang]` (se presente). Se `SEARCHE_FALL_BACK` e' true e nessuna query primaria produce risultati, deve essere eseguita una ricerca fallback con `<title> <lang_tag>` oppure `<title>` con le stesse regole di composizione del tag.  
+  Criteri di accettazione: `__search_series_indexer()` legge le lingue da `self.__config['languages']`, non usa `series.languages` per il ciclo lingue, genera per ogni lingua (o una sola volta se lista vuota) le tre query primarie episodio/pack/stagione (`<season>E01-E` incluso), localizza la stringa `Season` in base alla lingua del ciclo, costruisce `lang_tag` vuoto quando non ci sono lingue richieste o quando `indexer.language != 'en' and indexer.language == lang`, concatena i risultati delle tre query primarie, ed esegue fallback `<title>[ <lang_tag>]` solo se `SEARCHE_FALL_BACK` e' true e il totale risultati primari e' zero.  
   Evidenza: `src/debriddo/search/search_service.py` / `__search_series_indexer()`.
 
 ### 3.7 Filtraggio e ordinamento
@@ -936,3 +936,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 0.8      | Refactory filtro serie TV: matching OR tra episodio (`SnnEmm`/varianti), range pack (`SnnExx-Eyy` e `SnnExx-yy`/varianti) e stagione completa localizzata (`Season ... COMPLETE` nella stessa lingua). |
 | 2026-02-13 | 0.9      | Aggiunto requisito di log conteggio item dopo il filtro serie non matching. |
 | 2026-02-13 | 1.0      | Migliorato REQ-532 per supportare match stagione completa con formato numerico (`Season d ... COMPLETE`); esteso REQ-533 per filtraggio titoli serie con pattern stagione (`<titolo>.+Snn`, `<titolo>.+Season Snn`, `<titolo>.+Season d`); aggiunto TST-533 per unit test filtro serie. |
+| 2026-02-13 | 1.1      | Aggiornati REQ-571 e REQ-572: ciclo lingue da `config['languages']`, regole `lang_tag` condizionali su lingua indexer, ricerca primaria sempre attiva e fallback solo su assenza risultati primari. |
