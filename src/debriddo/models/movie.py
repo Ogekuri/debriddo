@@ -11,18 +11,16 @@
 from debriddo.models.media import Media
 
 class Movie(Media):
-    """
-    Rappresenta un film.
-    """
+    """@brief Class `Movie` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
     def __init__(self, id, titles, year, languages):
-        """
-        Inizializza un oggetto Movie.
-
-        Args:
-        id (str): L'identificatore del film.
-        titles (list): Lista dei titoli.
-        year (str|int): L'anno di uscita.
-        languages (list): Lista delle lingue.
-        """
+        """@brief Function `__init__` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param id Runtime parameter.
+@param titles Runtime parameter.
+@param year Runtime parameter.
+@param languages Runtime parameter.
+"""
         super().__init__(id, titles, languages, "movie")
         self.year = year

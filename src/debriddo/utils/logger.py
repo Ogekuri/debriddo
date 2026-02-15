@@ -12,7 +12,9 @@ import os
 import logging
 
 class CustomFormatter(logging.Formatter):
-    """Logging Formatter to add colors and count warning / errors"""
+    """@brief Class `CustomFormatter` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
 
     WHITE = "\033[97m"   
     WHITE_BOLD = "\033[1;97m"   
@@ -58,31 +60,21 @@ class CustomFormatter(logging.Formatter):
     }
 
     def format(self, record):
-        """
-            Formatta il record di log applicando colori e stili.
-    
-            Args:
-                record (logging.LogRecord): Il record di log da formattare.
-    
-            Returns:
-                str: Il messaggio di log formattato.
-            """
+        """@brief Function `format` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param record Runtime parameter.
+"""
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt, "%m-%d %H:%M:%S")
         return formatter.format(record)
 
 
 def setup_logger(name, debug=None):
-    """
-    Configura e restituisce un logger con formatter personalizzato.
-
-    Args:
-    name (str): Il nome del logger.
-    debug (bool, optional): Se True, imposta il livello a DEBUG. Defaults to None.
-
-    Returns:
-    logging.Logger: L'istanza del logger configurata.
-    """
+    """@brief Function `setup_logger` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param name Runtime parameter.
+@param debug Runtime parameter.
+"""
     logger = logging.getLogger(name)
 
     # get environment

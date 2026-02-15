@@ -56,7 +56,12 @@ class PrettyPrint:
 
     def __anySizeToBytes(self, size_string):
         """
-        Convert a string like '1 KB' to '1024' (bytes)
+        @brief Execute `__anySizeToBytes` operational logic.
+        @details Converts a human-readable size token into integer byte units using binary prefixes.
+        @param self Runtime input parameter consumed by `__anySizeToBytes`.
+        @param size_string Runtime input parameter consumed by `__anySizeToBytes`.
+        @return Computed result payload; `-1` when parsing fails.
+        @side_effect No external side effects.
         """
         # separate integer from unit
         try:

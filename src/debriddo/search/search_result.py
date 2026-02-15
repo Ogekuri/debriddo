@@ -16,13 +16,13 @@ from debriddo.utils.logger import setup_logger
 logger = setup_logger(__name__)
 
 class SearchResult:
-    """
-    Rappresenta un risultato di ricerca grezzo dai motori torrent.
-    """
+    """@brief Class `SearchResult` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
     def __init__(self):
-        """
-        Inizializza un oggetto SearchResult vuoto.
-        """
+        """@brief Function `__init__` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
         self.raw_title = None  # Raw title of the torrent
         self.title = None  # Title of the torrent
         self.size = None  # Size of the torrent
@@ -47,12 +47,9 @@ class SearchResult:
         self.parsed_data = None  # Ranked result
 
     def convert_to_torrent_item(self):
-        """
-        Converte questo risultato in un oggetto TorrentItem.
-
-        Returns:
-        TorrentItem: L'oggetto TorrentItem convertito.
-        """
+        """@brief Function `convert_to_torrent_item` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
         # def TorrentItem::__init__(self, 
         # raw_title, 
         # title, 
@@ -87,15 +84,10 @@ class SearchResult:
         )
 
     def from_cached_item(self, cached_item):
-        """
-        Popola il SearchResult da un dizionario di item in cache.
-
-        Args:
-        cached_item (dict): Il dizionario contenente i dati della cache.
-
-        Returns:
-        SearchResult: L'istanza stessa popolata.
-        """
+        """@brief Function `from_cached_item` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param cached_item Runtime parameter.
+"""
         if type(cached_item) is not dict:
             logger.error(cached_item)
         self.type = cached_item['media_type']

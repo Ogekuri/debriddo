@@ -153,12 +153,12 @@ def _match_season_episode_pair(raw_title, numeric_season, numeric_episode):
 
 
 def _match_title_with_season(raw_title, media_title, numeric_season):
-    """
-    Match title followed by season in three forms for series:
-    1. <title>.+Snn (basic season format)
-    2. <title>.+Season Snn (localized season label with Snn)
-    3. <title>.+Season d (localized season label with numeric season)
-    """
+    """@brief Function `_match_title_with_season` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param raw_title Runtime parameter.
+@param media_title Runtime parameter.
+@param numeric_season Runtime parameter.
+"""
     title = str(raw_title or "")
     # Normalize title to handle dots, spaces, underscores as separators
     # Replace each word separator in media_title with flexible separator pattern

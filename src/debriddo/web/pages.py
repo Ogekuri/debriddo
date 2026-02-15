@@ -14,17 +14,12 @@ WEB_DIR = Path(__file__).resolve().parent
 
 
 def get_index(app_name, app_version, app_environment):
-    """
-    Legge e restituisce il contenuto della pagina index.html con i placeholder sostituiti.
-
-    Args:
-    app_name (str): Il nome dell'applicazione.
-    app_version (str): La versione dell'applicazione.
-    app_environment (str): L'ambiente di esecuzione (es. development).
-
-    Returns:
-    str: Il contenuto HTML della pagina index processata.
-    """
+    """@brief Function `get_index` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param app_name Runtime parameter.
+@param app_version Runtime parameter.
+@param app_environment Runtime parameter.
+"""
     with open(WEB_DIR / "index.html", 'r', encoding='utf-8') as file:
         index = file.read()
         index = index.replace( "$APP_NAME", app_name )

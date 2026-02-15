@@ -12,15 +12,10 @@ import ast
 import importlib.metadata
 
 def get_imported_modules_from_file(filepath):
-    """
-    Estrae i moduli importati da un file Python analizzandone l'AST.
-
-    Args:
-    filepath (str): Il percorso del file da analizzare.
-
-    Returns:
-    set: Un set di stringhe contenente i nomi dei moduli top-level importati.
-    """
+    """@brief Function `get_imported_modules_from_file` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param filepath Runtime parameter.
+"""
     imported_modules = set()
     with open(filepath, "r", encoding="utf-8") as f:
         try:
@@ -40,15 +35,10 @@ def get_imported_modules_from_file(filepath):
     return imported_modules
 
 def get_all_imported_modules(root_dir):
-    """
-    Scansiona ricorsivamente una directory per trovare tutti i moduli importati nei file .py.
-
-    Args:
-    root_dir (str): La directory radice da cui iniziare la scansione.
-
-    Returns:
-    set: Un set di tutti i moduli importati trovati.
-    """
+    """@brief Function `get_all_imported_modules` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param root_dir Runtime parameter.
+"""
     all_imports = set()
     for dirpath, dirnames, filenames in os.walk(root_dir):
         # Ignora virtual env
@@ -62,15 +52,10 @@ def get_all_imported_modules(root_dir):
     return all_imports
 
 def get_requirements(requirements_file):
-    """
-    Legge un file requirements.txt e restituisce un set di pacchetti richiesti.
-
-    Args:
-    requirements_file (str): Il percorso del file requirements.txt.
-
-    Returns:
-    set: Un set di nomi di pacchetti (senza versioni).
-    """
+    """@brief Function `get_requirements` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param requirements_file Runtime parameter.
+"""
     packages = set()
     with open(requirements_file, 'r', encoding='utf-8') as f:
         for line in f:

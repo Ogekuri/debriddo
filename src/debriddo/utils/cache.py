@@ -59,16 +59,11 @@ CREATE TABLE IF NOT EXISTS cached_items (
 logger = setup_logger(__name__)
 
 def search_cache(config, media):
-    """
-    Cerca risultati nella cache SQLite per il media specificato.
-
-    Args:
-    config (dict): La configurazione dell'applicazione.
-    media (Media): L'oggetto media da cercare.
-
-    Returns:
-    list: Lista di risultati trovati in cache o None.
-    """
+    """@brief Function `search_cache` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param config Runtime parameter.
+@param media Runtime parameter.
+"""
     if os.path.exists(CACHE_DATABASE_FILE):
         try:
             connection = sqlite3.connect(CACHE_DATABASE_FILE)
@@ -166,16 +161,11 @@ def search_cache(config, media):
 
 
 def cache_results(torrents: List[TorrentItem], media):
-    """
-    Salva i risultati torrent nella cache SQLite.
-
-    Args:
-    torrents (List[TorrentItem]): Lista di item da cachare.
-    media (Media): L'oggetto media associato.
-
-    Returns:
-    None
-    """
+    """@brief Function `cache_results` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param torrents Runtime parameter.
+@param media Runtime parameter.
+"""
 
     if torrents is not None and len(torrents) > 0:
 

@@ -11,20 +11,18 @@
 from debriddo.models.media import Media
 
 class Series(Media):
-    """
-    Rappresenta un episodio di una serie TV.
-    """
+    """@brief Class `Series` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
     def __init__(self, id, titles, season, episode, languages):
-        """
-        Inizializza un oggetto Series.
-
-        Args:
-        id (str): L'identificatore della serie.
-        titles (list): Lista dei titoli.
-        season (str): Identificatore della stagione (es. S01).
-        episode (str): Identificatore dell'episodio (es. E01).
-        languages (list): Lista delle lingue.
-        """
+        """@brief Function `__init__` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param id Runtime parameter.
+@param titles Runtime parameter.
+@param season Runtime parameter.
+@param episode Runtime parameter.
+@param languages Runtime parameter.
+"""
         super().__init__(id, titles, languages, "series")
         self.season = season
         self.episode = episode

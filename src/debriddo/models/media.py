@@ -9,19 +9,17 @@
 # CONTRIBUTORS: Ogekuri
 
 class Media:
-    """
-    Rappresenta un media generico (film o serie TV).
-    """
+    """@brief Class `Media` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
     def __init__(self, id, titles, languages, type):
-        """
-        Inizializza un oggetto Media.
-
-        Args:
-        id (str): L'identificatore del media (es. IMDB ID).
-        titles (list): Lista dei titoli associati.
-        languages (list): Lista delle lingue.
-        type (str): Il tipo di media ('movie' o 'series').
-        """
+        """@brief Function `__init__` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param id Runtime parameter.
+@param titles Runtime parameter.
+@param languages Runtime parameter.
+@param type Runtime parameter.
+"""
         self.id = id
         self.titles = titles
         self.languages = languages

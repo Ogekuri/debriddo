@@ -41,7 +41,10 @@ class limetorrents(BasePlugin):
     
     
     class MyHtmlParser(HTMLParser):
-        """ Sub-class for parsing results """
+        """
+        @brief Class `MyHtmlParser` encapsulates cohesive runtime behavior.
+        @details Specialized HTML parser collecting torrent entries from LimeTorrents search result rows.
+        """
 
         def error(self, message):
             """

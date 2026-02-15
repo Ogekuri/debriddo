@@ -50,16 +50,14 @@ from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 SEARCHE_FALL_BACK = True
 
 class SearchService:
-    """
-    Servizio principale per la ricerca di torrent su diversi indexer.
-    """
+    """@brief Class `SearchService` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
     def __init__(self, config):
-        """
-        Inizializza il servizio di ricerca.
-
-        Args:
-        config (dict): La configurazione dell'applicazione.
-        """
+        """@brief Function `__init__` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param config Runtime parameter.
+"""
         self.__config = config
 
         self.logger = setup_logger(__name__)
@@ -86,15 +84,10 @@ class SearchService:
   
 
     async def search(self, media):
-        """
-        Esegue la ricerca di torrent per il media specificato.
-
-        Args:
-        media (Media): L'oggetto media (Movie o Series) da cercare.
-
-        Returns:
-        list: Una lista di oggetti SearchResult o None se nessun risultato trovato.
-        """
+        """@brief Function `search` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param media Runtime parameter.
+"""
         self.logger.debug("Started Search search for " + media.type + " " + media.titles[0])
 
         indexers = self.__get_indexers()
@@ -154,15 +147,10 @@ class SearchService:
 
 
     def __get_engine(self, engine_name):
-        """
-        Recupera l'istanza del plugin motore specificato.
-
-        Args:
-        engine_name (str): Il nome del motore di ricerca.
-
-        Returns:
-        object: L'istanza del plugin del motore o solleva ValueError.
-        """
+        """@brief Function `__get_engine` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param engine_name Runtime parameter.
+"""
         if engine_name == 'thepiratebay':
             return thepiratebay(self.__config)
         elif engine_name == 'one337x':
@@ -186,12 +174,9 @@ class SearchService:
     
 
     def __get_requested_languages(self):
-        """
-        Recupera la lista delle lingue richieste dalla configurazione.
-
-        Returns:
-        list: Lista di codici lingua o [None].
-        """
+        """@brief Function `__get_requested_languages` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
         config_languages = self.__config.get('languages')
         if isinstance(config_languages, list) and len(config_languages) > 0:
             return config_languages
@@ -199,16 +184,11 @@ class SearchService:
 
 
     def __get_title_for_language(self, media, lang):
-        """
-        Ottiene il titolo del media per la lingua specificata.
-
-        Args:
-        media (Media): L'oggetto media.
-        lang (str): Il codice lingua.
-
-        Returns:
-        str: Il titolo localizzato o il primo titolo disponibile.
-        """
+        """@brief Function `__get_title_for_language` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param media Runtime parameter.
+@param lang Runtime parameter.
+"""
         titles = media.titles or []
         if len(titles) == 0:
             return ""
@@ -226,16 +206,11 @@ class SearchService:
 
 
     def __get_lang_tag(self, indexer_language, lang):
-        """
-        Restituisce il tag lingua appropriato per la ricerca.
-
-        Args:
-        indexer_language (str): La lingua dell'indexer.
-        lang (str): La lingua richiesta.
-
-        Returns:
-        str: Il tag lingua mappato o stringa vuota.
-        """
+        """@brief Function `__get_lang_tag` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param indexer_language Runtime parameter.
+@param lang Runtime parameter.
+"""
         if lang is None:
             return ""
 
@@ -246,29 +221,17 @@ class SearchService:
 
 
     def __build_query(self, *parts):
-        """
-        Costruisce una stringa di query normalizzata concatenando le parti.
-
-        Args:
-        *parts: Componenti della query.
-
-        Returns:
-        str: La query normalizzata.
-        """
+        """@brief Function `__build_query` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         return normalize(query)
 
 
     def __build_query_keep_dash(self, *parts):
-        """
-        Costruisce una query mantenendo i trattini, utile per ricerche specifiche.
-
-        Args:
-        *parts: Componenti della query.
-
-        Returns:
-        str: La query processata e pulita.
-        """
+        """@brief Function `__build_query_keep_dash` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         query = unidecode(query)
         query = re.sub("'s ", ' ', query)
@@ -278,18 +241,13 @@ class SearchService:
 
 
     async def __search_torrents(self, media, indexer, search_string, category):
-        """
-        Esegue la ricerca torrent su un indexer specifico.
-
-        Args:
-        media (Media): L'oggetto media.
-        indexer (SearchIndexer): L'indexer su cui cercare.
-        search_string (str): La stringa di ricerca.
-        category (str): La categoria di ricerca.
-
-        Returns:
-        list: Lista di oggetti SearchResult.
-        """
+        """@brief Function `__search_torrents` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param media Runtime parameter.
+@param indexer Runtime parameter.
+@param search_string Runtime parameter.
+@param category Runtime parameter.
+"""
         list_of_dicts = await indexer.engine.search(search_string, category)
         if list_of_dicts is None or len(list_of_dicts) == 0:
             return []
@@ -309,16 +267,14 @@ class SearchService:
         query_start_time,
         result_count,
     ):
-        """
-        Registra nei log i risultati di una query.
-
-        Args:
-            search_string (str): La stringa cercata.
-            indexer (SearchIndexer): L'indexer utilizzato.
-            category (str): La categoria utilizzata.
-            query_start_time (float): Timestamp di inizio query.
-            result_count (int): Numero di risultati trovati.
-        """
+        """@brief Function `__log_query_result` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param search_string Runtime parameter.
+@param indexer Runtime parameter.
+@param category Runtime parameter.
+@param query_start_time Runtime parameter.
+@param result_count Runtime parameter.
+"""
         elapsed = round(time.time() - query_start_time, 1)
         if result_count > 0:
             self.logger.info(
@@ -333,18 +289,11 @@ class SearchService:
 
 
     async def __search_movie_indexer(self, movie, indexer):
-        """
-        Esegue la ricerca per un film su un indexer specifico.
-
-        Itera sulle lingue richieste e costruisce query appropriate.
-
-        Args:
-        movie (Movie): L'oggetto film.
-        indexer (SearchIndexer): L'indexer su cui cercare.
-
-        Returns:
-        list: Lista di risultati trovati.
-        """
+        """@brief Function `__search_movie_indexer` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param movie Runtime parameter.
+@param indexer Runtime parameter.
+"""
         results = []
         indexer_start_time = time.time()
         base_title = movie.titles[0] if movie.titles else ""
@@ -409,18 +358,11 @@ class SearchService:
     
 
     async def __search_series_indexer(self, series, indexer):
-        """
-        Esegue la ricerca per una serie TV su un indexer specifico.
-
-        Gestisce diverse strategie di ricerca (episodio singolo, pack, stagione).
-
-        Args:
-        series (Series): L'oggetto serie TV.
-        indexer (SearchIndexer): L'indexer su cui cercare.
-
-        Returns:
-        list: Lista di risultati trovati.
-        """
+        """@brief Function `__search_series_indexer` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param series Runtime parameter.
+@param indexer Runtime parameter.
+"""
         results = []
         indexer_start_time = time.time()
         base_title = series.titles[0] if series.titles else ""
@@ -510,12 +452,9 @@ class SearchService:
 
 
     def __get_indexers(self):
-        """
-        Recupera e inizializza tutti gli indexer configurati.
-
-        Returns:
-        dict: Dizionario degli indexer attivi con nome motore come chiave.
-        """
+        """@brief Function `__get_indexers` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+"""
         try:
             search_indexers = self.__get_indexer_from_engines(self.__config['engines'])
             # creiamo un dizionario con title come chiave
@@ -527,15 +466,10 @@ class SearchService:
 
 
     def __get_indexer_from_engines(self, engines):
-        """
-        Istanzia gli oggetti SearchIndexer a partire dalla lista di motori.
-
-        Args:
-        engines (list): Lista dei nomi dei motori da attivare.
-
-        Returns:
-        list: Lista di oggetti SearchIndexer configurati.
-        """
+        """@brief Function `__get_indexer_from_engines` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param engines Runtime parameter.
+"""
         indexer_list = []
         id = 0
         for engine_name in engines:
@@ -576,17 +510,12 @@ class SearchService:
 
 
     def __get_torrents_from_list_of_dicts(self, media, indexer, list_of_dicts):
-        """
-        Converte una lista di dizionari grezzi in oggetti SearchResult.
-
-        Args:
-        media (Media): L'oggetto media.
-        indexer (SearchIndexer): L'indexer di provenienza.
-        list_of_dicts (list): Lista di risultati grezzi dal motore.
-
-        Returns:
-        list: Lista di oggetti SearchResult.
-        """
+        """@brief Function `__get_torrents_from_list_of_dicts` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param media Runtime parameter.
+@param indexer Runtime parameter.
+@param list_of_dicts Runtime parameter.
+"""
         result_list = []
         
         for item in list_of_dicts:
@@ -615,32 +544,19 @@ class SearchService:
 
 
     def __is_magnet_link(self, link):
-        """
-        Verifica se una stringa è un magnet link.
-
-        Args:
-        link (str): Il link da verificare.
-
-        Returns:
-        bool: True se è un magnet link, False altrimenti.
-        """
+        """@brief Function `__is_magnet_link` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param link Runtime parameter.
+"""
         # Check if link inizia con "magnet:?"
         return link.startswith("magnet:?")
 
 
     def __extract_info_hash(self, magnet_link):
-        """
-        Estrae l'info hash da un magnet link.
-
-        Args:
-        magnet_link (str): Il magnet link.
-
-        Returns:
-        str: L'info hash estratto.
-
-        Raises:
-        ValueError: Se il magnet link non è valido.
-        """
+        """@brief Function `__extract_info_hash` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param magnet_link Runtime parameter.
+"""
         # parse
         parsed = urlparse(magnet_link)
         
@@ -657,17 +573,12 @@ class SearchService:
 
 
     async def __post_process_result(self, indexers, result, media):
-        """
-        Post-processa un risultato di ricerca, risolvendo i magnet link se necessario.
-
-        Args:
-        indexers (dict): Dizionario degli indexer disponibili.
-        result (SearchResult): Il risultato da processare.
-        media (Media): L'oggetto media.
-
-        Returns:
-        SearchResult: Il risultato processato o None in caso di fallimento.
-        """
+        """@brief Function `__post_process_result` runtime contract.
+@details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param indexers Runtime parameter.
+@param result Runtime parameter.
+@param media Runtime parameter.
+"""
         if self.__is_magnet_link(result.link):
             result.magnet = result.link
         else:

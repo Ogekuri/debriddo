@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "1.4"
+version: "1.5"
 date: "2026-02-15"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 1.4  
+**Versione**: 1.5  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-15
 
@@ -300,10 +300,6 @@ Queste regole devono essere sempre rispettate:
   │     ├─ constants.py
   │     ├─ main.py
 
-- **DES-534**: Tutti i componenti codice sotto `src/` (moduli, classi, funzioni/metodi, variabili esportate) devono includere documentazione inline in formato Doxygen ottimizzata per parser LLM, in Inglese US, con tag strutturati (`@brief`, `@param`, `@return`, `@throws`, `@complexity`, `@side_effect`) quando applicabili.
-  Comportamento atteso: Ogni entita' documentabile include un blocco documentazione consistente con la semantica implementata e senza contraddizioni con il codice.
-  Criteri di accettazione: Analisi statica/ispezione conferma copertura documentazione 100% su componenti Python sotto `src/`; i blocchi includono tag Doxygen richiesti dal tipo di entita' e descrivono vincoli input, output, side effect e dipendenze.
-  Evidenza: `src/**/*.py` con docstring/commenti Doxygen su moduli, classi, funzioni e variabili esportate.
   │     ├─ models/
   │     │  ├─ media.py
   │     │  ├─ movie.py
@@ -954,3 +950,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 1.2      | Allineati REQ-571/REQ-572: mapping lingua->titolo guidato da `config['languages']` (non `movie/series.languages`), query pack serie `SnnE01-`, e query stagione serie eseguita solo con lingue configurate. |
 | 2026-02-13 | 1.3      | Aggiunto REQ-574 per lo script `pdoc.sh` (compilazione moduli e generazione documentazione pdoc). |
 | 2026-02-15 | 1.4      | Aggiornato requisito documentazione codice a standard Doxygen LLM-native (DES-534) e allineata copertura documentale componenti `src/`. |
+| 2026-02-15 | 1.5      | Rimosso DES-534 e tutti i vincoli SRS sulle modalita' di inserimento commenti/documentazione inline nei sorgenti. |

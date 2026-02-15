@@ -138,10 +138,13 @@ class ilcorsaroblu(BasePlugin):
 
     async def __extract_info_hash(self, html_content, suffix_to_remove=" - il CorSaRo Blu"):
         """
-        Estrae l'info hash da un contenuto HTML.
-        
-        :param html_content: stringa contenente il contenuto HTML
-        :return: lista di info hash trovati (può essere vuota se non ce ne sono)
+        @brief Execute `__extract_info_hash` operational logic.
+        @details Parses ilCorSaRo Blu detail page HTML and extracts tuple `(info_hash, normalized_name)` when both fields are available.
+        @param self Runtime input parameter consumed by `__extract_info_hash`.
+        @param html_content Runtime input parameter consumed by `__extract_info_hash`.
+        @param suffix_to_remove Runtime input parameter consumed by `__extract_info_hash`.
+        @return Computed result payload; `None` when required nodes are missing.
+        @side_effect No external side effects.
         """
         soup = BeautifulSoup(html_content, 'html.parser')
 
@@ -168,12 +171,14 @@ class ilcorsaroblu(BasePlugin):
 
     async def __generate_magnet_link(self, info_hash, name=None, tracker_urls=None):
         """
-        Genera un magnet link dato un info hash, un nome e (opzionalmente) una lista di tracker URLs.
-        
-        :param info_hash: stringa contenente l'info hash (SHA-1) del torrent
-        :param name: stringa contenente il nome descrittivo del torrent (opzionale)
-        :param tracker_urls: lista di URL dei tracker opzionali (default: None)
-        :return: stringa con il magnet link generato
+        @brief Execute `__generate_magnet_link` operational logic.
+        @details Builds a magnet URI from info hash and optional display name plus tracker list.
+        @param self Runtime input parameter consumed by `__generate_magnet_link`.
+        @param info_hash Runtime input parameter consumed by `__generate_magnet_link`.
+        @param name Runtime input parameter consumed by `__generate_magnet_link`.
+        @param tracker_urls Runtime input parameter consumed by `__generate_magnet_link`.
+        @return Computed result payload containing the generated magnet URI.
+        @side_effect No external side effects.
         """
         # Base del magnet link con l'info hash
         base_magnet = f"magnet:?xt=urn:btih:{info_hash}"
