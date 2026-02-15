@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/utils/novaprinter.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -16,13 +22,32 @@
 from debriddo.utils.logger import setup_logger
 
 class PrettyPrint:
+    """
+    @brief Class `PrettyPrint` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self):
         # Inizializza una lista per salvare tutte le stringhe stampate
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.dictionary_list = []
         self.logger = setup_logger(__name__)
 
     def __call__(self, dictionary): # *args, **kwargs):
         # Se serve comunque stampare l'dictionary_list, puoi usare:
+        """
+        @brief Execute `__call__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__call__`.
+        @param dictionary Runtime input parameter consumed by `__call__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if 'link' in dictionary and 'name' in dictionary and 'size' in dictionary and 'seeds' in dictionary and 'leech' in dictionary and 'engine_url' in dictionary and 'desc_link' in dictionary:
             # convert size to bytes
             dictionary['size'] = self.__anySizeToBytes(dictionary['size'])
@@ -59,6 +84,13 @@ class PrettyPrint:
 
     def get(self):
         # Restituisci l'elenco di tutte le stringhe accumulate
+        """
+        @brief Execute `get` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if type(self.dictionary_list) is list and len(self.dictionary_list) > 0:
             return self.dictionary_list
         else:
@@ -66,4 +98,11 @@ class PrettyPrint:
 
     def clear(self):
         # Resetta l'elenco delle stringhe salvate
+        """
+        @brief Execute `clear` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `clear`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.dictionary_list = []

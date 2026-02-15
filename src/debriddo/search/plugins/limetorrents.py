@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/plugins/limetorrents.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Lima66
 # CONTRIBUTORS: Ogekuri, Diego de las Heras (ngosang@hotmail.es)
@@ -18,6 +24,10 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 
 class limetorrents(BasePlugin):
+    """
+    @brief Class `limetorrents` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     url = "https://www.limetorrents.lol"
     name = "LimeTorrents"
     language = "any"
@@ -34,11 +44,27 @@ class limetorrents(BasePlugin):
         """ Sub-class for parsing results """
 
         def error(self, message):
+            """
+                @brief Execute `error` operational logic.
+                @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+                @param self Runtime input parameter consumed by `error`.
+                @param message Runtime input parameter consumed by `error`.
+                @return Computed result payload; `None` when side-effect-only execution path is selected.
+                @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+                """
             pass
 
         A, TD, TR, HREF = ('a', 'td', 'tr', 'href')
 
         def __init__(self, url):
+            """
+            @brief Execute `__init__` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `__init__`.
+            @param url Runtime input parameter consumed by `__init__`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             HTMLParser.__init__(self)
             self.url = url
             self.current_item = {}  # dict for found item
@@ -61,6 +87,15 @@ class limetorrents(BasePlugin):
             }
 
         def handle_starttag(self, tag, attrs):
+            """
+            @brief Execute `handle_starttag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_starttag`.
+            @param tag Runtime input parameter consumed by `handle_starttag`.
+            @param attrs Runtime input parameter consumed by `handle_starttag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             params = dict(attrs)
 
             if params.get('class') == 'table2':
@@ -93,6 +128,14 @@ class limetorrents(BasePlugin):
                     self.current_item["desc_link"] = safe_link
 
         def handle_data(self, data):
+            """
+            @brief Execute `handle_data` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_data`.
+            @param data Runtime input parameter consumed by `handle_data`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if self.column_name:
                 if self.column_name in ["size", "seeds", "leech"]:
                     data = data.replace(',', '')
@@ -108,6 +151,14 @@ class limetorrents(BasePlugin):
                 self.column_name = None
 
         def handle_endtag(self, tag):
+            """
+            @brief Execute `handle_endtag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_endtag`.
+            @param tag Runtime input parameter consumed by `handle_endtag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if tag == 'table':
                 self.inside_table = False
 
@@ -120,6 +171,14 @@ class limetorrents(BasePlugin):
 
 
     async def download_torrent(self, info):
+        """
+        @brief Execute `download_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `download_torrent`.
+        @param info Runtime input parameter consumed by `download_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         # since limetorrents provides torrent links in itorrent (cloudflare protected),
         # we have to fetch the info page and extract the magnet link
@@ -136,6 +195,15 @@ class limetorrents(BasePlugin):
         return None
 
     async def search(self, what, cat='all'):
+        """
+        @brief Execute `search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `search`.
+        @param what Runtime input parameter consumed by `search`.
+        @param cat Runtime input parameter consumed by `search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         # """ Performs search """
         prettyPrinter.clear()

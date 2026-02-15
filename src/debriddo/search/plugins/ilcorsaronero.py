@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/plugins/ilcorsaronero.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: LightDestory (https://github.com/LightDestory)
 # CONTRIBUTORS: Ogekuri
@@ -11,6 +17,10 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 from debriddo.search.plugins.base_plugin import BasePlugin
 
 class ilcorsaronero(BasePlugin):
+    """
+    @brief Class `ilcorsaronero` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     url = 'https://ilcorsaronero.link/'
     name = 'ilCorSaRoNeRo'
     language = "it"
@@ -26,11 +36,31 @@ class ilcorsaronero(BasePlugin):
 
     class HTMLParser:
 
+        """
+        @brief Class `HTMLParser` encapsulates cohesive runtime behavior.
+        @details Generated Doxygen block for class-level contract and extension boundaries.
+        """
         def __init__(self, url):
+            """
+            @brief Execute `__init__` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `__init__`.
+            @param url Runtime input parameter consumed by `__init__`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             self.url = url
             self.noTorrents = False
 
         def feed(self, html):
+            """
+            @brief Execute `feed` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `feed`.
+            @param html Runtime input parameter consumed by `feed`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             self.noTorrents = False
             torrents = self.__findTorrents(html)
             if len(torrents) == 0:
@@ -50,6 +80,14 @@ class ilcorsaronero(BasePlugin):
                 prettyPrinter(data)
 
         def __findTorrents(self, html):
+            """
+            @brief Execute `__findTorrents` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `__findTorrents`.
+            @param html Runtime input parameter consumed by `__findTorrents`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             torrents = []
             # Find all TR nodes with class odd or odd2
             trs = re.findall(r'(<tr>.+?</tr>)', html)
@@ -72,6 +110,14 @@ class ilcorsaronero(BasePlugin):
             return torrents
 
     async def download_torrent(self, info):
+        """
+        @brief Execute `download_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `download_torrent`.
+        @param info Runtime input parameter consumed by `download_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         page = await session.retrieve_url(info)
         if page is not None:
@@ -88,6 +134,15 @@ class ilcorsaronero(BasePlugin):
         return None
 
     async def search(self, what, cat='all'):
+        """
+        @brief Execute `search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `search`.
+        @param what Runtime input parameter consumed by `search`.
+        @param cat Runtime input parameter consumed by `search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         what = quote_plus(what)

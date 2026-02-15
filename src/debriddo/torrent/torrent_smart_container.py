@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/torrent/torrent_smart_container.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -18,18 +24,52 @@ from debriddo.utils.logger import setup_logger
 
 
 class TorrentSmartContainer:
+    """
+    @brief Class `TorrentSmartContainer` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self, torrent_items: List[TorrentItem], media):
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @param torrent_items Runtime input parameter consumed by `__init__`.
+        @param media Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.logger = setup_logger(__name__)
         self.__itemsDict: Dict[str, TorrentItem] = self.__build_items_dict_by_infohash(torrent_items)
         self.__media = media
 
     def get_hashes(self):
+        """
+        @brief Execute `get_hashes` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_hashes`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         return list(self.__itemsDict.keys())
 
     def get_items(self):
+        """
+        @brief Execute `get_items` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_items`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         return list(self.__itemsDict.values())
 
     def get_direct_torrentable(self):
+        """
+        @brief Execute `get_direct_torrentable` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_direct_torrentable`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         direct_torrentable_items = []
         for torrent_item in self.__itemsDict.values():
             if torrent_item.privacy == "public" and torrent_item.file_index is not None:
@@ -37,6 +77,13 @@ class TorrentSmartContainer:
         return direct_torrentable_items
 
     def get_best_matching(self):
+        """
+        @brief Execute `get_best_matching` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_best_matching`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         best_matching = []
         self.logger.debug(f"Amount of items: {len(self.__itemsDict)}")
         for torrent_item in self.__itemsDict.values():
@@ -58,14 +105,38 @@ class TorrentSmartContainer:
         # threading.Thread(target=self.__save_to_cache).start()
         # la versione originale esegue l'upload dei risultati quindi
         # gira in un tread separato, ma per sqllite non serve
+        """
+        @brief Execute `cache_container_items` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `cache_container_items`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.__save_to_cache()
 
 
     def __save_to_cache(self):
+        """
+        @brief Execute `__save_to_cache` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__save_to_cache`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         public_torrents = list(filter(lambda x: x.privacy == "public", self.get_items()))
         cache_results(public_torrents, self.__media)
 
     def update_availability(self, debrid_response, debrid_type, media):
+        """
+        @brief Execute `update_availability` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `update_availability`.
+        @param debrid_response Runtime input parameter consumed by `update_availability`.
+        @param debrid_type Runtime input parameter consumed by `update_availability`.
+        @param media Runtime input parameter consumed by `update_availability`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if debrid_type is RealDebrid:
             self.__update_availability_realdebrid(debrid_response, media)
         elif debrid_type is AllDebrid:
@@ -78,6 +149,15 @@ class TorrentSmartContainer:
             raise NotImplemented
 
     def __update_availability_realdebrid(self, response, media):
+        """
+        @brief Execute `__update_availability_realdebrid` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__update_availability_realdebrid`.
+        @param response Runtime input parameter consumed by `__update_availability_realdebrid`.
+        @param media Runtime input parameter consumed by `__update_availability_realdebrid`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         for info_hash, details in response.items():
             if "rd" not in details:
                 continue
@@ -116,6 +196,15 @@ class TorrentSmartContainer:
             self.__update_file_details(torrent_item, files)
 
     def __update_availability_alldebrid(self, response, media):
+        """
+        @brief Execute `__update_availability_alldebrid` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__update_availability_alldebrid`.
+        @param response Runtime input parameter consumed by `__update_availability_alldebrid`.
+        @param media Runtime input parameter consumed by `__update_availability_alldebrid`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if response["status"] != "success":
             self.logger.error(f"Error while updating availability: {response}")
             return
@@ -133,6 +222,15 @@ class TorrentSmartContainer:
             self.__update_file_details(torrent_item, files)
 
     def __update_availability_torbox(self, response, media):
+        """
+        @brief Execute `__update_availability_torbox` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__update_availability_torbox`.
+        @param response Runtime input parameter consumed by `__update_availability_torbox`.
+        @param media Runtime input parameter consumed by `__update_availability_torbox`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         for torrent_hash, data in response.items():
 
             if not torrent_hash or torrent_hash not in self.__itemsDict:
@@ -152,6 +250,14 @@ class TorrentSmartContainer:
             self.__update_file_details(torrent_item, files)
 
     def __update_availability_premiumize(self, response):
+        """
+        @brief Execute `__update_availability_premiumize` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__update_availability_premiumize`.
+        @param response Runtime input parameter consumed by `__update_availability_premiumize`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if response["status"] != "success":
             self.logger.error(f"Error while updating availability: {response}")
             return
@@ -163,6 +269,15 @@ class TorrentSmartContainer:
 
 
     def __update_file_details(self, torrent_item, files):
+        """
+        @brief Execute `__update_file_details` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__update_file_details`.
+        @param torrent_item Runtime input parameter consumed by `__update_file_details`.
+        @param files Runtime input parameter consumed by `__update_file_details`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if len(files) == 0:
             return
 
@@ -173,6 +288,14 @@ class TorrentSmartContainer:
         torrent_item.size = file["size"]
 
     def __build_items_dict_by_infohash(self, items: List[TorrentItem]):
+        """
+        @brief Execute `__build_items_dict_by_infohash` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__build_items_dict_by_infohash`.
+        @param items Runtime input parameter consumed by `__build_items_dict_by_infohash`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.logger.debug(f"Building items dict by infohash ({len(items)} items)")
         items_dict = dict()
         for item in items:
@@ -185,6 +308,19 @@ class TorrentSmartContainer:
 
     # Simple recursion to traverse the file structure returned by AllDebrid
     def __explore_folders(self, folder, files, file_index, type, season=None, episode=None):
+        """
+        @brief Execute `__explore_folders` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__explore_folders`.
+        @param folder Runtime input parameter consumed by `__explore_folders`.
+        @param files Runtime input parameter consumed by `__explore_folders`.
+        @param file_index Runtime input parameter consumed by `__explore_folders`.
+        @param type Runtime input parameter consumed by `__explore_folders`.
+        @param season Runtime input parameter consumed by `__explore_folders`.
+        @param episode Runtime input parameter consumed by `__explore_folders`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if type == "series":
             for file in folder:
                 if "e" in file or "files" in file:

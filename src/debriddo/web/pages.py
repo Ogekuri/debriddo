@@ -1,8 +1,15 @@
+"""
+@file src/debriddo/web/pages.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
 from pathlib import Path
 
+#: @brief Exported constant `WEB_DIR` used by runtime workflows.
 WEB_DIR = Path(__file__).resolve().parent
 
 
@@ -11,12 +18,12 @@ def get_index(app_name, app_version, app_environment):
     Legge e restituisce il contenuto della pagina index.html con i placeholder sostituiti.
 
     Args:
-        app_name (str): Il nome dell'applicazione.
-        app_version (str): La versione dell'applicazione.
-        app_environment (str): L'ambiente di esecuzione (es. development).
+    app_name (str): Il nome dell'applicazione.
+    app_version (str): La versione dell'applicazione.
+    app_environment (str): L'ambiente di esecuzione (es. development).
 
     Returns:
-        str: Il contenuto HTML della pagina index processata.
+    str: Il contenuto HTML della pagina index processata.
     """
     with open(WEB_DIR / "index.html", 'r', encoding='utf-8') as file:
         index = file.read()

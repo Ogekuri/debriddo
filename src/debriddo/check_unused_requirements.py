@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/check_unused_requirements.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -10,10 +16,10 @@ def get_imported_modules_from_file(filepath):
     Estrae i moduli importati da un file Python analizzandone l'AST.
 
     Args:
-        filepath (str): Il percorso del file da analizzare.
+    filepath (str): Il percorso del file da analizzare.
 
     Returns:
-        set: Un set di stringhe contenente i nomi dei moduli top-level importati.
+    set: Un set di stringhe contenente i nomi dei moduli top-level importati.
     """
     imported_modules = set()
     with open(filepath, "r", encoding="utf-8") as f:
@@ -38,10 +44,10 @@ def get_all_imported_modules(root_dir):
     Scansiona ricorsivamente una directory per trovare tutti i moduli importati nei file .py.
 
     Args:
-        root_dir (str): La directory radice da cui iniziare la scansione.
+    root_dir (str): La directory radice da cui iniziare la scansione.
 
     Returns:
-        set: Un set di tutti i moduli importati trovati.
+    set: Un set di tutti i moduli importati trovati.
     """
     all_imports = set()
     for dirpath, dirnames, filenames in os.walk(root_dir):
@@ -60,10 +66,10 @@ def get_requirements(requirements_file):
     Legge un file requirements.txt e restituisce un set di pacchetti richiesti.
 
     Args:
-        requirements_file (str): Il percorso del file requirements.txt.
+    requirements_file (str): Il percorso del file requirements.txt.
 
     Returns:
-        set: Un set di nomi di pacchetti (senza versioni).
+    set: Un set di nomi di pacchetti (senza versioni).
     """
     packages = set()
     with open(requirements_file, 'r', encoding='utf-8') as f:

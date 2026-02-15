@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/plugins/torrentz.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -12,6 +18,10 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 
 
 class torrentz(BasePlugin):
+    """
+    @brief Class `torrentz` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     url = 'https://torrentz2.nz/'
     api_url = "https://torrentz2.nz/"
     name = 'Torrentz2'
@@ -24,6 +34,14 @@ class torrentz(BasePlugin):
 
 
     def __parseHTML(self, html):
+        """
+        @brief Execute `__parseHTML` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__parseHTML`.
+        @param html Runtime input parameter consumed by `__parseHTML`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         soup = BeautifulSoup(html, 'html.parser')
         results = []
         
@@ -63,20 +81,29 @@ class torrentz(BasePlugin):
             
             # Crea il dizionario per il risultato
             data={
-				'link':			magnet_link,
-				'name':			title,
-				'size':			size,
-				'seeds':		int(seeders),
-				'leech':		int(leechers),
-				'engine_url':	self.url,
-				'desc_link':	urllib.parse.quote(str(link))
-			}
+                'link':			magnet_link,
+                'name':			title,
+                'size':			size,
+                'seeds':		int(seeders),
+                'leech':		int(leechers),
+                'engine_url':	self.url,
+                'desc_link':	urllib.parse.quote(str(link))
+            }
             prettyPrinter(data)
 
         
         return results
 
     async def search(self, what, cat='all'):
+        """
+        @brief Execute `search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `search`.
+        @param what Runtime input parameter consumed by `search`.
+        @param cat Runtime input parameter consumed by `search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         what = quote(what)

@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/search_service.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -40,6 +46,7 @@ from itertools import chain
 from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 # Se non trova risultati prova una ricerca più estesa
+#: @brief Exported constant `SEARCHE_FALL_BACK` used by runtime workflows.
 SEARCHE_FALL_BACK = True
 
 class SearchService:
@@ -51,7 +58,7 @@ class SearchService:
         Inizializza il servizio di ricerca.
 
         Args:
-            config (dict): La configurazione dell'applicazione.
+        config (dict): La configurazione dell'applicazione.
         """
         self.__config = config
 
@@ -83,10 +90,10 @@ class SearchService:
         Esegue la ricerca di torrent per il media specificato.
 
         Args:
-            media (Media): L'oggetto media (Movie o Series) da cercare.
+        media (Media): L'oggetto media (Movie o Series) da cercare.
 
         Returns:
-            list: Una lista di oggetti SearchResult o None se nessun risultato trovato.
+        list: Una lista di oggetti SearchResult o None se nessun risultato trovato.
         """
         self.logger.debug("Started Search search for " + media.type + " " + media.titles[0])
 
@@ -151,10 +158,10 @@ class SearchService:
         Recupera l'istanza del plugin motore specificato.
 
         Args:
-            engine_name (str): Il nome del motore di ricerca.
+        engine_name (str): Il nome del motore di ricerca.
 
         Returns:
-            object: L'istanza del plugin del motore o solleva ValueError.
+        object: L'istanza del plugin del motore o solleva ValueError.
         """
         if engine_name == 'thepiratebay':
             return thepiratebay(self.__config)
@@ -183,7 +190,7 @@ class SearchService:
         Recupera la lista delle lingue richieste dalla configurazione.
 
         Returns:
-            list: Lista di codici lingua o [None].
+        list: Lista di codici lingua o [None].
         """
         config_languages = self.__config.get('languages')
         if isinstance(config_languages, list) and len(config_languages) > 0:
@@ -196,11 +203,11 @@ class SearchService:
         Ottiene il titolo del media per la lingua specificata.
 
         Args:
-            media (Media): L'oggetto media.
-            lang (str): Il codice lingua.
+        media (Media): L'oggetto media.
+        lang (str): Il codice lingua.
 
         Returns:
-            str: Il titolo localizzato o il primo titolo disponibile.
+        str: Il titolo localizzato o il primo titolo disponibile.
         """
         titles = media.titles or []
         if len(titles) == 0:
@@ -223,11 +230,11 @@ class SearchService:
         Restituisce il tag lingua appropriato per la ricerca.
 
         Args:
-            indexer_language (str): La lingua dell'indexer.
-            lang (str): La lingua richiesta.
+        indexer_language (str): La lingua dell'indexer.
+        lang (str): La lingua richiesta.
 
         Returns:
-            str: Il tag lingua mappato o stringa vuota.
+        str: Il tag lingua mappato o stringa vuota.
         """
         if lang is None:
             return ""
@@ -243,10 +250,10 @@ class SearchService:
         Costruisce una stringa di query normalizzata concatenando le parti.
 
         Args:
-            *parts: Componenti della query.
+        *parts: Componenti della query.
 
         Returns:
-            str: La query normalizzata.
+        str: La query normalizzata.
         """
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         return normalize(query)
@@ -257,10 +264,10 @@ class SearchService:
         Costruisce una query mantenendo i trattini, utile per ricerche specifiche.
 
         Args:
-            *parts: Componenti della query.
+        *parts: Componenti della query.
 
         Returns:
-            str: La query processata e pulita.
+        str: La query processata e pulita.
         """
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         query = unidecode(query)
@@ -275,13 +282,13 @@ class SearchService:
         Esegue la ricerca torrent su un indexer specifico.
 
         Args:
-            media (Media): L'oggetto media.
-            indexer (SearchIndexer): L'indexer su cui cercare.
-            search_string (str): La stringa di ricerca.
-            category (str): La categoria di ricerca.
+        media (Media): L'oggetto media.
+        indexer (SearchIndexer): L'indexer su cui cercare.
+        search_string (str): La stringa di ricerca.
+        category (str): La categoria di ricerca.
 
         Returns:
-            list: Lista di oggetti SearchResult.
+        list: Lista di oggetti SearchResult.
         """
         list_of_dicts = await indexer.engine.search(search_string, category)
         if list_of_dicts is None or len(list_of_dicts) == 0:
@@ -332,11 +339,11 @@ class SearchService:
         Itera sulle lingue richieste e costruisce query appropriate.
 
         Args:
-            movie (Movie): L'oggetto film.
-            indexer (SearchIndexer): L'indexer su cui cercare.
+        movie (Movie): L'oggetto film.
+        indexer (SearchIndexer): L'indexer su cui cercare.
 
         Returns:
-            list: Lista di risultati trovati.
+        list: Lista di risultati trovati.
         """
         results = []
         indexer_start_time = time.time()
@@ -408,11 +415,11 @@ class SearchService:
         Gestisce diverse strategie di ricerca (episodio singolo, pack, stagione).
 
         Args:
-            series (Series): L'oggetto serie TV.
-            indexer (SearchIndexer): L'indexer su cui cercare.
+        series (Series): L'oggetto serie TV.
+        indexer (SearchIndexer): L'indexer su cui cercare.
 
         Returns:
-            list: Lista di risultati trovati.
+        list: Lista di risultati trovati.
         """
         results = []
         indexer_start_time = time.time()
@@ -507,7 +514,7 @@ class SearchService:
         Recupera e inizializza tutti gli indexer configurati.
 
         Returns:
-            dict: Dizionario degli indexer attivi con nome motore come chiave.
+        dict: Dizionario degli indexer attivi con nome motore come chiave.
         """
         try:
             search_indexers = self.__get_indexer_from_engines(self.__config['engines'])
@@ -524,10 +531,10 @@ class SearchService:
         Istanzia gli oggetti SearchIndexer a partire dalla lista di motori.
 
         Args:
-            engines (list): Lista dei nomi dei motori da attivare.
+        engines (list): Lista dei nomi dei motori da attivare.
 
         Returns:
-            list: Lista di oggetti SearchIndexer configurati.
+        list: Lista di oggetti SearchIndexer configurati.
         """
         indexer_list = []
         id = 0
@@ -573,12 +580,12 @@ class SearchService:
         Converte una lista di dizionari grezzi in oggetti SearchResult.
 
         Args:
-            media (Media): L'oggetto media.
-            indexer (SearchIndexer): L'indexer di provenienza.
-            list_of_dicts (list): Lista di risultati grezzi dal motore.
+        media (Media): L'oggetto media.
+        indexer (SearchIndexer): L'indexer di provenienza.
+        list_of_dicts (list): Lista di risultati grezzi dal motore.
 
         Returns:
-            list: Lista di oggetti SearchResult.
+        list: Lista di oggetti SearchResult.
         """
         result_list = []
         
@@ -612,10 +619,10 @@ class SearchService:
         Verifica se una stringa è un magnet link.
 
         Args:
-            link (str): Il link da verificare.
+        link (str): Il link da verificare.
 
         Returns:
-            bool: True se è un magnet link, False altrimenti.
+        bool: True se è un magnet link, False altrimenti.
         """
         # Check if link inizia con "magnet:?"
         return link.startswith("magnet:?")
@@ -626,13 +633,13 @@ class SearchService:
         Estrae l'info hash da un magnet link.
 
         Args:
-            magnet_link (str): Il magnet link.
+        magnet_link (str): Il magnet link.
 
         Returns:
-            str: L'info hash estratto.
+        str: L'info hash estratto.
 
         Raises:
-            ValueError: Se il magnet link non è valido.
+        ValueError: Se il magnet link non è valido.
         """
         # parse
         parsed = urlparse(magnet_link)
@@ -654,12 +661,12 @@ class SearchService:
         Post-processa un risultato di ricerca, risolvendo i magnet link se necessario.
 
         Args:
-            indexers (dict): Dizionario degli indexer disponibili.
-            result (SearchResult): Il risultato da processare.
-            media (Media): L'oggetto media.
+        indexers (dict): Dizionario degli indexer disponibili.
+        result (SearchResult): Il risultato da processare.
+        media (Media): L'oggetto media.
 
         Returns:
-            SearchResult: Il risultato processato o None in caso di fallimento.
+        SearchResult: Il risultato processato o None in caso di fallimento.
         """
         if self.__is_magnet_link(result.link):
             result.magnet = result.link

@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/torrent/torrent_item.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -11,8 +17,33 @@ from debriddo.utils.logger import setup_logger
 
 
 class TorrentItem:
+    """
+    @brief Class `TorrentItem` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self, raw_title, title, size, magnet, info_hash, link, seeders, languages, indexer,
                  engine_name, privacy, type=None, parsed_data=None, from_cache=False):
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @param raw_title Runtime input parameter consumed by `__init__`.
+        @param title Runtime input parameter consumed by `__init__`.
+        @param size Runtime input parameter consumed by `__init__`.
+        @param magnet Runtime input parameter consumed by `__init__`.
+        @param info_hash Runtime input parameter consumed by `__init__`.
+        @param link Runtime input parameter consumed by `__init__`.
+        @param seeders Runtime input parameter consumed by `__init__`.
+        @param languages Runtime input parameter consumed by `__init__`.
+        @param indexer Runtime input parameter consumed by `__init__`.
+        @param engine_name Runtime input parameter consumed by `__init__`.
+        @param privacy Runtime input parameter consumed by `__init__`.
+        @param type Runtime input parameter consumed by `__init__`.
+        @param parsed_data Runtime input parameter consumed by `__init__`.
+        @param from_cache Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.logger = setup_logger(__name__)
 
         self.raw_title = raw_title  # Raw title of the torrent
@@ -40,6 +71,14 @@ class TorrentItem:
         self.parsed_data: Any = parsed_data  # Ranked result
 
     def to_debrid_stream_query(self, media: Media) -> dict:
+        """
+        @brief Execute `to_debrid_stream_query` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `to_debrid_stream_query`.
+        @param media Runtime input parameter consumed by `to_debrid_stream_query`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         return {
             "magnet": self.magnet,
             "type": self.type,

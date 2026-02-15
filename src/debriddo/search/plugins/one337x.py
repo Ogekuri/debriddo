@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/plugins/one337x.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: sa3dany, Alyetama, BurningMop, scadams
 # CONTRIBUTORS: Ogekuri
@@ -31,6 +37,10 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 from debriddo.search.plugins.base_plugin import BasePlugin
 
 class one337x(BasePlugin):
+    """
+    @brief Class `one337x` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     url = 'https://1337x.to'
     name = '1337x'
     language = "any"
@@ -47,12 +57,32 @@ class one337x(BasePlugin):
 
     class MyHtmlParser(HTMLParser):
 
+        """
+        @brief Class `MyHtmlParser` encapsulates cohesive runtime behavior.
+        @details Generated Doxygen block for class-level contract and extension boundaries.
+        """
         def error(self, message):
+            """
+            @brief Execute `error` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `error`.
+            @param message Runtime input parameter consumed by `error`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             pass
 
         A, TD, TR, HREF, TBODY, TABLE = ('a', 'td', 'tr', 'href', 'tbody', 'table')
 
         def __init__(self, url):
+            """
+            @brief Execute `__init__` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `__init__`.
+            @param url Runtime input parameter consumed by `__init__`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             HTMLParser.__init__(self)
             self.url = url
             self.row = {}
@@ -68,6 +98,15 @@ class one337x(BasePlugin):
             }
 
         def handle_starttag(self, tag, attrs):
+            """
+            @brief Execute `handle_starttag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_starttag`.
+            @param tag Runtime input parameter consumed by `handle_starttag`.
+            @param attrs Runtime input parameter consumed by `handle_starttag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             params = dict(attrs)
             if 'search-page' in (params.get('class') or ''):
                 self.foundResults = True
@@ -105,6 +144,14 @@ class one337x(BasePlugin):
                     self.row['desc_link'] = link
 
         def handle_data(self, data):
+            """
+            @brief Execute `handle_data` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_data`.
+            @param data Runtime input parameter consumed by `handle_data`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if self.insideRow and self.column:
                 if self.column == 'size':
                     data = data.replace(',', '')
@@ -112,6 +159,14 @@ class one337x(BasePlugin):
                 self.column = None
 
         def handle_endtag(self, tag):
+            """
+            @brief Execute `handle_endtag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_endtag`.
+            @param tag Runtime input parameter consumed by `handle_endtag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if tag == self.TABLE:
                 self.foundTable = False
             if self.insideRow and tag == self.TR:
@@ -123,6 +178,14 @@ class one337x(BasePlugin):
                 self.row = {}
 
     async def download_torrent(self, info):
+        """
+        @brief Execute `download_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `download_torrent`.
+        @param info Runtime input parameter consumed by `download_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         # fix le info dopo
         torrent_page = await session.retrieve_url(info)
@@ -138,6 +201,15 @@ class one337x(BasePlugin):
         return None
 
     async def search(self, what, cat='all'):
+        """
+        @brief Execute `search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `search`.
+        @param what Runtime input parameter consumed by `search`.
+        @param cat Runtime input parameter consumed by `search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         parser = self.MyHtmlParser(self.url)

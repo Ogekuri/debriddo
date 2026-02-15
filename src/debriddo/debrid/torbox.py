@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/debrid/torbox.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -16,7 +22,19 @@ logger = setup_logger(__name__)
 
 
 class TorBox(BaseDebrid):
+    """
+    @brief Class `TorBox` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self, config):
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @param config Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         super().__init__(config)
         self.base_url = "https://api.torbox.app/v1/api/"
         self.headers = {
@@ -24,6 +42,16 @@ class TorBox(BaseDebrid):
         }
 
     async def wait_for_files(self, torrent_hash, timeout=30, interval=5):
+        """
+        @brief Execute `wait_for_files` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `wait_for_files`.
+        @param torrent_hash Runtime input parameter consumed by `wait_for_files`.
+        @param timeout Runtime input parameter consumed by `wait_for_files`.
+        @param interval Runtime input parameter consumed by `wait_for_files`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         start_time = time.time()
         while time.time() - start_time < timeout:
             status = await self.check_magnet_status(torrent_hash)
@@ -40,6 +68,15 @@ class TorBox(BaseDebrid):
         return None
 
     async def add_magnet(self, magnet, ip=None):
+        """
+        @brief Execute `add_magnet` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `add_magnet`.
+        @param magnet Runtime input parameter consumed by `add_magnet`.
+        @param ip Runtime input parameter consumed by `add_magnet`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}torrents/createtorrent"
         data = {
             "magnet": magnet,
@@ -68,6 +105,14 @@ class TorBox(BaseDebrid):
         return None
 
     async def check_magnet_status(self, torrent_hash):
+        """
+        @brief Execute `check_magnet_status` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `check_magnet_status`.
+        @param torrent_hash Runtime input parameter consumed by `check_magnet_status`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}torrents/checkcached?hash={torrent_hash}&format=object&list_files=true"
         response = await self.get_json_response(url)
         if response is not None:
@@ -79,6 +124,15 @@ class TorBox(BaseDebrid):
         return None
 
     async def get_file_download_link(self, torrent_id, file_name):
+        """
+        @brief Execute `get_file_download_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_file_download_link`.
+        @param torrent_id Runtime input parameter consumed by `get_file_download_link`.
+        @param file_name Runtime input parameter consumed by `get_file_download_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}torrents/requestdl?token={self.config['debridKey']}&torrent_id={torrent_id}&file_id={file_name}&zip_link=false&torrent_file=false"
         response = await self.get_json_response(url, method='get')
         if response is not None:
@@ -89,6 +143,15 @@ class TorBox(BaseDebrid):
         return None
 
     async def __add_magnet_or_torrent(self, magnet, torrent_download=None):
+        """
+        @brief Execute `__add_magnet_or_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__add_magnet_or_torrent`.
+        @param magnet Runtime input parameter consumed by `__add_magnet_or_torrent`.
+        @param torrent_download Runtime input parameter consumed by `__add_magnet_or_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         torrent_id = None
         if magnet:
             logger.debug(f"Adding magnet to TorBox")
@@ -99,6 +162,15 @@ class TorBox(BaseDebrid):
         return torrent_id
 
     async def get_stream_link(self, query, ip=None):
+        """
+        @brief Execute `get_stream_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_stream_link`.
+        @param query Runtime input parameter consumed by `get_stream_link`.
+        @param ip Runtime input parameter consumed by `get_stream_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         magnet = query["magnet"]
         stream_type = query["type"]
         season = query.get("season")
@@ -172,6 +244,15 @@ class TorBox(BaseDebrid):
 
     async def get_availability_bulk(self, hashes_or_magnets, ip=None):
 
+        """
+        @brief Execute `get_availability_bulk` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_availability_bulk`.
+        @param hashes_or_magnets Runtime input parameter consumed by `get_availability_bulk`.
+        @param ip Runtime input parameter consumed by `get_availability_bulk`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         available_torrents = {}
 
         for torrent_hash in hashes_or_magnets:

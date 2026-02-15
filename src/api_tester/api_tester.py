@@ -26,12 +26,19 @@ except ImportError as import_error:
     sys.exit(2)
 
 
+#: @brief Exported constant `DEFAULT_CONFIG_ENV` used by runtime workflows.
 DEFAULT_CONFIG_ENV = "DEBRIDDO_CONFIG_URL"
+#: @brief Exported constant `DEFAULT_TIMEOUT` used by runtime workflows.
 DEFAULT_TIMEOUT = 180.0
+#: @brief Exported constant `DEBRIDDO_MODULE_PREFIX` used by runtime workflows.
 DEBRIDDO_MODULE_PREFIX = "debriddo"
 
 
 class CliError(Exception):
+    """
+    @brief Class `CliError` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     pass
 
 
@@ -40,7 +47,7 @@ def ensure_no_debriddo_modules_loaded() -> None:
     Verifica che nessun modulo del package 'debriddo' sia stato caricato.
 
     Raises:
-        CliError: Se vengono rilevati moduli 'debriddo' caricati.
+    CliError: Se vengono rilevati moduli 'debriddo' caricati.
     """
     loaded = sorted(
         name
@@ -55,6 +62,10 @@ def ensure_no_debriddo_modules_loaded() -> None:
 
 @dataclass
 class TargetUrls:
+    """
+    @brief Class `TargetUrls` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     base_url: str
     config_segment: str
     config_url: str
@@ -62,6 +73,10 @@ class TargetUrls:
 
 @dataclass
 class CheckResult:
+    """
+    @brief Class `CheckResult` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     name: str
     ok: bool
     detail: str
@@ -72,13 +87,13 @@ def normalize_config_url(raw_value: str) -> TargetUrls:
     Analizza e normalizza l'URL di configurazione fornito.
 
     Args:
-        raw_value (str): L'URL grezzo passato come input.
+    raw_value (str): L'URL grezzo passato come input.
 
     Returns:
-        TargetUrls: Oggetto contenente URL base, segmento config e URL completo.
+    TargetUrls: Oggetto contenente URL base, segmento config e URL completo.
 
     Raises:
-        CliError: Se l'URL non è valido o manca del segmento di configurazione.
+    CliError: Se l'URL non è valido o manca del segmento di configurazione.
     """
     value = raw_value.strip()
     if not value:
@@ -121,13 +136,13 @@ def get_target_from_args(args: argparse.Namespace) -> TargetUrls:
     Recupera l'URL target dagli argomenti CLI o variabili d'ambiente.
 
     Args:
-        args (argparse.Namespace): Gli argomenti parsati della CLI.
+    args (argparse.Namespace): Gli argomenti parsati della CLI.
 
     Returns:
-        TargetUrls: L'oggetto TargetUrls risolto.
+    TargetUrls: L'oggetto TargetUrls risolto.
 
     Raises:
-        CliError: Se la configurazione è mancante.
+    CliError: Se la configurazione è mancante.
     """
     config_url = args.config_url or os.getenv(args.config_url_env, "")
     if not config_url:
@@ -174,11 +189,11 @@ def make_url(base_url: str, path: str) -> str:
     Costruisce un URL completo combinando base URL e path.
 
     Args:
-        base_url (str): L'URL base.
-        path (str): Il percorso relativo.
+    base_url (str): L'URL base.
+    path (str): Il percorso relativo.
 
     Returns:
-        str: L'URL completo senza doppi slash.
+    str: L'URL completo senza doppi slash.
     """
     return f"{base_url.rstrip('/')}/{path.lstrip('/')}"
 
@@ -188,10 +203,10 @@ def parse_json_body(response: requests.Response) -> Optional[Any]:
     Tenta di parsare il corpo della risposta come JSON.
 
     Args:
-        response (requests.Response): La risposta HTTP.
+    response (requests.Response): La risposta HTTP.
 
     Returns:
-        Optional[Any]: Il JSON parsato o None se il parsing fallisce.
+    Optional[Any]: Il JSON parsato o None se il parsing fallisce.
     """
     try:
         return response.json()
@@ -299,10 +314,10 @@ def cmd_target(args: argparse.Namespace) -> int:
     Stampa le informazioni sul target risolto (comando 'target').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Sempre 0.
+    int: Sempre 0.
     """
     target = get_target_from_args(args)
     print(f"base_url     : {target.base_url}")
@@ -316,10 +331,10 @@ def cmd_root(args: argparse.Namespace) -> int:
     Esegue il test dell'endpoint root '/' (comando 'root').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
     with requests.Session() as session:
@@ -338,10 +353,10 @@ def cmd_configure(args: argparse.Namespace) -> int:
     Esegue il test dell'endpoint '/configure' (comando 'configure').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
     path = f"/{target.config_segment}/configure" if args.with_config else "/configure"
@@ -354,10 +369,10 @@ def cmd_manifest(args: argparse.Namespace) -> int:
     Esegue il test dell'endpoint '/manifest.json' (comando 'manifest').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
     path = f"/{target.config_segment}/manifest.json" if args.with_config else "/manifest.json"
@@ -370,10 +385,10 @@ def cmd_site_webmanifest(args: argparse.Namespace) -> int:
     Esegue il test dell'endpoint '/site.webmanifest' (comando 'site-webmanifest').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
     with requests.Session() as session:
@@ -385,10 +400,10 @@ def cmd_asset(args: argparse.Namespace) -> int:
     Esegue il test degli asset statici (comando 'asset').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
 
@@ -457,10 +472,10 @@ def cmd_stream(args: argparse.Namespace) -> int:
     Esegue il test dell'endpoint '/stream' (comando 'stream').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
     with requests.Session() as session:
@@ -494,10 +509,10 @@ def cmd_search(args: argparse.Namespace) -> int:
     Esegue una ricerca stream stampando il payload completo (comando 'search').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
     with requests.Session() as session:
@@ -534,10 +549,10 @@ def extract_playback_path_from_streams(streams_payload: Dict[str, Any]) -> Optio
     Estrae il path di playback dal payload degli stream.
 
     Args:
-        streams_payload (Dict[str, Any]): Il payload JSON degli stream.
+    streams_payload (Dict[str, Any]): Il payload JSON degli stream.
 
     Returns:
-        Optional[str]: Il path di playback se trovato, altrimenti None.
+    Optional[str]: Il path di playback se trovato, altrimenti None.
     """
     streams = streams_payload.get("streams")
     if not isinstance(streams, list):
@@ -591,10 +606,10 @@ def cmd_playback(args: argparse.Namespace) -> int:
     Esegue il test dell'endpoint '/playback' (comando 'playback').
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 errore).
+    int: Codice di uscita (0 successo, 1 errore).
     """
     target = get_target_from_args(args)
 
@@ -641,10 +656,10 @@ def validate_manifest_payload(payload: Dict[str, Any]) -> Tuple[bool, str]:
     Valida il payload del manifest JSON.
 
     Args:
-        payload (Dict[str, Any]): Il payload JSON.
+    payload (Dict[str, Any]): Il payload JSON.
 
     Returns:
-        Tuple[bool, str]: (Valido, Messaggio di dettaglio).
+    Tuple[bool, str]: (Valido, Messaggio di dettaglio).
     """
     resources = payload.get("resources")
     if not isinstance(resources, list):
@@ -665,10 +680,10 @@ def add_check(results: List[CheckResult], name: str, ok: bool, detail: str) -> N
     Aggiunge un risultato di controllo alla lista.
 
     Args:
-        results (List[CheckResult]): Lista dei risultati.
-        name (str): Nome del controllo.
-        ok (bool): Esito del controllo.
-        detail (str): Dettaglio del controllo.
+    results (List[CheckResult]): Lista dei risultati.
+    name (str): Nome del controllo.
+    ok (bool): Esito del controllo.
+    detail (str): Dettaglio del controllo.
     """
     results.append(CheckResult(name=name, ok=ok, detail=detail))
 
@@ -678,11 +693,11 @@ def run_smoke(args: argparse.Namespace, target: TargetUrls) -> List[CheckResult]
     Esegue una serie di test smoke (controllo salute di base).
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
-        target (TargetUrls): URL target.
+    args (argparse.Namespace): Argomenti CLI.
+    target (TargetUrls): URL target.
 
     Returns:
-        List[CheckResult]: Lista dei risultati dei test.
+    List[CheckResult]: Lista dei risultati dei test.
     """
     results: List[CheckResult] = []
     verify_ssl = not args.insecure
@@ -906,10 +921,10 @@ def cmd_smoke(args: argparse.Namespace) -> int:
     Esegue il comando 'smoke' che lancia una suite di test.
 
     Args:
-        args (argparse.Namespace): Argomenti CLI.
+    args (argparse.Namespace): Argomenti CLI.
 
     Returns:
-        int: Codice di uscita (0 successo, 1 fallimento).
+    int: Codice di uscita (0 successo, 1 fallimento).
     """
     target = get_target_from_args(args)
     results = run_smoke(args, target)
@@ -930,7 +945,7 @@ def build_parser() -> argparse.ArgumentParser:
     Costruisce il parser degli argomenti della riga di comando.
 
     Returns:
-        argparse.ArgumentParser: Il parser configurato.
+    argparse.ArgumentParser: Il parser configurato.
     """
     parser = argparse.ArgumentParser(
         prog="debriddo_api_tester.py",
@@ -1092,7 +1107,7 @@ def main() -> int:
     Punto di ingresso principale dello script.
 
     Returns:
-        int: Codice di uscita da passare a sys.exit().
+    int: Codice di uscita da passare a sys.exit().
     """
     ensure_no_debriddo_modules_loaded()
     parser = build_parser()

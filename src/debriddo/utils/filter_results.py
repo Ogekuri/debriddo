@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/utils/filter_results.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -48,6 +54,14 @@ complete_labels = {
 
 
 def _match_complete_season(raw_title, numeric_season):
+    """
+    @brief Execute `_match_complete_season` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param raw_title Runtime input parameter consumed by `_match_complete_season`.
+    @param numeric_season Runtime input parameter consumed by `_match_complete_season`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     title = str(raw_title or "")
 
     # Localized complete season must use season/complete labels from the same language.
@@ -91,6 +105,15 @@ def _match_complete_season(raw_title, numeric_season):
 
 
 def _match_episode_range_pack(raw_title, numeric_season, numeric_episode):
+    """
+    @brief Execute `_match_episode_range_pack` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param raw_title Runtime input parameter consumed by `_match_episode_range_pack`.
+    @param numeric_season Runtime input parameter consumed by `_match_episode_range_pack`.
+    @param numeric_episode Runtime input parameter consumed by `_match_episode_range_pack`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     title = str(raw_title or "")
     pattern = re.compile(
         r"\bS0?(?P<season>\d{1,2})(?:\s+|-)?E0?(?P<episode_start>\d{1,3})\s*-\s*(?:E0?)?(?P<episode_end>\d{1,3})\b",
@@ -108,6 +131,15 @@ def _match_episode_range_pack(raw_title, numeric_season, numeric_episode):
 
 
 def _match_season_episode_pair(raw_title, numeric_season, numeric_episode):
+    """
+    @brief Execute `_match_season_episode_pair` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param raw_title Runtime input parameter consumed by `_match_season_episode_pair`.
+    @param numeric_season Runtime input parameter consumed by `_match_season_episode_pair`.
+    @param numeric_episode Runtime input parameter consumed by `_match_season_episode_pair`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     title = str(raw_title or "")
     season_episode_match = re.compile(
         r"\bS0?"
@@ -182,6 +214,13 @@ def sort_quality(item):
     #                          float('inf')), item.parsed_data.data.resolution is None
 
     # Controlla la presenza di parsed_data e data
+    """
+    @brief Execute `sort_quality` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param item Runtime input parameter consumed by `sort_quality`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     if not hasattr(item, 'parsed_data') or not hasattr(item.parsed_data, 'data') or not hasattr(item.parsed_data.data, 'resolution'):
         return float('inf'), True   # True = non trovato
 
@@ -198,6 +237,14 @@ def sort_quality(item):
 def items_sort(items, config):
 
     
+    """
+    @brief Execute `items_sort` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param items Runtime input parameter consumed by `items_sort`.
+    @param config Runtime input parameter consumed by `items_sort`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     settings = SettingsModel(
         require=[],
         exclude=config['exclusionKeywords'] + config['exclusion'],
@@ -265,6 +312,15 @@ def items_sort(items, config):
 
 # TODO: not needed anymore because of RTN
 def filter_out_non_matching(items, season, episode):
+    """
+    @brief Execute `filter_out_non_matching` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param items Runtime input parameter consumed by `filter_out_non_matching`.
+    @param season Runtime input parameter consumed by `filter_out_non_matching`.
+    @param episode Runtime input parameter consumed by `filter_out_non_matching`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     filtered_items = []
     for item in items:
         # logger.debug(item.parsed_data)
@@ -293,6 +349,15 @@ def filter_out_non_matching(items, season, episode):
 
 
 def remove_non_matching_title(items, titles, media):
+    """
+    @brief Execute `remove_non_matching_title` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param items Runtime input parameter consumed by `remove_non_matching_title`.
+    @param titles Runtime input parameter consumed by `remove_non_matching_title`.
+    @param media Runtime input parameter consumed by `remove_non_matching_title`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     logger.debug(f"Filtering by title: {titles}")
     # default: threshold: float = 0.85
     threshold = float(0.5)
@@ -339,6 +404,15 @@ def remove_non_matching_title(items, titles, media):
 
 def filter_items(items, media, config):
     # vengono processati nell'ordine in cui sono dichiarati
+    """
+    @brief Execute `filter_items` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param items Runtime input parameter consumed by `filter_items`.
+    @param media Runtime input parameter consumed by `filter_items`.
+    @param config Runtime input parameter consumed by `filter_items`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     filters = {
         "languages": LanguageFilter(config),
         "maxSize": MaxSizeFilter(config, media.type),  # Max size filtering only happens for movies, so it
@@ -382,6 +456,14 @@ def filter_items(items, media, config):
 
 
 def sort_items(items, config):
+    """
+    @brief Execute `sort_items` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param items Runtime input parameter consumed by `sort_items`.
+    @param config Runtime input parameter consumed by `sort_items`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     if config['sort'] is not None:
         return items_sort(items, config)
     else:

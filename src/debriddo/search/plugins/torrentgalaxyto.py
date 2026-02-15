@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/plugins/torrentgalaxyto.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: nindogo (nindogo@gmail.com)
 # CONTRIBUTORS: Ogekuri
@@ -34,9 +40,14 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 from debriddo.search.plugins.base_plugin import BasePlugin
 
 
+#: @brief Exported constant `SITE_URL` used by runtime workflows.
 SITE_URL = "https://torrentgalaxy.to/"
 
 class torrentgalaxy(BasePlugin):
+    """
+    @brief Class `torrentgalaxy` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     url = SITE_URL
     name = "TorrentGalaxy"
     language = "any"
@@ -54,6 +65,10 @@ class torrentgalaxy(BasePlugin):
 
 
     class TorrentGalaxyParser(HTMLParser):
+        """
+        @brief Class `TorrentGalaxyParser` encapsulates cohesive runtime behavior.
+        @details Generated Doxygen block for class-level contract and extension boundaries.
+        """
         DIV, A, SPAN, FONT, SMALL, = 'div', 'a', 'span', 'font', 'small'
         count_div, = -1,
         get_size, get_seeds, get_leechs, get_pub_date0, get_pub_date = False, False, False, False, False
@@ -61,6 +76,15 @@ class torrentgalaxy(BasePlugin):
         url = SITE_URL
 
         def handle_starttag(self, tag, attrs):
+            """
+            @brief Execute `handle_starttag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_starttag`.
+            @param tag Runtime input parameter consumed by `handle_starttag`.
+            @param attrs Runtime input parameter consumed by `handle_starttag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if tag == self.DIV:
                 my_attrs = dict(attrs)
                 # if (my_attrs.get('class') == 'tgxtablerow txlight'):
@@ -103,6 +127,14 @@ class torrentgalaxy(BasePlugin):
                 self.get_pub_date = True
 
         def handle_data(self, data):
+            """
+            @brief Execute `handle_data` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_data`.
+            @param data Runtime input parameter consumed by `handle_data`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if self.get_size is True and self.count_div < 13:
                 self.this_record['size'] = data.strip().replace(',', '')
                 self.get_size = False
@@ -117,12 +149,30 @@ class torrentgalaxy(BasePlugin):
                 self.get_pub_date, self.get_pub_date0 = False, False
 
     async def do_search(self, session, url):
+        """
+        @brief Execute `do_search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `do_search`.
+        @param session Runtime input parameter consumed by `do_search`.
+        @param url Runtime input parameter consumed by `do_search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         webpage = await session.retrieve_url(url)
         if webpage is not None:
             tgParser = self.TorrentGalaxyParser()
             tgParser.feed(webpage)
 
     async def search(self, what, cat='all'):
+        """
+        @brief Execute `search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `search`.
+        @param what Runtime input parameter consumed by `search`.
+        @param cat Runtime input parameter consumed by `search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         query = quote_plus(what)

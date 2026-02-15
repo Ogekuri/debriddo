@@ -181,3 +181,12 @@
       - description: Uses SQLite (`sqlite3`) for cached torrent persistence and lookup through `search_cache()` and `cache_results()`.
     - `common_logic()`: reused control/data utilities [`src/debriddo/utils/string_encoding.py`, `src/debriddo/utils/general.py`, `src/debriddo/utils/filter_results.py`, `src/debriddo/utils/multi_thread.py`, `src/debriddo/debrid/base_debrid.py`]
       - description: Provides shared LZ encode/decode wrappers, magnet/hash and episode matching helpers, ordered filter/sort logic, coroutine thread execution, and polling/HTTP wrappers reused by multiple subsystems.
+
+- Feature: Doxygen metadata coverage for source components
+  - Component: `src/**/*.py`
+    - `module_docstring()`: declare module contract and parser-oriented metadata [`src/**/*.py`]
+      - description: Each Python module exposes top-level Doxygen metadata (`@file`, `@brief`, `@details`) to support static indexing and machine-driven refactoring flows.
+    - `class_docstring()`: declare class responsibility boundary [`src/**/*.py`]
+      - description: Every class definition includes Doxygen class-level contract with extension boundary semantics for inheritance/call-site tracing.
+    - `function_docstring()`: declare callable contract and side effects [`src/**/*.py`]
+      - description: Every function/method includes structured Doxygen tags (`@brief`, `@param`, `@return`, `@side_effect`) describing runtime inputs, output contract, and side-effect surfaces.

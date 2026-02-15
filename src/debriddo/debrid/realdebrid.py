@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/debrid/realdebrid.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -18,25 +24,70 @@ logger = setup_logger(__name__)
 
 
 class RealDebrid(BaseDebrid):
+    """
+    @brief Class `RealDebrid` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self, config):
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @param config Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         super().__init__(config)
         self.base_url = "https://api.real-debrid.com"
         self.headers = {"Authorization": f"Bearer {self.config['debridKey']}"}
 
     async def add_magnet(self, magnet, ip=None):
+        """
+        @brief Execute `add_magnet` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `add_magnet`.
+        @param magnet Runtime input parameter consumed by `add_magnet`.
+        @param ip Runtime input parameter consumed by `add_magnet`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/rest/1.0/torrents/addMagnet"
         data = {"magnet": magnet}
         return await self.get_json_response(url, method='post', headers=self.headers, data=data)
 
     async def add_torrent(self, torrent_file):
+        """
+        @brief Execute `add_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `add_torrent`.
+        @param torrent_file Runtime input parameter consumed by `add_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/rest/1.0/torrents/addTorrent"
         return await self.get_json_response(url, method='put', headers=self.headers, data=torrent_file)
 
     async def delete_torrent(self, id):
+        """
+        @brief Execute `delete_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `delete_torrent`.
+        @param id Runtime input parameter consumed by `delete_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/rest/1.0/torrents/delete/{id}"
         return await self.get_json_response(url, method='delete', headers=self.headers)
 
     async def get_torrent_info(self, torrent_id):
+        """
+        @brief Execute `get_torrent_info` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_torrent_info`.
+        @param torrent_id Runtime input parameter consumed by `get_torrent_info`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         logger.debug(f"Getting torrent info for: {torrent_id}")
         url = f"{self.base_url}/rest/1.0/torrents/info/{torrent_id}"
         torrent_info = await self.get_json_response(url, headers=self.headers)
@@ -48,6 +99,15 @@ class RealDebrid(BaseDebrid):
         return None
 
     async def select_files(self, torrent_id, file_id):
+        """
+        @brief Execute `select_files` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `select_files`.
+        @param torrent_id Runtime input parameter consumed by `select_files`.
+        @param file_id Runtime input parameter consumed by `select_files`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         logger.debug(f"Selecting file(s): {file_id}")
         url = f"{self.base_url}/rest/1.0/torrents/selectFiles/{torrent_id}"
         data = {"files": str(file_id)}
@@ -56,11 +116,27 @@ class RealDebrid(BaseDebrid):
         await self.get_json_response(url, method='post', headers=self.headers, data=data)
 
     async def unrestrict_link(self, link):
+        """
+        @brief Execute `unrestrict_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `unrestrict_link`.
+        @param link Runtime input parameter consumed by `unrestrict_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/rest/1.0/unrestrict/link"
         data = {"link": link}
         return await self.get_json_response(url, method='post', headers=self.headers, data=data)
 
     async def is_already_added(self, magnet):
+        """
+        @brief Execute `is_already_added` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `is_already_added`.
+        @param magnet Runtime input parameter consumed by `is_already_added`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         hash = magnet.split("urn:btih:")[1].split("&")[0].lower()
         url = f"{self.base_url}/rest/1.0/torrents"
         torrents = await self.get_json_response(url, headers=self.headers)
@@ -71,6 +147,16 @@ class RealDebrid(BaseDebrid):
         return False
 
     async def wait_for_link(self, torrent_id, timeout=30, interval=2):
+        """
+        @brief Execute `wait_for_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `wait_for_link`.
+        @param torrent_id Runtime input parameter consumed by `wait_for_link`.
+        @param timeout Runtime input parameter consumed by `wait_for_link`.
+        @param interval Runtime input parameter consumed by `wait_for_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         start_time = time.time()
         while time.time() - start_time < timeout:
             torrent_info = await self.get_torrent_info(torrent_id)
@@ -81,6 +167,15 @@ class RealDebrid(BaseDebrid):
         return None
 
     async def get_availability_bulk(self, hashes_or_magnets, ip=None):
+        """
+        @brief Execute `get_availability_bulk` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_availability_bulk`.
+        @param hashes_or_magnets Runtime input parameter consumed by `get_availability_bulk`.
+        @param ip Runtime input parameter consumed by `get_availability_bulk`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if len(hashes_or_magnets) == 0:
             logger.debug("No hashes to be sent to Real-Debrid.")
             return dict()
@@ -98,6 +193,15 @@ class RealDebrid(BaseDebrid):
         return await self.get_json_response(url, headers=self.headers)
 
     async def get_stream_link(self, query, ip=None):
+        """
+        @brief Execute `get_stream_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_stream_link`.
+        @param query Runtime input parameter consumed by `get_stream_link`.
+        @param ip Runtime input parameter consumed by `get_stream_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         magnet = query['magnet']
         stream_type = query['type']
         file_index = int(query['file_index']) if query['file_index'] is not None else None
@@ -159,6 +263,14 @@ class RealDebrid(BaseDebrid):
         return unrestrict_response['download']
 
     async def __get_cached_torrent_ids(self, info_hash):
+        """
+        @brief Execute `__get_cached_torrent_ids` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__get_cached_torrent_ids`.
+        @param info_hash Runtime input parameter consumed by `__get_cached_torrent_ids`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/rest/1.0/torrents"
         torrents = await self.get_json_response(url, headers=self.headers)
         if torrents is not None:
@@ -172,6 +284,17 @@ class RealDebrid(BaseDebrid):
         return []
 
     async def __get_cached_torrent_info(self, cached_ids, file_index, season, episode):
+        """
+        @brief Execute `__get_cached_torrent_info` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__get_cached_torrent_info`.
+        @param cached_ids Runtime input parameter consumed by `__get_cached_torrent_info`.
+        @param file_index Runtime input parameter consumed by `__get_cached_torrent_info`.
+        @param season Runtime input parameter consumed by `__get_cached_torrent_info`.
+        @param episode Runtime input parameter consumed by `__get_cached_torrent_info`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         cached_torrents = []
         for cached_torrent_id in cached_ids:
             cached_torrent_info = await self.get_torrent_info(cached_torrent_id)
@@ -189,6 +312,17 @@ class RealDebrid(BaseDebrid):
         return max(cached_torrents, key=lambda x: x['progress'])
 
     def __torrent_contains_file(self, torrent_info, file_index, season, episode):
+        """
+        @brief Execute `__torrent_contains_file` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__torrent_contains_file`.
+        @param torrent_info Runtime input parameter consumed by `__torrent_contains_file`.
+        @param file_index Runtime input parameter consumed by `__torrent_contains_file`.
+        @param season Runtime input parameter consumed by `__torrent_contains_file`.
+        @param episode Runtime input parameter consumed by `__torrent_contains_file`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if not torrent_info or "files" not in torrent_info:
             return False
 
@@ -204,6 +338,15 @@ class RealDebrid(BaseDebrid):
         return False
 
     async def __add_magnet_or_torrent(self, magnet, torrent_download=None):
+        """
+        @brief Execute `__add_magnet_or_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__add_magnet_or_torrent`.
+        @param magnet Runtime input parameter consumed by `__add_magnet_or_torrent`.
+        @param torrent_download Runtime input parameter consumed by `__add_magnet_or_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         torrent_id = ""
         if torrent_download is None:
             logger.debug(f"Adding magnet to RealDebrid")
@@ -234,6 +377,17 @@ class RealDebrid(BaseDebrid):
         return await self.get_torrent_info(torrent_id)
 
     async def __prefetch_season_pack(self, magnet, torrent_download, timeout=30, interval=2):
+        """
+        @brief Execute `__prefetch_season_pack` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__prefetch_season_pack`.
+        @param magnet Runtime input parameter consumed by `__prefetch_season_pack`.
+        @param torrent_download Runtime input parameter consumed by `__prefetch_season_pack`.
+        @param timeout Runtime input parameter consumed by `__prefetch_season_pack`.
+        @param interval Runtime input parameter consumed by `__prefetch_season_pack`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         torrent_info = await self.__add_magnet_or_torrent(magnet, torrent_download)
         if not torrent_info:
             return None
@@ -252,6 +406,18 @@ class RealDebrid(BaseDebrid):
         return await self.get_torrent_info(torrent_info["id"])
 
     async def __select_file(self, torrent_info, stream_type, file_index, season, episode):
+        """
+        @brief Execute `__select_file` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__select_file`.
+        @param torrent_info Runtime input parameter consumed by `__select_file`.
+        @param stream_type Runtime input parameter consumed by `__select_file`.
+        @param file_index Runtime input parameter consumed by `__select_file`.
+        @param season Runtime input parameter consumed by `__select_file`.
+        @param episode Runtime input parameter consumed by `__select_file`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         torrent_id = torrent_info["id"]
         if file_index is not None:
             logger.debug(f"Selecting file_index: {file_index}")
@@ -284,6 +450,18 @@ class RealDebrid(BaseDebrid):
             await self.select_files(torrent_id, largest_file_id)
 
     def __find_appropiate_link(self, torrent_info, links, file_index, season, episode):
+        """
+        @brief Execute `__find_appropiate_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__find_appropiate_link`.
+        @param torrent_info Runtime input parameter consumed by `__find_appropiate_link`.
+        @param links Runtime input parameter consumed by `__find_appropiate_link`.
+        @param file_index Runtime input parameter consumed by `__find_appropiate_link`.
+        @param season Runtime input parameter consumed by `__find_appropiate_link`.
+        @param episode Runtime input parameter consumed by `__find_appropiate_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         selected_files = list(filter(lambda file: file["selected"] == 1, torrent_info["files"]))
 
         index = 0

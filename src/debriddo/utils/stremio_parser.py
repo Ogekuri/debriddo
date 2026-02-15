@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/utils/stremio_parser.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -15,6 +21,13 @@ logger = setup_logger(__name__)
 
 # TODO: Languages
 def get_emoji(language):
+    """
+    @brief Execute `get_emoji` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param language Runtime input parameter consumed by `get_emoji`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     emoji_dict = {
         "fr": "🇫🇷",
         "en": "🇬🇧",
@@ -32,12 +45,22 @@ def get_emoji(language):
     return emoji_dict.get(language, "🇬🇧")
 
 
+#: @brief Exported constant `INSTANTLY_AVAILABLE` used by runtime workflows.
 INSTANTLY_AVAILABLE = "[⚡"
+#: @brief Exported constant `DOWNLOAD_REQUIRED` used by runtime workflows.
 DOWNLOAD_REQUIRED = "[⬇️"
+#: @brief Exported constant `DIRECT_TORRENT` used by runtime workflows.
 DIRECT_TORRENT = "[🏴‍☠️"
 
 
 def filter_by_availability(item):
+    """
+    @brief Execute `filter_by_availability` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param item Runtime input parameter consumed by `filter_by_availability`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     if item["name"].startswith(INSTANTLY_AVAILABLE):
         return 0
     else:
@@ -45,6 +68,13 @@ def filter_by_availability(item):
 
 
 def filter_by_direct_torrnet(item):
+    """
+    @brief Execute `filter_by_direct_torrnet` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param item Runtime input parameter consumed by `filter_by_direct_torrnet`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     if item["name"].startswith(DIRECT_TORRENT):
         return 1
     else:
@@ -52,6 +82,18 @@ def filter_by_direct_torrnet(item):
 
 
 def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, playtorrent, results: queue.Queue, media: Media):
+    """
+    @brief Execute `parse_to_debrid_stream` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param torrent_item Runtime input parameter consumed by `parse_to_debrid_stream`.
+    @param config_url Runtime input parameter consumed by `parse_to_debrid_stream`.
+    @param node_url Runtime input parameter consumed by `parse_to_debrid_stream`.
+    @param playtorrent Runtime input parameter consumed by `parse_to_debrid_stream`.
+    @param results Runtime input parameter consumed by `parse_to_debrid_stream`.
+    @param media Runtime input parameter consumed by `parse_to_debrid_stream`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     if torrent_item.availability == True:
         name = f"{INSTANTLY_AVAILABLE}"
     else:
@@ -158,6 +200,17 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
 
 
 def parse_to_stremio_streams(torrent_items: List[TorrentItem], config, config_url, node_url, media):
+    """
+    @brief Execute `parse_to_stremio_streams` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @param torrent_items Runtime input parameter consumed by `parse_to_stremio_streams`.
+    @param config Runtime input parameter consumed by `parse_to_stremio_streams`.
+    @param config_url Runtime input parameter consumed by `parse_to_stremio_streams`.
+    @param node_url Runtime input parameter consumed by `parse_to_stremio_streams`.
+    @param media Runtime input parameter consumed by `parse_to_stremio_streams`.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     stream_list = []
     threads = []
     thread_results_queue = queue.Queue()

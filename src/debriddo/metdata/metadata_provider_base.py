@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/metdata/metadata_provider_base.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -6,12 +12,32 @@ from debriddo.utils.logger import setup_logger
 
 class MetadataProvider:
 
+    """
+    @brief Class `MetadataProvider` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self, config):
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @param config Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.config = config
         self.logger = setup_logger(__name__)
 
 
     def replace_weird_characters(self, string):
+        """
+        @brief Execute `replace_weird_characters` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `replace_weird_characters`.
+        @param string Runtime input parameter consumed by `replace_weird_characters`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         corresp = {
             'ā': 'a', 'ă': 'a', 'ą': 'a', 'ć': 'c', 'č': 'c', 'ç': 'c',
             'ĉ': 'c', 'ċ': 'c', 'ď': 'd', 'đ': 'd', 'è': 'e', 'é': 'e',
@@ -36,4 +62,13 @@ class MetadataProvider:
         return string
 
     async def get_metadata(self, id, type):
+        """
+        @brief Execute `get_metadata` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_metadata`.
+        @param id Runtime input parameter consumed by `get_metadata`.
+        @param type Runtime input parameter consumed by `get_metadata`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         raise NotImplementedError

@@ -1,8 +1,8 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "1.3"
-date: "2026-02-13"
+version: "1.4"
+date: "2026-02-15"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
   paths:
@@ -17,9 +17,9 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 1.3  
+**Versione**: 1.4  
 **Autore**: Auto-generato da analisi del codice sorgente  
-**Data**: 2026-02-13
+**Data**: 2026-02-15
 
 ## Indice
 <!-- TOC -->
@@ -300,10 +300,10 @@ Queste regole devono essere sempre rispettate:
   │     ├─ constants.py
   │     ├─ main.py
 
-- **DES-525**: Tutte le funzioni nel codebase devono includere docstring in formato Google Style in lingua italiana, compatibili con pdoc per la generazione della documentazione.
-  Comportamento atteso: Ogni definizione di funzione (`def`) nel codice sorgente sotto `src/` deve essere immediatamente seguita da una stringa di documentazione tripla (`"""`) che descrive scopo, argomenti (`Args:`) e valori di ritorno (`Returns:`), scritta in italiano.
-  Criteri di accettazione: L'analisi statica o l'ispezione visiva conferma la presenza di docstring su tutte le funzioni pubbliche e private.
-  Evidenza: Controllo a campione su `src/debriddo/main.py` e altri file principali.
+- **DES-534**: Tutti i componenti codice sotto `src/` (moduli, classi, funzioni/metodi, variabili esportate) devono includere documentazione inline in formato Doxygen ottimizzata per parser LLM, in Inglese US, con tag strutturati (`@brief`, `@param`, `@return`, `@throws`, `@complexity`, `@side_effect`) quando applicabili.
+  Comportamento atteso: Ogni entita' documentabile include un blocco documentazione consistente con la semantica implementata e senza contraddizioni con il codice.
+  Criteri di accettazione: Analisi statica/ispezione conferma copertura documentazione 100% su componenti Python sotto `src/`; i blocchi includono tag Doxygen richiesti dal tipo di entita' e descrivono vincoli input, output, side effect e dipendenze.
+  Evidenza: `src/**/*.py` con docstring/commenti Doxygen su moduli, classi, funzioni e variabili esportate.
   │     ├─ models/
   │     │  ├─ media.py
   │     │  ├─ movie.py
@@ -953,3 +953,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 1.1      | Aggiornati REQ-571 e REQ-572: ciclo lingue da `config['languages']`, regole `lang_tag` condizionali su lingua indexer, ricerca primaria sempre attiva e fallback solo su assenza risultati primari. |
 | 2026-02-13 | 1.2      | Allineati REQ-571/REQ-572: mapping lingua->titolo guidato da `config['languages']` (non `movie/series.languages`), query pack serie `SnnE01-`, e query stagione serie eseguita solo con lingue configurate. |
 | 2026-02-13 | 1.3      | Aggiunto REQ-574 per lo script `pdoc.sh` (compilazione moduli e generazione documentazione pdoc). |
+| 2026-02-15 | 1.4      | Aggiornato requisito documentazione codice a standard Doxygen LLM-native (DES-534) e allineata copertura documentale componenti `src/`. |

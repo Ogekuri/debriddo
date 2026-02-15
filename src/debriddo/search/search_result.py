@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/search_result.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -45,7 +51,7 @@ class SearchResult:
         Converte questo risultato in un oggetto TorrentItem.
 
         Returns:
-            TorrentItem: L'oggetto TorrentItem convertito.
+        TorrentItem: L'oggetto TorrentItem convertito.
         """
         # def TorrentItem::__init__(self, 
         # raw_title, 
@@ -85,10 +91,10 @@ class SearchResult:
         Popola il SearchResult da un dizionario di item in cache.
 
         Args:
-            cached_item (dict): Il dizionario contenente i dati della cache.
+        cached_item (dict): Il dizionario contenente i dati della cache.
 
         Returns:
-            SearchResult: L'istanza stessa popolata.
+        SearchResult: L'istanza stessa popolata.
         """
         if type(cached_item) is not dict:
             logger.error(cached_item)

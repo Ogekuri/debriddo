@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/debrid/premiumize.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -14,26 +20,71 @@ logger = setup_logger(__name__)
 
 
 class Premiumize(BaseDebrid):
+    """
+    @brief Class `Premiumize` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     def __init__(self, config):
+        """
+        @brief Execute `__init__` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `__init__`.
+        @param config Runtime input parameter consumed by `__init__`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         super().__init__(config)
         self.base_url = "https://www.premiumize.me/api"
 
     async def add_magnet(self, magnet, ip=None):
+        """
+        @brief Execute `add_magnet` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `add_magnet`.
+        @param magnet Runtime input parameter consumed by `add_magnet`.
+        @param ip Runtime input parameter consumed by `add_magnet`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/transfer/create?apikey={self.config['debridKey']}"
         form = {'src': magnet}
         return await self.get_json_response(url, method='post', data=form)
 
     # Doesn't work for the time being. Premiumize does not support torrent file torrents
     async def add_torrent(self, torrent_file):
+        """
+        @brief Execute `add_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `add_torrent`.
+        @param torrent_file Runtime input parameter consumed by `add_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/transfer/create?apikey={self.config['debridKey']}"
         form = {'file': torrent_file}
         return await self.get_json_response(url, method='post', data=form)
 
     async def list_transfers(self):
+        """
+        @brief Execute `list_transfers` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `list_transfers`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/transfer/list?apikey={self.config['debridKey']}"
         return await self.get_json_response(url)
 
     async def get_folder_or_file_details(self, item_id, is_folder=True):
+        """
+        @brief Execute `get_folder_or_file_details` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_folder_or_file_details`.
+        @param item_id Runtime input parameter consumed by `get_folder_or_file_details`.
+        @param is_folder Runtime input parameter consumed by `get_folder_or_file_details`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         if is_folder:
             logger.debug(f"Getting folder details with id: {item_id}")
             url = f"{self.base_url}/folder/list?id={item_id}&apikey={self.config['debridKey']}"
@@ -43,15 +94,41 @@ class Premiumize(BaseDebrid):
         return await self.get_json_response(url)
 
     async def get_availability(self, hash):
+        """
+        @brief Execute `get_availability` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_availability`.
+        @param hash Runtime input parameter consumed by `get_availability`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/cache/check?apikey={self.config['debridKey']}&items[]={hash}"
         return await self.get_json_response(url)
 
     async def get_availability_bulk(self, hashes_or_magnets, ip=None):
+        """
+        @brief Execute `get_availability_bulk` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_availability_bulk`.
+        @param hashes_or_magnets Runtime input parameter consumed by `get_availability_bulk`.
+        @param ip Runtime input parameter consumed by `get_availability_bulk`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         url = f"{self.base_url}/cache/check?apikey={self.config['debridKey']}&items[]=" + "&items[]=".join(
             hashes_or_magnets)
         return await self.get_json_response(url)
 
     async def get_stream_link(self, query, ip=None):
+        """
+        @brief Execute `get_stream_link` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_stream_link`.
+        @param query Runtime input parameter consumed by `get_stream_link`.
+        @param ip Runtime input parameter consumed by `get_stream_link`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         magnet = query['magnet']
         logger.debug(f"Received query for magnet: {magnet}")
         info_hash = get_info_hash_from_magnet(magnet)
@@ -67,6 +144,12 @@ class Premiumize(BaseDebrid):
         logger.debug(f"Transfer created with ID: {transfer_id}")
 
         async def is_ready():
+            """
+            @brief Execute `is_ready` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             availability = await self.get_availability(info_hash)
             if not isinstance(availability, dict):
                 return False

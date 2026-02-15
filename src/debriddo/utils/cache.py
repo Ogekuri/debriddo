@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/utils/cache.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -10,8 +16,10 @@ from debriddo.utils.logger import setup_logger
 from datetime import datetime
 from debriddo.utils.string_encoding import normalize
 
+#: @brief Exported constant `TABLE_NAME` used by runtime workflows.
 TABLE_NAME = "cached_items"
 
+#: @brief Exported constant `TABLE_SCHEMA` used by runtime workflows.
 TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS cached_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,11 +63,11 @@ def search_cache(config, media):
     Cerca risultati nella cache SQLite per il media specificato.
 
     Args:
-        config (dict): La configurazione dell'applicazione.
-        media (Media): L'oggetto media da cercare.
+    config (dict): La configurazione dell'applicazione.
+    media (Media): L'oggetto media da cercare.
 
     Returns:
-        list: Lista di risultati trovati in cache o None.
+    list: Lista di risultati trovati in cache o None.
     """
     if os.path.exists(CACHE_DATABASE_FILE):
         try:
@@ -162,11 +170,11 @@ def cache_results(torrents: List[TorrentItem], media):
     Salva i risultati torrent nella cache SQLite.
 
     Args:
-        torrents (List[TorrentItem]): Lista di item da cachare.
-        media (Media): L'oggetto media associato.
+    torrents (List[TorrentItem]): Lista di item da cachare.
+    media (Media): L'oggetto media associato.
 
     Returns:
-        None
+    None
     """
 
     if torrents is not None and len(torrents) > 0:

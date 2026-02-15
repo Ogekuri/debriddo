@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/search/plugins/torrentproject.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: mauricci
 # CONTRIBUTORS: Ogekuri
@@ -13,6 +19,10 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 
 
 class torrentproject(BasePlugin):
+    """
+    @brief Class `torrentproject` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     url = 'https://torrentproject.cc'
     name = 'TorrentProject'
     language = "any"
@@ -21,7 +31,19 @@ class torrentproject(BasePlugin):
 
     class MyHTMLParser(HTMLParser):
 
+        """
+        @brief Class `MyHTMLParser` encapsulates cohesive runtime behavior.
+        @details Generated Doxygen block for class-level contract and extension boundaries.
+        """
         def __init__(self, url):
+            """
+            @brief Execute `__init__` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `__init__`.
+            @param url Runtime input parameter consumed by `__init__`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             HTMLParser.__init__(self)
             self.url = url
             self.insideResults = False
@@ -41,6 +63,13 @@ class torrentproject(BasePlugin):
             self.singleResData = self.get_single_data()
 
         def get_single_data(self):
+            """
+            @brief Execute `get_single_data` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `get_single_data`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             return {
                 'name': '-1',
                 'seeds': '-1',
@@ -53,6 +82,15 @@ class torrentproject(BasePlugin):
             }
 
         def handle_starttag(self, tag, attrs):
+            """
+            @brief Execute `handle_starttag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_starttag`.
+            @param tag Runtime input parameter consumed by `handle_starttag`.
+            @param attrs Runtime input parameter consumed by `handle_starttag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             attributes = dict(attrs)
             if tag == 'div' and 'nav' in (attributes.get('id') or ''):
                 self.pageComplete = True
@@ -69,6 +107,14 @@ class torrentproject(BasePlugin):
                     self.singleResData['desc_link'] = self.url + attributes['href']
 
         def handle_endtag(self, tag):
+            """
+            @brief Execute `handle_endtag` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_endtag`.
+            @param tag Runtime input parameter consumed by `handle_endtag`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if not self.pageComplete:
                 if tag == 'div':
                     self.insideDataDiv = False
@@ -96,6 +142,14 @@ class torrentproject(BasePlugin):
                         self.singleResData = self.get_single_data()
 
         def handle_data(self, data):
+            """
+            @brief Execute `handle_data` operational logic.
+            @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+            @param self Runtime input parameter consumed by `handle_data`.
+            @param data Runtime input parameter consumed by `handle_data`.
+            @return Computed result payload; `None` when side-effect-only execution path is selected.
+            @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+            """
             if self.insideDataDiv:
                 for key, val in self.infoMap.items():
                     if self.spanCount == val:
@@ -107,6 +161,15 @@ class torrentproject(BasePlugin):
                                 self.singleResData[curr_key] += data.strip()
 
     async def search(self, what, cat='all'):
+        """
+        @brief Execute `search` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `search`.
+        @param what Runtime input parameter consumed by `search`.
+        @param cat Runtime input parameter consumed by `search`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         prettyPrinter.clear()
         # curr_cat = self.supported_categories[cat]
@@ -130,6 +193,14 @@ class torrentproject(BasePlugin):
         return prettyPrinter.get()
 
     async def download_torrent(self, info):
+        """
+        @brief Execute `download_torrent` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `download_torrent`.
+        @param info Runtime input parameter consumed by `download_torrent`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         session = AsyncThreadSafeSession()  # Usa il client asincrono
         """ Downloader """
         html = await session.retrieve_url(info)

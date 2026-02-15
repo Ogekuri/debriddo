@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/models/media.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -11,10 +17,10 @@ class Media:
         Inizializza un oggetto Media.
 
         Args:
-            id (str): L'identificatore del media (es. IMDB ID).
-            titles (list): Lista dei titoli associati.
-            languages (list): Lista delle lingue.
-            type (str): Il tipo di media ('movie' o 'series').
+        id (str): L'identificatore del media (es. IMDB ID).
+        titles (list): Lista dei titoli associati.
+        languages (list): Lista delle lingue.
+        type (str): Il tipo di media ('movie' o 'series').
         """
         self.id = id
         self.titles = titles

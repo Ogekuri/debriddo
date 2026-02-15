@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/test_sviluppo_plugins.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
@@ -7,6 +13,7 @@ from pathlib import Path
 import sys
 import asyncio
 
+#: @brief Exported constant `SRC_DIR` used by runtime workflows.
 SRC_DIR = Path(__file__).resolve().parents[1]
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
@@ -14,6 +21,12 @@ if str(SRC_DIR) not in sys.path:
 from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
 async def main():
+    """
+    @brief Execute `main` operational logic.
+    @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+    @return Computed result payload; `None` when side-effect-only execution path is selected.
+    @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+    """
     session = AsyncThreadSafeSession()
 
 

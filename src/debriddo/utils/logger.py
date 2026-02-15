@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/utils/logger.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -44,23 +50,23 @@ class CustomFormatter(logging.Formatter):
     space_critical = ' '
 
     FORMATS = {
-        logging.INFO:     GREEN    + level + RESET + space_info     + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
-        logging.DEBUG:    BLUE     + level + RESET + space_debug    + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
-        logging.WARNING:  YELLOW   + level + RESET + space_warning  + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
-        logging.ERROR:    RED      + level + RESET + space_error    + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
-        logging.CRITICAL: RED_BOLD + level + RESET + space_critical + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET
+    logging.INFO:     GREEN    + level + RESET + space_info     + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+    logging.DEBUG:    BLUE     + level + RESET + space_debug    + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+    logging.WARNING:  YELLOW   + level + RESET + space_warning  + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+    logging.ERROR:    RED      + level + RESET + space_error    + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET,
+    logging.CRITICAL: RED_BOLD + level + RESET + space_critical + WHITE + message + RESET + ' ' + CYAN + filename + RESET + ' ' + GREY + time + RESET + ' ' + MAGENTA + process + RESET
     }
 
     def format(self, record):
         """
-        Formatta il record di log applicando colori e stili.
-
-        Args:
-            record (logging.LogRecord): Il record di log da formattare.
-
-        Returns:
-            str: Il messaggio di log formattato.
-        """
+            Formatta il record di log applicando colori e stili.
+    
+            Args:
+                record (logging.LogRecord): Il record di log da formattare.
+    
+            Returns:
+                str: Il messaggio di log formattato.
+            """
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt, "%m-%d %H:%M:%S")
         return formatter.format(record)
@@ -71,11 +77,11 @@ def setup_logger(name, debug=None):
     Configura e restituisce un logger con formatter personalizzato.
 
     Args:
-        name (str): Il nome del logger.
-        debug (bool, optional): Se True, imposta il livello a DEBUG. Defaults to None.
+    name (str): Il nome del logger.
+    debug (bool, optional): Se True, imposta il livello a DEBUG. Defaults to None.
 
     Returns:
-        logging.Logger: L'istanza del logger configurata.
+    logging.Logger: L'istanza del logger configurata.
     """
     logger = logging.getLogger(name)
 

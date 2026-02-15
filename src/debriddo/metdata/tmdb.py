@@ -1,3 +1,9 @@
+"""
+@file src/debriddo/metdata/tmdb.py
+@brief Module-level runtime logic and reusable symbols.
+@details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
+"""
+
 # VERSION: 0.0.35
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
@@ -11,7 +17,20 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 
 class TMDB(MetadataProvider):
 
+    """
+    @brief Class `TMDB` encapsulates cohesive runtime behavior.
+    @details Generated Doxygen block for class-level contract and extension boundaries.
+    """
     async def get_metadata(self, id, type):
+        """
+        @brief Execute `get_metadata` operational logic.
+        @details Generated Doxygen block describing callable contract for LLM-native static reasoning.
+        @param self Runtime input parameter consumed by `get_metadata`.
+        @param id Runtime input parameter consumed by `get_metadata`.
+        @param type Runtime input parameter consumed by `get_metadata`.
+        @return Computed result payload; `None` when side-effect-only execution path is selected.
+        @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
+        """
         self.logger.debug("Getting metadata for " + type + " with id " + id)
 
         full_id = id.split(":")
