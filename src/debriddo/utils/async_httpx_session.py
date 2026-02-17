@@ -55,6 +55,8 @@ class AsyncThreadSafeSession:
     async def close(self):
         """@brief Function `close` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         await self._client.aclose()
         self.closed = True
@@ -62,6 +64,8 @@ class AsyncThreadSafeSession:
     async def __aenter__(self):
         """@brief Function `__aenter__` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         return self
 
@@ -77,6 +81,8 @@ class AsyncThreadSafeSession:
     def __del__(self):
         """@brief Function `__del__` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         if not self.closed:
             # Logga un avviso, senza tentare di chiudere la sessione

@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 """
-CLI autonoma per testare le API HTTP esposte da Debriddo.
-
-La configurazione può arrivare da:
-- parametro CLI `--config-url`
-- variabile d'ambiente (default: `DEBRIDDO_CONFIG_URL`)
-
-Il parametro CLI ha priorità sulla variabile d'ambiente.
+@file src/api_tester/api_tester.py
+@brief Espone una CLI autonoma per validare endpoint HTTP Debriddo.
+@details Implementa comandi `target/root/configure/manifest/site-webmanifest/asset/stream/search/playback/smoke`
+con risoluzione target via CLI/env, chiamate HTTP `requests`, validazione payload e codici uscita deterministici.
 """
 
 from __future__ import annotations

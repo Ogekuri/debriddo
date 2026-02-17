@@ -176,6 +176,8 @@ class SearchService:
     def __get_requested_languages(self):
         """@brief Function `__get_requested_languages` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         config_languages = self.__config.get('languages')
         if isinstance(config_languages, list) and len(config_languages) > 0:
@@ -223,6 +225,9 @@ class SearchService:
     def __build_query(self, *parts):
         """@brief Function `__build_query` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@param parts Runtime parameter.
+@return Runtime return value.
 """
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         return normalize(query)
@@ -231,6 +236,9 @@ class SearchService:
     def __build_query_keep_dash(self, *parts):
         """@brief Function `__build_query_keep_dash` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@param parts Runtime parameter.
+@return Runtime return value.
 """
         query = " ".join(str(part) for part in parts if str(part).strip() != "")
         query = unidecode(query)
@@ -454,6 +462,8 @@ class SearchService:
     def __get_indexers(self):
         """@brief Function `__get_indexers` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         try:
             search_indexers = self.__get_indexer_from_engines(self.__config['engines'])

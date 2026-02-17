@@ -33,6 +33,8 @@ class TorrentService:
     def __init__(self):
         """@brief Function `__init__` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         self.logger = setup_logger(__name__)
 

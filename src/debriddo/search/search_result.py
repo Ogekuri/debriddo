@@ -22,6 +22,8 @@ class SearchResult:
     def __init__(self):
         """@brief Function `__init__` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         self.raw_title = None  # Raw title of the torrent
         self.title = None  # Title of the torrent
@@ -49,6 +51,8 @@ class SearchResult:
     def convert_to_torrent_item(self):
         """@brief Function `convert_to_torrent_item` runtime contract.
 @details LLM-oriented operational contract for static analyzers and refactoring agents.
+@param self Runtime parameter.
+@return Runtime return value.
 """
         # def TorrentItem::__init__(self, 
         # raw_title, 

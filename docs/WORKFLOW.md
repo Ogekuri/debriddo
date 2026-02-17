@@ -190,5 +190,5 @@
       - description: Every class definition includes Doxygen class-level contract with extension boundary semantics for inheritance/call-site tracing.
     - `function_docstring()`: declare callable contract and side effects [`src/**/*.py`]
       - description: Every function/method includes structured Doxygen tags (`@brief`, `@param`, `@return`, `@side_effect`) describing runtime inputs, output contract, and side-effect surfaces.
-    - `doxygen_contract_refresh()`: normalize missing Doxygen tags on legacy docstrings [`src/api_tester/api_tester.py`, `src/debriddo/main.py`, `src/debriddo/**/*.py`]
-      - description: Injects `@brief`-first docstring contracts for previously non-structured callable/class documentation blocks while preserving executable control flow and external behavior.
+    - `doxygen_contract_refresh()`: normalize missing Doxygen tags on legacy docstrings [`src/api_tester/api_tester.py`, `src/debriddo/search/search_service.py`, `src/debriddo/search/search_result.py`, `src/debriddo/torrent/torrent_service.py`, `src/debriddo/utils/async_httpx_session.py`]
+      - description: Injects/normalizes `@file/@brief/@details/@param/@return` contract tags across touched modules to guarantee parser-stable metadata coverage without mutating runtime control flow.

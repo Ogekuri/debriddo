@@ -1,8 +1,8 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "1.5"
-date: "2026-02-15"
+version: "1.6"
+date: "2026-02-17"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
   paths:
@@ -17,9 +17,9 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 1.5  
+**Versione**: 1.6  
 **Autore**: Auto-generato da analisi del codice sorgente  
-**Data**: 2026-02-15
+**Data**: 2026-02-17
 
 ## Indice
 <!-- TOC -->
@@ -45,7 +45,6 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
     - [3.11 Playback (redirect Debrid)](#311-playback-redirect-debrid)
     - [3.12 Servizi Debrid (implementazioni)](#312-servizi-debrid-implementazioni)
     - [3.13 Script API tester](#313-script-api-tester)
-    - [3.14 Script generazione documentazione pdoc](#314-script-generazione-documentazione-pdoc)
   - [4. Requisiti di test](#4-requisiti-di-test)
   - [5. Storico revisioni](#5-storico-revisioni)
 <!-- TOC -->
@@ -855,14 +854,6 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `cmd_search()` usa `request_stream()` e `build_stream_path()` come `cmd_stream()`; il comando richiede `--stream-type` e `--stream-id`, supporta `--append-json`, e stampa ogni item `streams` serializzato per intero con indice.  
   Evidenza: `src/api_tester/api_tester.py` / `cmd_search()`, `build_parser()`. Estratto: `parser_search = subparsers.add_parser("search", ...)`; `for index, item in enumerate(streams): print(json.dumps(item, ...))`.
 
-### 3.14 Script generazione documentazione pdoc
-
-- **REQ-574**: Lo script `pdoc.sh` deve compilare i moduli Python sotto `src/debriddo` e generare la documentazione HTML con pdoc nella directory `pdoc/`, assicurando che `PYTHONPATH` includa `src/` e che l'output sia creato/aggiornato.  
-  ID originale: `N/A`.
-  Comportamento atteso: l'esecuzione di `pdoc.sh` produce file HTML aggiornati in `pdoc/` dopo una compilazione dei moduli sorgente.  
-  Criteri di accettazione: `pdoc.sh` invoca `python -m compileall` sui moduli `src/debriddo` e poi esegue `python -m pdoc --html --output-dir "$SCRIPT_PATH/pdoc" debriddo` con `PYTHONPATH="$SCRIPT_PATH/src:$PYTHONPATH"`; la directory `pdoc/` viene creata se assente.  
-  Evidenza: `pdoc.sh` / invocazioni `compileall`, `pdoc` e `mkdir -p`. Estratto: `python -m compileall "$SCRIPT_PATH/src/debriddo"`; `python -m pdoc --html --output-dir "$SCRIPT_PATH/pdoc" debriddo`.
-
 ## 4. Requisiti di test
 <!-- Requisiti di test legati a requisiti funzionali/non-funzionali o contesti di verifica -->
 
@@ -948,6 +939,7 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-13 | 1.0      | Migliorato REQ-532 per supportare match stagione completa con formato numerico (`Season d ... COMPLETE`); esteso REQ-533 per filtraggio titoli serie con pattern stagione (`<titolo>.+Snn`, `<titolo>.+Season Snn`, `<titolo>.+Season d`); aggiunto TST-533 per unit test filtro serie. |
 | 2026-02-13 | 1.1      | Aggiornati REQ-571 e REQ-572: ciclo lingue da `config['languages']`, regole `lang_tag` condizionali su lingua indexer, ricerca primaria sempre attiva e fallback solo su assenza risultati primari. |
 | 2026-02-13 | 1.2      | Allineati REQ-571/REQ-572: mapping lingua->titolo guidato da `config['languages']` (non `movie/series.languages`), query pack serie `SnnE01-`, e query stagione serie eseguita solo con lingue configurate. |
-| 2026-02-13 | 1.3      | Aggiunto REQ-574 per lo script `pdoc.sh` (compilazione moduli e generazione documentazione pdoc). |
+| 2026-02-13 | 1.3      | Aggiunto REQ-574 per script legacy di generazione documentazione HTML. |
 | 2026-02-15 | 1.4      | Aggiornato requisito documentazione codice a standard Doxygen LLM-native (DES-534) e allineata copertura documentale componenti `src/`. |
 | 2026-02-15 | 1.5      | Rimosso DES-534 e tutti i vincoli SRS sulle modalita' di inserimento commenti/documentazione inline nei sorgenti. |
+| 2026-02-17 | 1.6      | Rimosso REQ-574 e ogni riferimento al supporto documentazione legacy. |
