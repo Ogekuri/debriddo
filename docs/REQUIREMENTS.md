@@ -1,7 +1,7 @@
 ---
 title: "Requisiti Debriddo (BOZZA)"
 description: "Specifiche dei requisiti software (bozza derivata dal codice)"
-version: "1.6"
+version: "1.7"
 date: "2026-02-17"
 author: "Auto-generato da analisi del codice sorgente"
 scope:
@@ -17,7 +17,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
 ---
 
 # Requisiti Debriddo (BOZZA)
-**Versione**: 1.6  
+**Versione**: 1.7  
 **Autore**: Auto-generato da analisi del codice sorgente  
 **Data**: 2026-02-17
 
@@ -45,6 +45,7 @@ tags: ["markdown", "requirements", "srs", "code-derived"]
     - [3.11 Playback (redirect Debrid)](#311-playback-redirect-debrid)
     - [3.12 Servizi Debrid (implementazioni)](#312-servizi-debrid-implementazioni)
     - [3.13 Script API tester](#313-script-api-tester)
+    - [3.14 Script generazione documentazione Doxygen](#314-script-generazione-documentazione-doxygen)
   - [4. Requisiti di test](#4-requisiti-di-test)
   - [5. Storico revisioni](#5-storico-revisioni)
 <!-- TOC -->
@@ -854,6 +855,20 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: `cmd_search()` usa `request_stream()` e `build_stream_path()` come `cmd_stream()`; il comando richiede `--stream-type` e `--stream-id`, supporta `--append-json`, e stampa ogni item `streams` serializzato per intero con indice.  
   Evidenza: `src/api_tester/api_tester.py` / `cmd_search()`, `build_parser()`. Estratto: `parser_search = subparsers.add_parser("search", ...)`; `for index, item in enumerate(streams): print(json.dumps(item, ...))`.
 
+### 3.14 Script generazione documentazione Doxygen
+
+- **REQ-575**: Il progetto deve fornire uno script eseguibile `doxygen.sh` nella root repository che usa il binario `doxygen` installato nel sistema operativo per generare documentazione dai sorgenti in `src/`.  
+  ID originale: `REQ-922`.
+  Comportamento atteso: l'esecuzione `./doxygen.sh` usa `INPUT = src` e fallisce con codice non-zero se `doxygen` non e' disponibile o se la generazione documentazione termina con errore.  
+  Criteri di accettazione: `doxygen.sh` verifica disponibilita comando `doxygen`, genera configurazione con `RECURSIVE = YES` e `EXTRACT_ALL = YES`, imposta output root `doxygen/`, ed esegue Doxygen senza dipendere da tool esterni non dichiarati.  
+  Evidenza: `doxygen.sh` / `main` flow script.
+
+- **REQ-576**: Lo script `doxygen.sh` deve generare output multi-formato con directory dedicate: HTML in `doxygen/html`, PDF in `doxygen/pdf`, Markdown in `doxygen/markdown`.  
+  ID originale: `REQ-923`.
+  Comportamento atteso: dopo l'esecuzione riuscita dello script risultano disponibili artefatti documentali nei tre path target richiesti.  
+  Criteri di accettazione: la configurazione Doxygen abilita `GENERATE_HTML = YES` e `GENERATE_LATEX = YES`; la build PDF produce almeno un file `*.pdf` sotto `doxygen/pdf`; la build Markdown produce file `*.md` sotto `doxygen/markdown` usando output Doxygen nativo quando disponibile oppure trasformando output Doxygen XML con post-processing locale nello script.  
+  Evidenza: `doxygen.sh` / configurazione Doxygen e fase build PDF.
+
 ## 4. Requisiti di test
 <!-- Requisiti di test legati a requisiti funzionali/non-funzionali o contesti di verifica -->
 
@@ -917,6 +932,12 @@ Queste regole devono essere sempre rispettate:
   Criteri di accettazione: suite di test parametrizzati con almeno 15 casi di test coprendo: episodi singoli nelle tre forme (`SnnEmm`, `Snn Emm`, `Snn-Emm`), pack range nelle varianti (`SnnExx-Eyy`, `SnnExx-yy`) con stagione corretta/errata e episodio dentro/fuori range, stagioni complete localizzate con/senza indicatore COMPLETE, stagioni diverse da quella richiesta; tutti i test devono passare.
   Evidenza: `tests/unit/atomic/test_filter_results.py` / `test_filter_out_non_matching_matches_requested_series_logic()`, `test_remove_non_matching_title_for_series()`.
 
+- **TST-534**: Il sistema deve essere verificabile per `REQ-575` e `REQ-576` eseguendo `./doxygen.sh` e verificando la presenza degli output richiesti nei path `doxygen/html`, `doxygen/pdf`, `doxygen/markdown`.  
+  ID originale: `TST-009`.
+  Comportamento atteso: la generazione documentazione e' riproducibile su ambiente con Doxygen installato.  
+  Criteri di accettazione: PASS se `./doxygen.sh` termina con exit code `0` e sono presenti almeno `doxygen/html/index.html`, un file `doxygen/pdf/*.pdf`, e almeno un file `doxygen/markdown/*.md`; FAIL altrimenti.  
+  Evidenza: `doxygen.sh` e directory di output `doxygen/`.
+
 ## 5. Storico revisioni
 <!-- A ogni modifica, aggiornare versione e aggiungere una riga -->
 
@@ -943,3 +964,4 @@ Queste regole devono essere sempre rispettate:
 | 2026-02-15 | 1.4      | Aggiornato requisito documentazione codice a standard Doxygen LLM-native (DES-534) e allineata copertura documentale componenti `src/`. |
 | 2026-02-15 | 1.5      | Rimosso DES-534 e tutti i vincoli SRS sulle modalita' di inserimento commenti/documentazione inline nei sorgenti. |
 | 2026-02-17 | 1.6      | Rimosso REQ-574 e ogni riferimento al supporto documentazione legacy. |
+| 2026-02-17 | 1.7      | Aggiunti REQ-575/REQ-576 e TST-534 per script `doxygen.sh` con output HTML/PDF/Markdown in `doxygen/`. |

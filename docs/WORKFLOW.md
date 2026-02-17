@@ -173,8 +173,8 @@
 
 - Feature: External I/O boundaries summary (cross-referenced with requirements)
   - Component: cross-module map
-    - `filesystem_io()`: filesystem read/write/move/delete boundaries [`src/debriddo/web/pages.py`, `src/debriddo/main.py`, `src/debriddo/utils/cache.py`, `src/debriddo/utils/async_httpx_session.py`]
-      - description: Reads `web/index.html`; writes/extracts/deletes `update.zip` and `update/`; creates and mutates `caches_items.db`; writes temporary downloaded files via `tempfile.mkstemp()`.
+    - `filesystem_io()`: filesystem read/write/move/delete boundaries [`src/debriddo/web/pages.py`, `src/debriddo/main.py`, `src/debriddo/utils/cache.py`, `src/debriddo/utils/async_httpx_session.py`, `doxygen.sh`]
+      - description: Reads `web/index.html`; writes/extracts/deletes `update.zip` and `update/`; creates and mutates `caches_items.db`; writes temporary downloaded files via `tempfile.mkstemp()`; generates/removes documentation artifacts under `doxygen/` and temporary config/parser files under `/tmp`.
     - `external_api_io()`: outbound HTTP/API boundaries [`src/debriddo/metdata/cinemeta.py`, `src/debriddo/metdata/tmdb.py`, `src/debriddo/debrid/*.py`, `src/debriddo/search/plugins/*.py`, `src/debriddo/main.py`]
       - description: Calls Cinemeta, TMDB, debrid provider APIs (RealDebrid/AllDebrid/Premiumize/TorBox), search-engine websites for scraping, and GitHub Releases API for self-update.
     - `database_io()`: external database boundary [`src/debriddo/utils/cache.py`]
@@ -192,3 +192,12 @@
       - description: Every function/method includes structured Doxygen tags (`@brief`, `@param`, `@return`, `@side_effect`) describing runtime inputs, output contract, and side-effect surfaces.
     - `doxygen_contract_refresh()`: normalize missing Doxygen tags on legacy docstrings [`src/api_tester/api_tester.py`, `src/debriddo/search/search_service.py`, `src/debriddo/search/search_result.py`, `src/debriddo/torrent/torrent_service.py`, `src/debriddo/utils/async_httpx_session.py`]
       - description: Injects/normalizes `@file/@brief/@details/@param/@return` contract tags across touched modules to guarantee parser-stable metadata coverage without mutating runtime control flow.
+
+- Feature: Doxygen artifact generation pipeline
+  - Component: `doxygen.sh`
+    - `fail()`: terminate script execution on unrecoverable prerequisite/runtime error [`doxygen.sh`]
+      - description: Emits deterministic `ERROR:` message to `stderr` and exits non-zero, centralizing failure semantics for missing binaries and missing output artifacts.
+    - `cleanup()`: remove temporary Doxygen configuration file on script exit [`doxygen.sh`]
+      - description: Registered via `trap ... EXIT`, guarantees `/tmp/debriddo-doxygen.*` config file cleanup regardless of success/failure path.
+    - `main()`: orchestrate end-to-end documentation generation for `src/` [`doxygen.sh`]
+      - description: Resolves root/output directories; verifies `doxygen` and `make`; recreates `doxygen/` tree; writes runtime Doxygen config with recursive extraction and multi-output generation (HTML/LaTeX/XML); executes Doxygen; compiles LaTeX and validates `refman.pdf`; copies PDF to `doxygen/pdf/refman.pdf`; transforms Doxygen XML into Markdown index/module files under `doxygen/markdown`; enforces post-conditions by asserting `doxygen/html/index.html`, `doxygen/pdf/refman.pdf`, and `doxygen/markdown/*.md`.
