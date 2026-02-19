@@ -71,7 +71,7 @@
 ```
 
 # api_tester.py | Python | 1022L | 33 symbols | 9 imports | 35 comments
-> Path: `/home/ogekuri/debriddo/src/api_tester/api_tester.py`
+> Path: `src/api_tester/api_tester.py`
 
 ## Imports
 ```
@@ -201,7 +201,7 @@ import requests
 ---
 
 # check_unused_requirements.py | Python | 115L | 3 symbols | 3 imports | 15 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/check_unused_requirements.py`
+> Path: `src/debriddo/check_unused_requirements.py`
 
 ## Imports
 ```
@@ -229,7 +229,7 @@ import importlib.metadata
 ---
 
 # constants.py | Python | 27L | 6 symbols | 0 imports | 12 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/constants.py`
+> Path: `src/debriddo/constants.py`
 
 ## Definitions
 
@@ -259,7 +259,7 @@ import importlib.metadata
 ---
 
 # main.py | Python | 694L | 23 symbols | 36 imports | 96 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/main.py`
+> Path: `src/debriddo/main.py`
 
 ## Imports
 ```
@@ -382,7 +382,7 @@ from debriddo.constants import APPLICATION_NAME, APPLICATION_VERSION, APPLICATIO
 ---
 
 # test_plugins.py | Python | 122L | 7 symbols | 13 imports | 16 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/test_plugins.py`
+> Path: `src/debriddo/test_plugins.py`
 
 ## Imports
 ```
@@ -446,7 +446,7 @@ from urllib.parse import quote_plus
 ---
 
 # test_sviluppo_plugins.py | Python | 110L | 2 symbols | 6 imports | 31 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/test_sviluppo_plugins.py`
+> Path: `src/debriddo/test_sviluppo_plugins.py`
 
 ## Imports
 ```
@@ -477,7 +477,7 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 ---
 
 # config.js | JavaScript | 236L | 3 symbols | 0 imports | 11 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/web/config.js`
+> Path: `src/debriddo/web/config.js`
 
 ## Definitions
 
@@ -498,7 +498,7 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 ---
 
 # lz-string.min.js | JavaScript | 1L | 1 symbols | 0 imports | 0 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/web/lz-string.min.js`
+> Path: `src/debriddo/web/lz-string.min.js`
 
 ## Definitions
 
@@ -512,7 +512,7 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 ---
 
 # pages.py | Python | 80L | 2 symbols | 1 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/web/pages.py`
+> Path: `src/debriddo/web/pages.py`
 
 ## Imports
 ```
@@ -535,7 +535,7 @@ from pathlib import Path
 ---
 
 # search_indexer.py | Python | 32L | 2 symbols | 1 imports | 5 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/search_indexer.py`
+> Path: `src/debriddo/search/search_indexer.py`
 
 ## Imports
 ```
@@ -565,7 +565,7 @@ from typing import Any
 ---
 
 # search_result.py | Python | 113L | 4 symbols | 4 imports | 25 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/search_result.py`
+> Path: `src/debriddo/search/search_result.py`
 
 ## Imports
 ```
@@ -599,7 +599,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # search_service.py | Python | 617L | 20 symbols | 29 imports | 57 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/search_service.py`
+> Path: `src/debriddo/search/search_service.py`
 
 ## Imports
 ```
@@ -706,7 +706,7 @@ from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 ---
 
 # base_plugin.py | Python | 61L | 5 symbols | 1 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/base_plugin.py`
+> Path: `src/debriddo/search/plugins/base_plugin.py`
 
 ## Imports
 ```
@@ -754,7 +754,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # ilcorsaroblu.py | Python | 352L | 7 symbols | 7 imports | 35 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/ilcorsaroblu.py`
+> Path: `src/debriddo/search/plugins/ilcorsaroblu.py`
 
 ## Imports
 ```
@@ -823,7 +823,7 @@ from urllib.parse import quote
 ---
 
 # ilcorsaronero.py | Python | 165L | 7 symbols | 6 imports | 16 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/ilcorsaronero.py`
+> Path: `src/debriddo/search/plugins/ilcorsaronero.py`
 
 ## Imports
 ```
@@ -889,7 +889,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # limetorrents.py | Python | 228L | 9 symbols | 9 imports | 18 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/limetorrents.py`
+> Path: `src/debriddo/search/plugins/limetorrents.py`
 
 ## Imports
 ```
@@ -971,7 +971,7 @@ import ssl
 ---
 
 # one337x.py | Python | 231L | 9 symbols | 7 imports | 42 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/one337x.py`
+> Path: `src/debriddo/search/plugins/one337x.py`
 
 ## Imports
 ```
@@ -1050,7 +1050,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # thepiratebay_categories.py | Python | 188L | 4 symbols | 7 imports | 18 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/thepiratebay_categories.py`
+> Path: `src/debriddo/search/plugins/thepiratebay_categories.py`
 
 ## Imports
 ```
@@ -1099,7 +1099,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # therarbg.py | Python | 301L | 11 symbols | 7 imports | 38 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/therarbg.py`
+> Path: `src/debriddo/search/plugins/therarbg.py`
 
 ## Imports
 ```
@@ -1193,7 +1193,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # torrentgalaxyone.py | Python | 144L | 3 symbols | 6 imports | 18 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/torrentgalaxyone.py`
+> Path: `src/debriddo/search/plugins/torrentgalaxyone.py`
 
 ## Imports
 ```
@@ -1234,7 +1234,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # torrentgalaxyto.py | Python | 206L | 7 symbols | 10 imports | 31 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/torrentgalaxyto.py`
+> Path: `src/debriddo/search/plugins/torrentgalaxyto.py`
 
 ## Imports
 ```
@@ -1301,7 +1301,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # torrentproject.py | Python | 214L | 9 symbols | 7 imports | 28 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/torrentproject.py`
+> Path: `src/debriddo/search/plugins/torrentproject.py`
 
 ## Imports
 ```
@@ -1381,7 +1381,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # torrentz.py | Python | 118L | 3 symbols | 7 imports | 15 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/search/plugins/torrentz.py`
+> Path: `src/debriddo/search/plugins/torrentz.py`
 
 ## Imports
 ```
@@ -1423,7 +1423,7 @@ from debriddo.search.plugins.base_plugin import BasePlugin
 ---
 
 # cinemeta.py | Python | 62L | 2 symbols | 4 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/metdata/cinemeta.py`
+> Path: `src/debriddo/metdata/cinemeta.py`
 
 ## Imports
 ```
@@ -1456,7 +1456,7 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 ---
 
 # metadata_provider_base.py | Python | 74L | 4 symbols | 1 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/metdata/metadata_provider_base.py`
+> Path: `src/debriddo/metdata/metadata_provider_base.py`
 
 ## Imports
 ```
@@ -1498,7 +1498,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # tmdb.py | Python | 74L | 2 symbols | 6 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/metdata/tmdb.py`
+> Path: `src/debriddo/metdata/tmdb.py`
 
 ## Imports
 ```
@@ -1533,7 +1533,7 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 ---
 
 # alldebrid.py | Python | 247L | 10 symbols | 7 imports | 21 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/debrid/alldebrid.py`
+> Path: `src/debriddo/debrid/alldebrid.py`
 
 ## Imports
 ```
@@ -1617,7 +1617,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # base_debrid.py | Python | 148L | 9 symbols | 5 imports | 15 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/debrid/base_debrid.py`
+> Path: `src/debriddo/debrid/base_debrid.py`
 
 ## Imports
 ```
@@ -1693,7 +1693,7 @@ from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa
 ---
 
 # get_debrid_service.py | Python | 39L | 1 symbols | 5 imports | 5 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/debrid/get_debrid_service.py`
+> Path: `src/debriddo/debrid/get_debrid_service.py`
 
 ## Imports
 ```
@@ -1721,7 +1721,7 @@ from debriddo.debrid.torbox import TorBox
 ---
 
 # premiumize.py | Python | 221L | 10 symbols | 5 imports | 18 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/debrid/premiumize.py`
+> Path: `src/debriddo/debrid/premiumize.py`
 
 ## Imports
 ```
@@ -1802,7 +1802,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # realdebrid.py | Python | 496L | 19 symbols | 10 imports | 40 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/debrid/realdebrid.py`
+> Path: `src/debriddo/debrid/realdebrid.py`
 
 ## Imports
 ```
@@ -1951,7 +1951,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # torbox.py | Python | 277L | 9 symbols | 8 imports | 26 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/debrid/torbox.py`
+> Path: `src/debriddo/debrid/torbox.py`
 
 ## Imports
 ```
@@ -2032,7 +2032,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # torrent_item.py | Python | 89L | 3 symbols | 5 imports | 7 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/torrent/torrent_item.py`
+> Path: `src/debriddo/torrent/torrent_item.py`
 
 ## Imports
 ```
@@ -2072,7 +2072,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # torrent_service.py | Python | 294L | 13 symbols | 14 imports | 43 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/torrent/torrent_service.py`
+> Path: `src/debriddo/torrent/torrent_service.py`
 
 ## Imports
 ```
@@ -2143,7 +2143,7 @@ from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 ---
 
 # torrent_smart_container.py | Python | 368L | 16 symbols | 9 imports | 26 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/torrent/torrent_smart_container.py`
+> Path: `src/debriddo/torrent/torrent_smart_container.py`
 
 ## Imports
 ```
@@ -2270,7 +2270,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # async_httpx_session.py | Python | 352L | 17 symbols | 11 imports | 99 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/async_httpx_session.py`
+> Path: `src/debriddo/utils/async_httpx_session.py`
 
 ## Imports
 ```
@@ -2352,7 +2352,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # cache.py | Python | 328L | 3 symbols | 8 imports | 32 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/cache.py`
+> Path: `src/debriddo/utils/cache.py`
 
 ## Imports
 ```
@@ -2385,7 +2385,7 @@ from debriddo.utils.string_encoding import normalize
 ---
 
 # detection.py | Python | 44L | 1 symbols | 1 imports | 5 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/detection.py`
+> Path: `src/debriddo/utils/detection.py`
 
 ## Imports
 ```
@@ -2409,7 +2409,7 @@ import re
 ---
 
 # filter_results.py | Python | 470L | 10 symbols | 9 imports | 71 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter_results.py`
+> Path: `src/debriddo/utils/filter_results.py`
 
 ## Imports
 ```
@@ -2500,7 +2500,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # general.py | Python | 75L | 3 symbols | 2 imports | 7 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/general.py`
+> Path: `src/debriddo/utils/general.py`
 
 ## Imports
 ```
@@ -2539,7 +2539,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # logger.py | Python | 110L | 16 symbols | 2 imports | 24 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/logger.py`
+> Path: `src/debriddo/utils/logger.py`
 
 ## Imports
 ```
@@ -2594,7 +2594,7 @@ import logging
 ---
 
 # multi_thread.py | Python | 30L | 2 symbols | 2 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/multi_thread.py`
+> Path: `src/debriddo/utils/multi_thread.py`
 
 ## Imports
 ```
@@ -2622,7 +2622,7 @@ from debriddo.constants import RUN_IN_MULTI_THREAD
 ---
 
 # novaprinter.py | Python | 113L | 6 symbols | 1 imports | 26 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/novaprinter.py`
+> Path: `src/debriddo/utils/novaprinter.py`
 
 ## Imports
 ```
@@ -2676,7 +2676,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # parse_config.py | Python | 57L | 3 symbols | 1 imports | 13 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/parse_config.py`
+> Path: `src/debriddo/utils/parse_config.py`
 
 ## Imports
 ```
@@ -2714,7 +2714,7 @@ from debriddo.utils.string_encoding import decode_lzstring, encode_lzstring
 ---
 
 # stremio_parser.py | Python | 238L | 8 symbols | 8 imports | 30 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/stremio_parser.py`
+> Path: `src/debriddo/utils/stremio_parser.py`
 
 ## Imports
 ```
@@ -2782,7 +2782,7 @@ from debriddo.utils.parse_config import encode_query
 ---
 
 # string_encoding.py | Python | 82L | 3 symbols | 4 imports | 11 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/string_encoding.py`
+> Path: `src/debriddo/utils/string_encoding.py`
 
 ## Imports
 ```
@@ -2823,7 +2823,7 @@ import lzstring
 ---
 
 # base_filter.py | Python | 61L | 5 symbols | 0 imports | 9 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter/base_filter.py`
+> Path: `src/debriddo/utils/filter/base_filter.py`
 
 ## Definitions
 
@@ -2866,7 +2866,7 @@ import lzstring
 ---
 
 # language_filter.py | Python | 64L | 4 symbols | 2 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter/language_filter.py`
+> Path: `src/debriddo/utils/filter/language_filter.py`
 
 ## Imports
 ```
@@ -2909,7 +2909,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # max_size_filter.py | Python | 57L | 4 symbols | 2 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter/max_size_filter.py`
+> Path: `src/debriddo/utils/filter/max_size_filter.py`
 
 ## Imports
 ```
@@ -2952,7 +2952,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # quality_exclusion_filter.py | Python | 72L | 6 symbols | 2 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter/quality_exclusion_filter.py`
+> Path: `src/debriddo/utils/filter/quality_exclusion_filter.py`
 
 ## Imports
 ```
@@ -2999,7 +2999,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # results_per_quality_filter.py | Python | 65L | 4 symbols | 2 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter/results_per_quality_filter.py`
+> Path: `src/debriddo/utils/filter/results_per_quality_filter.py`
 
 ## Imports
 ```
@@ -3042,7 +3042,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # title_exclusion_filter.py | Python | 60L | 4 symbols | 2 imports | 8 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/utils/filter/title_exclusion_filter.py`
+> Path: `src/debriddo/utils/filter/title_exclusion_filter.py`
 
 ## Imports
 ```
@@ -3085,7 +3085,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # media.py | Python | 26L | 2 symbols | 0 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/models/media.py`
+> Path: `src/debriddo/models/media.py`
 
 ## Definitions
 
@@ -3105,7 +3105,7 @@ from debriddo.utils.logger import setup_logger
 ---
 
 # movie.py | Python | 26L | 2 symbols | 1 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/models/movie.py`
+> Path: `src/debriddo/models/movie.py`
 
 ## Imports
 ```
@@ -3130,7 +3130,7 @@ from debriddo.models.media import Media
 ---
 
 # series.py | Python | 29L | 2 symbols | 1 imports | 6 comments
-> Path: `/home/ogekuri/debriddo/src/debriddo/models/series.py`
+> Path: `src/debriddo/models/series.py`
 
 ## Imports
 ```
