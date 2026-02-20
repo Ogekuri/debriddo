@@ -23,6 +23,7 @@
 !LICENSE.txt
 !setup.py
 !pyproject.toml
+!pyrightconfig.json
 !requirements.txt
 !.g.conf
 !/**/*.sh
