@@ -9,7 +9,6 @@
 # CONTRIBUTORS: Ogekuri
 
 # Assuming the BaseDebrid class and necessary imports are already defined as shown previously
-import json
 
 from debriddo.constants import NO_CACHE_VIDEO_URL
 from debriddo.debrid.base_debrid import BaseDebrid
@@ -179,7 +178,7 @@ class Premiumize(BaseDebrid):
             raise ValueError("Error: Transfer completed but no item ID found.")
 
         details = await self.get_folder_or_file_details(item_id, is_folder) or {}
-        logger.debug(f"Got details")
+        logger.debug("Got details")
 
         if stream_type == "movie":
             logger.debug("Getting link for movie")

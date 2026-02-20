@@ -8,9 +8,7 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-import json
 import asyncio
-import httpx
 from debriddo.utils.logger import setup_logger
 from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 

@@ -9,8 +9,6 @@
 # CONTRIBUTORS: Ogekuri
 
 import hashlib
-import queue
-import threading
 import urllib.parse
 from typing import List
 
@@ -255,7 +253,6 @@ class TorrentService:
             return None
 
         file_index = 1
-        strict_episode_files = []
         episode_files = []
         for files in file_structure:
             for file_name in files["path"]:

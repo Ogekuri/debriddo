@@ -7,28 +7,15 @@
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
-import sys
 import asyncio
 from pathlib import Path
+
+from debriddo.search.plugins.torrentgalaxyone import torrentgalaxy
 
 # Allow execution as a standalone script from any working directory.
 #: @brief Exported constant `SRC_DIR` used by runtime workflows.
 SRC_DIR = Path(__file__).resolve().parents[1]
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
 
-from debriddo.search.plugins.thepiratebay_categories import thepiratebay
-from debriddo.search.plugins.one337x import one337x
-from debriddo.search.plugins.limetorrents import limetorrents
-from debriddo.search.plugins.torrentproject import torrentproject
-from debriddo.search.plugins.ilcorsaronero import ilcorsaronero
-from debriddo.search.plugins.torrentz import torrentz
-# from debriddo.search.plugins.torrentgalaxyto import torrentgalaxy
-from debriddo.search.plugins.torrentgalaxyone import torrentgalaxy
-from debriddo.search.plugins.therarbg import therarbg
-from debriddo.search.plugins.ilcorsaroblu import ilcorsaroblu
-
-from urllib.parse import quote_plus
 
 # Dati del form di autenticazione
 ilcorsaroblu_user = {

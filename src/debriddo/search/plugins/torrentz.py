@@ -8,13 +8,16 @@
 # AUTHORS: Ogekuri
 
 import urllib.parse
-from debriddo.utils.novaprinter import PrettyPrint
-prettyPrinter = PrettyPrint()
-from bs4 import BeautifulSoup
 from urllib.parse import quote
-from debriddo.utils.logger import setup_logger
-from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+
+from bs4 import BeautifulSoup
+
 from debriddo.search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import \
+    AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.novaprinter import PrettyPrint
+
+prettyPrinter = PrettyPrint()
 
 
 class torrentz(BasePlugin):
@@ -69,7 +72,7 @@ class torrentz(BasePlugin):
             # Estrai gli altri campi
             spans = dd.find_all('span')
 
-            time_uploaded = spans[1].get_text(strip=True)
+            # time_uploaded = spans[1].get_text(strip=True)
             size = spans[2].get_text(strip=True)
             seeders = spans[3].get_text(strip=True)
             leechers = spans[4].get_text(strip=True)

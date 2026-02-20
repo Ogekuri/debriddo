@@ -9,7 +9,6 @@
 
 from RTN import parse
 
-from debriddo.models.series import Series
 from debriddo.torrent.torrent_item import TorrentItem
 from debriddo.utils.logger import setup_logger
 

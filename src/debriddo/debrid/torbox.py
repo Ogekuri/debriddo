@@ -8,10 +8,8 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-import json
 import time
 import asyncio
-from urllib.parse import unquote
 
 from debriddo.constants import NO_CACHE_VIDEO_URL
 from debriddo.debrid.base_debrid import BaseDebrid
@@ -154,7 +152,7 @@ class TorBox(BaseDebrid):
         """
         torrent_id = None
         if magnet:
-            logger.debug(f"Adding magnet to TorBox")
+            logger.debug("Adding magnet to TorBox")
             torrent_id = await self.add_magnet(magnet)
             logger.debug(f"TorBox add magnet response: {torrent_id}")
         else:

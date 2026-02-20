@@ -9,18 +9,20 @@
 # CONTRIBUTORS: Ogekuri, Diego de las Heras (ngosang@hotmail.es)
 
 import re
+import ssl
 from datetime import datetime, timedelta
 from html.parser import HTMLParser
 from urllib.parse import quote
-from debriddo.utils.logger import setup_logger
-from debriddo.utils.novaprinter import PrettyPrint
-prettyPrinter = PrettyPrint()
-from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+
 from debriddo.search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import \
+    AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.novaprinter import PrettyPrint
 
 # Fix invalid certificate in Windows
-import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+
+prettyPrinter = PrettyPrint()
 
 
 class limetorrents(BasePlugin):

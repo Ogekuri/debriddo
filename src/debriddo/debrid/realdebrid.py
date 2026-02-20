@@ -8,7 +8,6 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-import json
 import time
 import asyncio
 from urllib.parse import unquote
@@ -349,7 +348,7 @@ class RealDebrid(BaseDebrid):
         """
         torrent_id = ""
         if torrent_download is None:
-            logger.debug(f"Adding magnet to RealDebrid")
+            logger.debug("Adding magnet to RealDebrid")
             magnet_response = await self.add_magnet(magnet)
             logger.debug(f"RealDebrid add magnet response: {magnet_response}")
 
@@ -359,11 +358,11 @@ class RealDebrid(BaseDebrid):
 
             torrent_id = magnet_response['id']
         else:
-            logger.debug(f"Downloading torrent file from Jackett")
+            logger.debug("Downloading torrent file from Jackett")
             torrent_file = await self.download_torrent_file(torrent_download)
-            logger.debug(f"Torrent file downloaded from Jackett")
+            logger.debug("Torrent file downloaded from Jackett")
 
-            logger.debug(f"Adding torrent file to RealDebrid")
+            logger.debug("Adding torrent file to RealDebrid")
             upload_response = await self.add_torrent(torrent_file)
             logger.debug(f"RealDebrid add torrent file response: {upload_response}")
 

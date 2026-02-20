@@ -9,11 +9,13 @@
 
 from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
-from debriddo.utils.logger import setup_logger
-from debriddo.utils.novaprinter import PrettyPrint
-prettyPrinter = PrettyPrint()
-from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+
 from debriddo.search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import \
+    AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.novaprinter import PrettyPrint
+
+prettyPrinter = PrettyPrint()
 
 class ilcorsaroblu(BasePlugin):
     """
@@ -317,10 +319,10 @@ class ilcorsaroblu(BasePlugin):
                                         name = columns[1].get_text(strip=True)
                                         a_tag = columns[1].find('a')
                                         download_link = str(a_tag['href']) if a_tag else ""
-                                        date = columns[4].get_text(strip=True)
+                                        # date = columns[4].get_text(strip=True)
                                         seeders = columns[5].get_text(strip=True)
                                         leechers = columns[6].get_text(strip=True)
-                                        completed = columns[7].get_text(strip=True)
+                                        # completed = columns[7].get_text(strip=True)
                                         size = columns[9].get_text(strip=True)
 
                                         # non usati

@@ -8,7 +8,6 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-import json
 import queue
 import threading
 from typing import List

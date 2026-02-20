@@ -10,11 +10,13 @@
 
 import re
 from urllib.parse import quote_plus
-from debriddo.utils.novaprinter import PrettyPrint
-prettyPrinter = PrettyPrint()
-from debriddo.utils.logger import setup_logger
-from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+
 from debriddo.search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import \
+    AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.novaprinter import PrettyPrint
+
+prettyPrinter = PrettyPrint()
 
 class ilcorsaronero(BasePlugin):
     """

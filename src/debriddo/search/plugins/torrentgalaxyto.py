@@ -27,17 +27,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import re
-import math
-import time
-from urllib.parse import quote_plus
-from debriddo.utils.logger import setup_logger
-from debriddo.utils.novaprinter import PrettyPrint
-prettyPrinter = PrettyPrint()
-from html.parser import HTMLParser
 import asyncio
-from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+import math
+import re
+import time
+from html.parser import HTMLParser
+from urllib.parse import quote_plus
+
 from debriddo.search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import \
+    AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.novaprinter import PrettyPrint
+
+prettyPrinter = PrettyPrint()
 
 
 #: @brief Exported constant `SITE_URL` used by runtime workflows.

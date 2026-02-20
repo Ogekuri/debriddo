@@ -8,7 +8,6 @@
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 
-import json
 import uuid
 from urllib.parse import unquote
 
@@ -131,7 +130,7 @@ class AllDebrid(BaseDebrid):
         data = status_response.get("data")
         if not isinstance(data, dict):
             return NO_CACHE_VIDEO_URL
-        logger.debug(f"Retrieved data for torrent id")
+        logger.debug("Retrieved data for torrent id")
 
         link = NO_CACHE_VIDEO_URL
         if stream_type == "movie":
@@ -221,7 +220,7 @@ class AllDebrid(BaseDebrid):
         """
         torrent_id = ""
         if torrent_download is None:
-            logger.debug(f"Adding magnet to AllDebrid")
+            logger.debug("Adding magnet to AllDebrid")
             magnet_response = await self.add_magnet(magnet, ip)
             logger.debug(f"AllDebrid add magnet response: {magnet_response}")
 
@@ -230,11 +229,11 @@ class AllDebrid(BaseDebrid):
 
             torrent_id = magnet_response["data"]["magnets"][0]["id"]
         else:
-            logger.debug(f"Downloading torrent file")
+            logger.debug("Downloading torrent file")
             torrent_file = await self.download_torrent_file(torrent_download)
-            logger.debug(f"Torrent file downloaded")
+            logger.debug("Torrent file downloaded")
 
-            logger.debug(f"Adding torrent file to AllDebrid")
+            logger.debug("Adding torrent file to AllDebrid")
             upload_response = await self.add_torrent(torrent_file, ip)
             logger.debug(f"AllDebrid add torrent file response: {upload_response}")
 

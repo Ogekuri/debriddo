@@ -28,13 +28,15 @@
 # SOFTWARE.
 
 import re
-from urllib.parse import quote
 from html.parser import HTMLParser
-from debriddo.utils.logger import setup_logger
-from debriddo.utils.novaprinter import PrettyPrint
-prettyPrinter = PrettyPrint()
-from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from urllib.parse import quote
+
 from debriddo.search.plugins.base_plugin import BasePlugin
+from debriddo.utils.async_httpx_session import \
+    AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+from debriddo.utils.novaprinter import PrettyPrint
+
+prettyPrinter = PrettyPrint()
 
 
 class therarbg(BasePlugin):
@@ -78,7 +80,7 @@ class therarbg(BasePlugin):
             """
             pass
     
-        DIV, TABLE, TBODY, TR, TD, A, SPAN, I, B = ('div', 'table', 'tbody', 'tr', 'td', 'a', 'span', 'i', 'b')
+        DIV, TABLE, TBODY, TR, TD, A, SPAN, TAG_I, B = ('div', 'table', 'tbody', 'tr', 'td', 'a', 'span', 'i', 'b')
     
         def __init__(self, url):
             """
@@ -120,8 +122,8 @@ class therarbg(BasePlugin):
             @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
             """
             params = dict(attrs)
-            cssClasses = params.get('class', '')
-            elementId = params.get('id', '')
+            # cssClasses = params.get('class', '')
+            # elementId = params.get('id', '')
 
             if tag == self.TABLE:
                 self.foundTable = True

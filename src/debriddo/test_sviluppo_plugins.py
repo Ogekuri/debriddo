@@ -7,18 +7,17 @@
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
-from bs4 import BeautifulSoup
-from urllib.parse import quote, quote_plus
-from pathlib import Path
-import sys
 import asyncio
+from pathlib import Path
+from urllib.parse import quote
 
-#: @brief Exported constant `SRC_DIR` used by runtime workflows.
-SRC_DIR = Path(__file__).resolve().parents[1]
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
+from bs4 import BeautifulSoup
 
 from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
+
+# Allow execution as a standalone script from any working directory.
+#: @brief Exported constant `SRC_DIR` used by runtime workflows.
+SRC_DIR = Path(__file__).resolve().parents[1]
 
 async def main():
     """
@@ -31,18 +30,18 @@ async def main():
 
 
     # Variabili per l'autenticazione
-    myusername = "tuo_username"
-    mypassword = "tua_password"
+    # myusername = "tuo_username"
+    # mypassword = "tua_password"
 
     # URL del form di login e dati richiesti
-    login_url = "https://ilcorsaroblu.org/index.php?page=login"
+    # login_url = "https://ilcorsaroblu.org/index.php?page=login"
 
 
     # Dati del form di autenticazione
-    data = {
-        "uid": "ogekuri",
-        "pwd": "******"
-    }
+    # data = {
+    #     "uid": "ogekuri",
+    #     "pwd": "******"
+    # }
 
 
     login = True
@@ -86,7 +85,7 @@ async def main():
                 # Parsing della risposta HTML
                 soup = BeautifulSoup(html_content, 'html.parser')
                 divs = soup.find_all('div', class_='tgxtablerow txlight')  # Trova la prima tabella
-                r = 0
+                # r = 0
                 for div in divs:
                     cells = div.find_all('div', class_='tgxtablecell')  # Trova la prima tabella
                     category = " ".join(cells[0].get_text().split())

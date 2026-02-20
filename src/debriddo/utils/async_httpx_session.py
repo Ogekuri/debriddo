@@ -11,9 +11,7 @@ import gzip
 import re
 import socket
 import tempfile
-from urllib.parse import urlparse
 import html.entities
-import asyncio
 import httpx
 import socks
 import json
@@ -325,7 +323,7 @@ class AsyncThreadSafeSession:
                 if response.text.strip():
                     return response.json() # Restituisce la risposta finale dopo i reindirizzamenti
                 else:
-                    self.logger.warning(f"HTTP request with empty response")
+                    self.logger.warning("HTTP request with empty response")
                     return None
             
         except json.JSONDecodeError:

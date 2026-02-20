@@ -9,10 +9,8 @@
 # CONTRIBUTORS: Ogekuri
 
 from debriddo.metdata.metadata_provider_base import MetadataProvider
-from debriddo.models.media import Media
 from debriddo.models.movie import Movie
 from debriddo.models.series import Series
-from debriddo.utils.logger import setup_logger
 from debriddo.utils.async_httpx_session import AsyncThreadSafeSession  # Importa la classe per HTTP/2 asyncrono
 
 class TMDB(MetadataProvider):

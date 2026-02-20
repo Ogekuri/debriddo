@@ -344,7 +344,7 @@ def filter_out_non_matching(items, season, episode):
                 filtered_items.append(item)
                 continue
         except Exception as e:
-            logger.error(f"Error while filtering out non matching torrents", exc_info=e)
+            logger.error("Error while filtering out non matching torrents", exc_info=e)
     return filtered_items
 
 
@@ -424,7 +424,7 @@ def filter_items(items, media, config):
     # Filtering out 100% non-matching for series
     logger.debug(f"Item count before filtering: {len(items)}")
     if media.type == "series":
-        logger.debug(f"Filtering out non matching series torrents")
+        logger.debug("Filtering out non matching series torrents")
         items = filter_out_non_matching(items, media.season, media.episode)
         logger.debug(f"Item count changed to {len(items)}")
         logger.debug("Filter results for season: " + media.season + ", spisode: " + media.episode)

@@ -7,12 +7,14 @@
 # VERSION: 0.0.35
 # AUTHORS: Ogekuri
 
+import asyncio
 import re
 import time
-import xml.etree.ElementTree as ET
-from typing import Any
 
-import asyncio
+from itertools import chain
+from urllib.parse import parse_qs, urlparse
+
+from RTN import parse
 from unidecode import unidecode
 
 from debriddo.search.search_indexer import SearchIndexer
@@ -22,11 +24,6 @@ from debriddo.models.series import Series
 from debriddo.utils.detection import detect_languages
 from debriddo.utils.logger import setup_logger
 from debriddo.utils.string_encoding import normalize
-
-import time
-import xml.etree.ElementTree as ET
-
-from RTN import parse
 
 from debriddo.search.plugins.thepiratebay_categories import thepiratebay
 from debriddo.search.plugins.one337x import one337x
@@ -39,10 +36,6 @@ from debriddo.search.plugins.torrentgalaxyone import torrentgalaxy
 from debriddo.search.plugins.therarbg import therarbg
 from debriddo.search.plugins.ilcorsaroblu import ilcorsaroblu
 
-from urllib.parse import urlparse, parse_qs
-from concurrent.futures import ThreadPoolExecutor
-
-from itertools import chain
 from debriddo.utils.multi_thread import MULTI_THREAD, run_coroutine_in_thread
 
 # Se non trova risultati prova una ricerca più estesa
