@@ -307,7 +307,7 @@ def cache_results(torrents: List[TorrentItem], media):
                         cache_item['episode_last'] = int(episode_last)
                         cache_item['year'] = int(year)
                         cache_items.append(cache_item)
-                except:
+                except Exception:
                     logger.exception("An exception occured durring cache parsing")
         
         # Estrai dinamicamente le colonne dalla lista di dizionari

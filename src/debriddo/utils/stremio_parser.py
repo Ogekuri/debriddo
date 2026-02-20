@@ -94,7 +94,7 @@ def parse_to_debrid_stream(torrent_item: TorrentItem, config_url, node_url, play
     @return Computed result payload; `None` when side-effect-only execution path is selected.
     @side_effect May read/write process, network, filesystem, cache, or in-memory state depending on branch logic.
     """
-    if torrent_item.availability == True:
+    if torrent_item.availability:
         name = f"{INSTANTLY_AVAILABLE}"
     else:
         name = f"{DOWNLOAD_REQUIRED}"

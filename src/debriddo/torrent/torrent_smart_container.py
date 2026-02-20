@@ -146,7 +146,7 @@ class TorrentSmartContainer:
         elif debrid_type is TorBox:
             self.__update_availability_torbox(debrid_response, media)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def __update_availability_realdebrid(self, response, media):
         """
@@ -210,7 +210,7 @@ class TorrentSmartContainer:
             return
 
         for data in response["data"]["magnets"]:
-            if data["instant"] == False:
+            if not data["instant"]:
                 continue
 
             torrent_item: TorrentItem = self.__itemsDict[data["hash"]]
@@ -265,7 +265,7 @@ class TorrentSmartContainer:
         torrent_items = self.get_items()
         for i in range(len(response["response"])):
             if bool(response["response"][i]):
-                torrent_items[i].availability = response["transcoded"][i] == True
+                torrent_items[i].availability = bool(response["transcoded"][i])
 
 
     def __update_file_details(self, torrent_item, files):

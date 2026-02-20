@@ -15,7 +15,6 @@ import shutil
 import time
 import zipfile
 import uvicorn
-import json
 from pathlib import Path
 import starlette.status as status
 
@@ -178,7 +177,7 @@ async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
     scheduler.add_job(update_app, 'interval', seconds=60)  # Il check dell'update ogni 60 secondi
     scheduler.start()
-    logger.info(f"Scheduler avviato")
+    logger.info("Scheduler avviato")
 
     # Verifica se il server Uvicorn è configurato con reload
     if is_reload_enabled:
@@ -192,7 +191,7 @@ async def lifespan(app: FastAPI):
     # terminazione
     finally:
         scheduler.shutdown()
-        logger.info(f"Scheduler arrestato")
+        logger.info("Scheduler arrestato")
 
 # Creazione dell'app FastAPI
 app = FastAPI(lifespan=lifespan)

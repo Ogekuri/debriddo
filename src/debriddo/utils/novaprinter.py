@@ -66,13 +66,13 @@ class PrettyPrint:
         # separate integer from unit
         try:
             size, unit = size_string.split()
-        except:
+        except ValueError:
             try:
                 size = size_string.strip()
                 unit = ''.join([c for c in size if c.isalpha()])
                 if len(unit) > 0:
                     size = size[:-len(unit)]
-            except:
+            except Exception:
                 return -1
         if len(size) == 0:
             return -1
