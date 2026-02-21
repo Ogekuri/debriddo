@@ -1,7 +1,7 @@
 
 # Informazioni per gli sviluppatori
 
-**Version: Version: 0.0.35**
+**Version: Version: 0.0.36**
 
 ## TODO
 

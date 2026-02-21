@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.0.36](https://github.com/Ogekuri/debriddo/compare/v0.0.35..v0.0.36) - 2026-02-21
+### ⛰️  Features
+- *(core)* update github workflow.
+- *(core)* add seach_movie.sh and seach_series.sh scripts.
+- *(pdoc)* update requirements and doc build script [2026-02-13 19:10:00]
+- *(docs)* add Italian Google-style docstrings to all functions [2026-02-13 19:00:59]
+- *(core)* removed one337x, limetorrents and torrentproject that not work for claudeflare protection.
+
+### 🐛  Bug Fixes
+- *(core)* configure pyright venv resolution [2026-02-20 15:37:37]
+- *(core)* Fix static analysis errors and unused imports [2026-02-20 15:26:58]
+- *(core)* minor fixes
+
+### 🚜  Changes
+- *(doxygen)* add script and requirements/workflow updates [2026-02-17 15:24:57]
+- *(core)* remove pdoc support and refresh doxygen docs [2026-02-17 15:18:29]
+- *(core)* remove doc-comment req and normalize doxygen docs [2026-02-15 19:46:18]
+- *(core)* apply Doxygen documentation coverage and update specs [2026-02-15 19:27:42]
+- *(api_tester)* increase timeout default and specs [2026-02-13 18:47:57]
+
+### 📚  Documentation
+- *(core)* restore workflow runtime model [2026-02-20 15:45:03]
+- *(core)* refresh workflow runtime model [2026-02-20 15:44:42]
+- *(core)* regenerate references index [2026-02-19 17:52:27]
+- *(core)* regenerate workflow runtime model [2026-02-19 17:47:29]
+- *(core)* generate REFERENCES.md from source code [2026-02-15 19:19:26]
+- *(workflow)* regenerate technical call tree [2026-02-15 18:56:56]
+- *(core)* add comments.
+
 ## [0.0.35](https://github.com/Ogekuri/debriddo/compare/v0.0.34..v0.0.35) - 2026-02-13
 ### ⛰️  Features
 - *(core)* add ita/no-lang conf.
@@ -96,6 +125,7 @@
 - \[0.0.33\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.33
 - \[0.0.34\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.34
 - \[0.0.35\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.35
+- \[0.0.36\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.36
 
 [0.0.1]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.1
 [0.0.2]: https://github.com/Ogekuri/debriddo/compare/v0.0.1..v0.0.2
@@ -132,3 +162,4 @@
 [0.0.33]: https://github.com/Ogekuri/debriddo/compare/v0.0.32..v0.0.33
 [0.0.34]: https://github.com/Ogekuri/debriddo/compare/v0.0.33..v0.0.34
 [0.0.35]: https://github.com/Ogekuri/debriddo/compare/v0.0.34..v0.0.35
+[0.0.36]: https://github.com/Ogekuri/debriddo/compare/v0.0.35..v0.0.36
