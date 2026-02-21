@@ -23,28 +23,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          tag_name: ${{ github.ref_name }} # Nome del tag
-          name: Release ${{ github.ref_name }}  # Nome della release
-          # body_path: CHANGELOG.md # Se hai un file CHANGELOG.md, puoi usarlo come body della release
-          body: ${{ steps.build_changelog.outputs.changelog }} # Usa il changelog generato come body della release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download auto-generated ZIP
-        run: curl -L -o ${{ github.ref_name }}.zip https://github.com/${{ github.repository }}/archive/refs/tags/${{ github.ref_name }}.zip
-
-      - name: Set repository name as output
-        id: repo_name
-        run: |
-          REPO_NAME=$(echo '${{ github.repository }}' | cut -d'/' -f2)
-          echo "repo_name=$REPO_NAME" >> $GITHUB_ENV
-
       - name: Build Changelog
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v6
@@ -93,6 +71,28 @@ jobs:
             }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.ref_name }} # Nome del tag
+          name: Release ${{ github.ref_name }}  # Nome della release
+          # body_path: CHANGELOG.md # Se hai un file CHANGELOG.md, puoi usarlo come body della release
+          body: ${{ steps.build_changelog.outputs.changelog }} # Usa il changelog generato come body della release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download auto-generated ZIP
+        run: curl -L -o ${{ github.ref_name }}.zip https://github.com/${{ github.repository }}/archive/refs/tags/${{ github.ref_name }}.zip
+
+      - name: Set repository name as output
+        id: repo_name
+        run: |
+          REPO_NAME=$(echo '${{ github.repository }}' | cut -d'/' -f2)
+          echo "repo_name=$REPO_NAME" >> $GITHUB_ENV
 
       - name: Upload Asset on Release
         uses: actions/upload-release-asset@v1
