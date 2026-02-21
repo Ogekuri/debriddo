@@ -4,7 +4,7 @@
 @details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
 """
 
-# VERSION: 0.0.36
+# VERSION: 0.0.37
 # AUTHORS: Scare! (https://Scare.ca/dl/qBittorrent/)
 # CONTRIBUTORS: Ogekuri, LightDestory https://github.com/LightDestory
 
