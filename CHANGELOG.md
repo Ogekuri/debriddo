@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.39](https://github.com/Ogekuri/debriddo/compare/v0.0.38..v0.0.39) - 2026-02-21
+### 📚  Documentation
+- *(core)* Review README.md.
+
 ## [0.0.38](https://github.com/Ogekuri/debriddo/compare/v0.0.37..v0.0.38) - 2026-02-21
 ### ⛰️  Features
 - *(core)* update github workflow.
@@ -136,6 +140,7 @@
 - \[0.0.36\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.36
 - \[0.0.37\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.37
 - \[0.0.38\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.38
+- \[0.0.39\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.39
 
 [0.0.1]: https://github.com/Ogekuri/debriddo/releases/tag/v0.0.1
 [0.0.2]: https://github.com/Ogekuri/debriddo/compare/v0.0.1..v0.0.2
@@ -175,3 +180,4 @@
 [0.0.36]: https://github.com/Ogekuri/debriddo/compare/v0.0.35..v0.0.36
 [0.0.37]: https://github.com/Ogekuri/debriddo/compare/v0.0.36..v0.0.37
 [0.0.38]: https://github.com/Ogekuri/debriddo/compare/v0.0.37..v0.0.38
+[0.0.39]: https://github.com/Ogekuri/debriddo/compare/v0.0.38..v0.0.39

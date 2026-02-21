@@ -4,7 +4,7 @@
 @details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
 """
 
-# VERSION: 0.0.38
+# VERSION: 0.0.39
 # AUTHORS: Ogekuri
 
 from pathlib import Path

@@ -10,7 +10,7 @@
 #: @brief Exported constant `APPLICATION_NAME` used by runtime workflows.
 APPLICATION_NAME = "Debriddo"
 #: @brief Exported constant `APPLICATION_VERSION` used by runtime workflows.
-APPLICATION_VERSION = "0.0.38"
+APPLICATION_VERSION = "0.0.39"
 #: @brief Exported constant `APPLICATION_DESCRIPTION` used by runtime workflows.
 APPLICATION_DESCRIPTION = "Ricerca online i Film e le tue Serie Tv preferite."
 
