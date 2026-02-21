@@ -1,42 +1,104 @@
+🚧 **DRAFT:** Preliminary Version 📝 - Work in Progress 🏗️ 🚧
+
+⚠️ **IMPORTANT NOTICE**: Created with **[useReq/req](https://github.com/Ogekuri/useReq)** 🤖✨ ⚠️
+
 # Debriddo
 
 **Version: 0.0.38**
 
-Debriddo è un addon per Stremio per la ricerca dei film e delle serie tv sui motori di ricerca online di torrent.
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/license-GPL--3.0-491?style=flat-square" alt="License: GPL-3.0">
+  <img src="https://img.shields.io/badge/platform-Linux-6A7EC2?style=flat-square&logo=terminal&logoColor=white" alt="Platforms">
+  <img src="https://img.shields.io/badge/docs-live-b31b1b" alt="Docs">
+<img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json" alt="uv">
+</p>
 
-Le informazioni per gli sviluppatori sono contenute nel file [DEVELOP.md](DEVELOP.md)
+<p align="center">
+<strong>Debriddo is a Stremio add-on that searches for movies and TV series on online torrent search engines.</strong><br>
+It provides a web-based configuration page, builds compressed install URLs for Stremio, aggregates torrent results from multiple engines, applies quality/language/size filtering, uses a local SQLite cache, and can redirect playback through supported Debrid services.
+</p>
 
+<p align="center">
+  <a href="#quick-start">Quick Start</a> |
+  <a href="#feature-highlights">Feature Highlights</a> |
+  <a href="#acknowledgments">Acknowledgments</a>
+<p>
 
-# Installazione ed esecuzione
+## Feature Highlights
+- Stremio-compatible add-on manifest and `stream` endpoints for `movie` and `series`.
+- Web configuration UI with shareable compressed config payloads (`C_...`) for install and reconfiguration links.
+- Configurable multi-engine torrent search (The Pirate Bay, Torrentz, TorrentGalaxy, TheRARBG, Il Corsaro Nero, Il Corsaro Blu).
+- Metadata lookup via TMDB (with API key) or Cinemeta.
+- Result filtering and ordering by language, excluded keywords/qualities, max size, per-quality cap, and sort mode.
+- Local SQLite cache (`caches_items.db`) to reuse previous searches and reduce repeated engine lookups.
+- Optional Debrid playback redirect support for Real-Debrid, AllDebrid, Premiumize, and TorBox.
+- Docker-first run flow plus a CLI API tester for endpoint checks and smoke tests.
 
-## Docker
+## Quick Start
 
-- Ottenere l'immagine docker da GitHub Container Registry
+### Docker
+
+- Pull the Docker image from GitHub Container Registry
     ```sh
     sudo docker pull "ghcr.io/ogekuri/debriddo:latest"
     ```
-- Eseguire il conteiner docker
+- Run the Docker container
     ```sh
-    sudo docker run -p "0.0.0.0:8000:8000" --env DOCKER_PORT="8000" --env DOCKER_URL="https://foo.bar:443" "ghcr.io/ogekuri/debriddo:latest"
-    ````
-- Eventualmente puoi specificare il nome dell'ambinete
+    sudo docker run -p "0.0.0.0:8000:8000" --env DOCKER_PORT="8000" --env DOCKER_URL="https://foo.bar:443" --env NUM_WORKERS="auto" --env N_THREADS="auto" "ghcr.io/ogekuri/debriddo:latest"
+    ```
+- Optionally, you can define the environment with `DOCKER_ENV` (e.g. `test`)
     ```sh
     sudo docker run -p "0.0.0.0:8000:8000" --env DOCKER_PORT="8000" --env DOCKER_URL="https://foo.bar:443" --env DOCKER_ENV="test" "ghcr.io/ogekuri/debriddo:latest"
-    ````
-  Ora è accessibile attraverso `https://foo.bar:443`
+    ```
+  It is accessible through the URL set in `DOCKER_URL` (default: `http://127.0.0.1:8000`); the default port is `8000`.
 
-- Terminare l'applicazione
+- Supported parameters in the `docker run` command:
+  - `DOCKER_PORT`: listening port of the service inside the container.
+  - `DOCKER_URL`: public URL used by the add-on in manifests.
+  - `DOCKER_ENV` (optional): environment name (e.g. `test`, `develop`).
+  - `NUM_WORKERS` (optional): number of Uvicorn workers (`auto` supported).
+  - `N_THREADS` (optional): number of application threads (`auto` supported).
+
+- Stop the application
     ```sh
     Ctrl+C
-    ````
+    ```
 
-# Ringraziamenti
+### API Tester (CLI)
 
-Un ringraziamento speciale a **Riki** che ha sostituito egregiamente ChatGPT del tutto gratuitamente!.
+To test Debriddo HTTP endpoints, you can use:
 
-Il progetto è basato sul progetto di **aymene69** [Stremio Jackett Addon](https://github.com/aymene69/stremio-jackett) del quale integra parte dei sorgenti.
+```sh
+./api_tester.sh --help
+```
 
-Tuttavia, dal momento che il supporto al [Jackett API Server](https://github.com/Jackett/Jackett) è stato completamente rimosso a favore delle ricerche dirette, il progetto non è mantenuto come fork del progretto principale, ma come progetto indipendente.
-Grazie a **aymene69** e al team di **Jacket** per il loro prezioso contributo!
+- Supported global options:
+  - `--config-url`
+  - `--config-url-env`
+  - `--timeout`
+  - `--insecure`
+  - `--print-body`
 
-Un grazie infine anche ai realizzazetori dei plugins di qTorrentio che sono stati integrati in questo progetto: [LightDestory](https://github.com/LightDestory), [Scare!](https://Scare.ca/dl/qBittorrent/), Lima66, Diego de las Heras, sa3dany, Alyetama, BurningMop, scadams, BurningMop, nindogo, mauricci.
+- Available commands:
+  - `target`
+  - `root`
+  - `configure`
+  - `manifest`
+  - `site-webmanifest`
+  - `asset`
+  - `stream`
+  - `search`
+  - `playback`
+  - `smoke`
+
+## Acknowledgments
+
+Special thanks to **Riki**, who excellently replaced ChatGPT entirely for free.
+
+This project is based on **aymene69**'s [Stremio Jackett Addon](https://github.com/aymene69/stremio-jackett), from which it integrates part of the source code.
+
+However, since support for the [Jackett API Server](https://github.com/Jackett/Jackett) has been completely removed in favor of direct searches, this project is not maintained as a fork of the main project, but as an independent project.
+Thanks to **aymene69** and the **Jackett** team for their valuable contribution!
+
+Finally, thanks also to the creators of the qTorrentio plugins integrated into this project: [LightDestory](https://github.com/LightDestory), [Scare!](https://Scare.ca/dl/qBittorrent/), Lima66, Diego de las Heras, sa3dany, Alyetama, BurningMop, scadams, BurningMop, nindogo, mauricci.
