@@ -1,4 +1,4 @@
-name: Release
+name: Release (docker)
   
 env:
   REGISTRY: ghcr.io
@@ -31,7 +31,8 @@ jobs:
           prerelease: false
           tag_name: ${{ github.ref_name }} # Nome del tag
           name: Release ${{ github.ref_name }}  # Nome della release
-          body_path: CHANGELOG.md
+          # body_path: CHANGELOG.md # Se hai un file CHANGELOG.md, puoi usarlo come body della release
+          body: ${{ steps.build_changelog.outputs.changelog }} # Usa il changelog generato come body della release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -43,6 +44,55 @@ jobs:
         run: |
           REPO_NAME=$(echo '${{ github.repository }}' | cut -d'/' -f2)
           echo "repo_name=$REPO_NAME" >> $GITHUB_ENV
+
+      - name: Build Changelog
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v6
+        with:
+          mode: "COMMIT"
+          configurationJson: |
+            {
+
+              "categories": [
+               { "title": "## ⛰️ Features", "labels": ["new"] },
+               { "title": "## 🏗️ Implementations", "labels": ["implement"] },
+               { "title": "## 🐛 Bug Fixes", "labels": ["fix"] },
+               { "title": "## 🚜 Changes", "labels": ["change"] },
+               { "title": "## 🎯 Cover Requirements", "labels": ["cover"] },
+               { "title": "## ✨ Refactor", "labels": ["refactor"] },
+               { "title": "## 📚 Documentation", "labels": ["docs"] },
+               { "title": "## 🎨 Styling", "labels": ["style"] },
+               { "title": "## ◀️ Revert", "labels": ["revert"] },
+               { "title": "## ⚙️ Miscellaneous Tasks", "labels": ["misc"] },
+               { "title": "## 💬 Other", "labels": ["other"] },
+               { "title": "## ❓ Unknown", "labels": ["unknown"] },
+               { "title": "## 🚀 Release", "labels": ["release"] }
+             ],
+             "ignore_labels": [
+                "release",
+                "ignore"
+             ],
+             "transformers": [
+              {
+                "pattern": "^[^\\(:\\s]+(\\([^\\)]+\\))?!?:\\s+([\\S]+[\\s\\S]*)",
+                "target": "$2 $1"
+              }
+             ],
+             "sort": {
+                "order": "ASC",
+                "on_property": "mergedAt"
+             },
+             "template": "#{{CHANGELOG}}\n\n<details>\n<summary>Uncategorized</summary>\n\n#{{UNCATEGORIZED}}\n</details>\n\n**Full Changelog**: [#{{FROM_TAG}}...#{{TO_TAG}}](https://github.com/#{{OWNER}}/#{{REPO}}/compare/#{{FROM_TAG}}...#{{TO_TAG}})",
+              "label_extractor": [
+               {
+                 "pattern": "^([^\\(:\\s]+)(\\([^\\)]+\\))?(!)?:\\s+([\\S]+[\\s\\S]*)",
+                 "on_property": "title",
+                 "target": "$1"
+               }
+             ]
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Asset on Release
         uses: actions/upload-release-asset@v1
