@@ -1,6 +1,6 @@
 # Debriddo
 
-**Version: 0.0.39**
+**Version: 0.1.0**
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
