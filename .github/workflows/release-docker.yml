@@ -7,12 +7,14 @@ env:
 on:
   push:
     tags:
-      - 'v*' # Attiva il workflow per qualsiasi tag che inizia con "v"
+      - 'v[0-9]+.[0-9]+.[0-9]+' # push di una versione canonica (es. v1.2.3) senza pre-release
 
 jobs:
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+
     permissions:
       contents: write
       packages: write # Permessi per caricare pacchetti
@@ -22,6 +24,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Carica tutta la cronologia per poter confrontare i rami
+
+      - name: Check if tag is on master
+        run: |
+          # Usiamo l'hash del commit (GITHUB_SHA) per evitare problemi di nomi di tag simili
+          git fetch origin master
+          if git branch -r --contains ${GITHUB_SHA} | grep -q "origin/master"; then
+            echo "✅ Tag ${{ github.ref }} is on master branch. Proceeding with release."
+          else
+            echo "❌ Tag ${{ github.ref }} is not on master branch. Aborting release."
+            exit 1
+          fi
 
       - name: Build Changelog
         id: build_changelog

@@ -1,7 +1,3 @@
-🚧 **DRAFT:** Preliminary Version 📝 - Work in Progress 🏗️ 🚧
-
-⚠️ **IMPORTANT NOTICE**: Created with **[useReq/req](https://github.com/Ogekuri/useReq)** 🤖✨ ⚠️
-
 # Debriddo
 
 **Version: 0.0.39**
@@ -24,6 +20,14 @@ It provides a web-based configuration page, builds compressed install URLs for S
   <a href="#feature-highlights">Feature Highlights</a> |
   <a href="#acknowledgments">Acknowledgments</a>
 <p>
+
+<p align="center">
+<br>
+🚧 <strong>DRAFT:</strong>Preliminary Version 📝 - Work in Progress 🏗️ 🚧<br>
+⚠️ <strong>IMPORTANT NOTICE</strong>: Created with <a href="https://github.com/Ogekuri/useReq"><strong>useReq/req</strong></a> 🤖✨ ⚠️<br>
+<br>
+<p>
+
 
 ## Feature Highlights
 - Stremio-compatible add-on manifest and `stream` endpoints for `movie` and `series`.
