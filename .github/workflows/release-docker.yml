@@ -11,7 +11,35 @@ on:
 
 jobs:
 
+  # 1. Controlla se siamo sul branch corretto
+  check-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      is_master: ${{ steps.check.outputs.is_master }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
+      - name: Check if tag is on master
+        id: check
+        run: |
+          git fetch origin master
+          if git branch -r --contains ${GITHUB_SHA} | grep -q "origin/master"; then
+            echo "✅ Tag ${{ github.ref }} is on master branch. Proceeding with release."
+            echo "is_master=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "❌ Tag ${{ github.ref }} is not on master branch. Skipping release."
+            echo "is_master=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # 2. Effetua la build
   create-release:
+    needs: check-branch
+    # Esegue questo job SOLO se l'output del job precedente è 'true'
+    if: needs.check-branch.outputs.is_master == 'true'
+
     name: Create GitHub Release
     runs-on: ubuntu-latest
 
@@ -26,17 +54,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Carica tutta la cronologia per poter confrontare i rami
-
-      - name: Check if tag is on master
-        run: |
-          # Usiamo l'hash del commit (GITHUB_SHA) per evitare problemi di nomi di tag simili
-          git fetch origin master
-          if git branch -r --contains ${GITHUB_SHA} | grep -q "origin/master"; then
-            echo "✅ Tag ${{ github.ref }} is on master branch. Proceeding with release."
-          else
-            echo "❌ Tag ${{ github.ref }} is not on master branch. Aborting release."
-            exit 1
-          fi
 
       - name: Build Changelog
         id: build_changelog
