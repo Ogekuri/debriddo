@@ -27,14 +27,12 @@
 !requirements.txt
 !.g.conf
 !/**/*.sh
-!req/
-!req/**/*
 !src/
 !src/**/*
 !docs/
 !docs/**/*
-!tech/
-!tech/**/*
+!guidelines/
+!guidelines/**/*
 !tests/
 !tests/**/*
 # verificare
