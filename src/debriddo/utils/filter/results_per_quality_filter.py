@@ -4,7 +4,7 @@
 @details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
 """
 
-# VERSION: 0.1.1
+# VERSION: 0.1.2
 # AUTHORS: aymene69
 # CONTRIBUTORS: Ogekuri
 

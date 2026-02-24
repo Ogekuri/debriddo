@@ -1,8 +1,11 @@
 # Changelog
 
-## [0.1.1](https://github.com/Ogekuri/debriddo/compare/v0.1.0..v0.1.1) - 2026-02-24
+## [0.1.2](https://github.com/Ogekuri/debriddo/compare/v0.1.0..v0.1.2) - 2026-02-24
 ### ⛰️  Features
 - update .gitignore file. *(core)*
+
+### 🐛  Bug Fixes
+- Fix workflow. *(core)*
 
 ## [0.1.0](https://github.com/Ogekuri/debriddo/releases/tag/v0.1.0) - 2026-02-22
 ### ⛰️  Features
@@ -91,7 +94,7 @@
 # History
 
 - \[0.1.0\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.1.0
-- \[0.1.1\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.1.1
+- \[0.1.2\]: https://github.com/Ogekuri/debriddo/releases/tag/v0.1.2
 
 [0.1.0]: https://github.com/Ogekuri/debriddo/releases/tag/v0.1.0
-[0.1.1]: https://github.com/Ogekuri/debriddo/compare/v0.1.0..v0.1.1
+[0.1.2]: https://github.com/Ogekuri/debriddo/compare/v0.1.0..v0.1.2

@@ -4,7 +4,7 @@
 @details LLM-oriented Doxygen metadata for static analyzers and automated refactoring agents.
 """
 
-# VERSION: 0.1.1
+# VERSION: 0.1.2
 # AUTHORS: Ogekuri
 
 from debriddo.utils.logger import setup_logger
